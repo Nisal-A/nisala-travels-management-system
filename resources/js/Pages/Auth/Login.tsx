@@ -99,6 +99,9 @@ export default function Login() {
                                     required
                                     autoComplete="current-password"
                                 />
+                                {errors.password && (
+                                    <p className="text-sm font-medium text-destructive">{errors.password}</p>
+                                )}
                             </div>
 
                             {/* Submit */}

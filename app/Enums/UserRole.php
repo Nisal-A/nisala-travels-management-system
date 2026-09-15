@@ -12,10 +12,10 @@ namespace App\Enums;
 enum UserRole: string
 {
     case SuperAdmin = 'super_admin';
-    case Manager    = 'manager';
-    case Staff      = 'staff';
-    case Finance    = 'finance';
-    case Customer   = 'customer';
+    case Manager = 'manager';
+    case Staff = 'staff';
+    case Finance = 'finance';
+    case Customer = 'customer';
 
     /**
      * Human-readable label for display in UI.
@@ -24,10 +24,10 @@ enum UserRole: string
     {
         return match ($this) {
             self::SuperAdmin => 'Super Admin',
-            self::Manager    => 'Manager',
-            self::Staff      => 'Staff',
-            self::Finance    => 'Finance',
-            self::Customer   => 'Customer',
+            self::Manager => 'Manager',
+            self::Staff => 'Staff',
+            self::Finance => 'Finance',
+            self::Customer => 'Customer',
         };
     }
 

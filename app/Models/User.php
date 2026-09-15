@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\UserStatus;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, \Illuminate\Database\Eloquent\SoftDeletes, \Spatie\Permission\Traits\HasRoles;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes, Notifiable, \Spatie\Permission\Traits\HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -43,7 +45,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'status' => \App\Enums\UserStatus::class,
+            'status' => UserStatus::class,
         ];
     }
 }
