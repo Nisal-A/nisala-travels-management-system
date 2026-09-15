@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -21,9 +22,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => \App\Enums\UserRole::Customer,
-            'status' => \App\Enums\UserStatus::Active,
-            'phone' => fake()->phoneNumber(),
+            'status' => UserStatus::Active,
         ];
     }
 
@@ -34,45 +33,31 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function superAdmin(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => \App\Enums\UserRole::SuperAdmin,
-        ]);
-    }
-
-    public function manager(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => \App\Enums\UserRole::Manager,
-        ]);
-    }
-
-    public function staff(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => \App\Enums\UserRole::Staff,
-        ]);
-    }
-
-    public function finance(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => \App\Enums\UserRole::Finance,
-        ]);
-    }
-
-    public function customer(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => \App\Enums\UserRole::Customer,
-        ]);
-    }
+    /**
+     * NOTE: Role-specific factory states will be reimplemented in NT-004.2
+     * when the RoleSeeder is active and Spatie roles can be assigned via
+     * afterCreating() callbacks, e.g.:
+     *
+     *   public function superAdmin(): static
+     *   {
+     *       return $this->afterCreating(function (User $user) {
+     *           $user->assignRole('super_admin');
+     *       });
+     *   }
+     */
 
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => \App\Enums\UserStatus::Inactive,
+            'status' => UserStatus::Inactive,
+        ]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => UserStatus::Suspended,
         ]);
     }
 }
+
