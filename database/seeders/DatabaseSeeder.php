@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Phase 2 — NT-003
-        // $this->call(RoleSeeder::class);
-        // $this->call(AdminUserSeeder::class);
+        // Phase 2 — NT-004 Authentication Foundation
+        // $this->call(RoleSeeder::class);       // NT-004.2 — requires role definitions
+        $this->call(AdminUserSeeder::class);
 
         // Phase 4 — NT-006
         // $this->call(CustomerSeeder::class);

@@ -3,12 +3,13 @@
 namespace App\Enums;
 
 /**
- * Defines the available status flags for a user.
+ * Defines the possible account statuses for users within the system.
  */
 enum UserStatus: string
 {
-    case Active = 'active';
-    case Inactive = 'inactive';
+    case Active    = 'active';
+    case Inactive  = 'inactive';
+    case Suspended = 'suspended';
 
     /**
      * Human-readable label for display in UI.
@@ -16,8 +17,9 @@ enum UserStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Active => 'Active',
-            self::Inactive => 'Inactive',
+            self::Active    => 'Active',
+            self::Inactive  => 'Inactive',
+            self::Suspended => 'Suspended',
         };
     }
 }
