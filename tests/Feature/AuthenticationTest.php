@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserStatus;
 use App\Models\User;
 
 /*
@@ -163,7 +162,7 @@ test('login attempts are rate limited', function () {
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
-        
+
         $response->assertSessionHasErrors('email');
     }
 
@@ -177,4 +176,49 @@ test('login attempts are rate limited', function () {
         'Too many login attempts.',
         session('errors')->get('email')[0]
     );
+});
+
+test('normal successful authentication remains possible after the throttle period', function () {
+    $user = User::factory()->create();
+
+    for ($i = 0; $i < 6; $i++) {
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+    }
+
+    $this->travel(5)->minutes();
+
+    $response = $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    $response->assertRedirect(route('dashboard'));
+});
+
+test('session is regenerated upon successful login', function () {
+    $user = User::factory()->create();
+
+    $this->get('/login');
+    $originalToken = session('_token');
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertNotEquals($originalToken, session('_token'));
+});
+
+test('protected routes are inaccessible after logout', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/logout');
+
+    $response = $this->get('/dashboard');
+
+    $response->assertRedirect('/login');
 });

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('causer_id')->nullable();
             $table->json('properties')->nullable();
             $table->timestamps();
-            
+
             $table->index(['subject_type', 'subject_id']);
             $table->index(['causer_type', 'causer_id']);
         });
