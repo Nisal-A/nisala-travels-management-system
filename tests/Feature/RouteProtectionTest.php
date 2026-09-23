@@ -1,16 +1,22 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 
 /*
 |--------------------------------------------------------------------------
-| NT-004.6 Protected Routes Tests
+| NT-004.6 / NT-005.2 Protected Routes Tests
 |--------------------------------------------------------------------------
 |
 | Tests to ensure that all authenticated routes enforce the 'auth' middleware
-| properly, and that unauthenticated users are redirected.
+| properly, and that unauthenticated users are redirected. Updated in
+| NT-005.2 to use a super admin user since routes now enforce role checks.
 |
 */
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 dataset('protected_routes', [
     ['/admin'],
@@ -31,8 +37,8 @@ test('guests are redirected to login when accessing protected routes', function 
     $this->assertGuest();
 })->with('protected_routes');
 
-test('authenticated users can access protected routes', function (string $route) {
-    $user = User::factory()->create();
+test('authorized users can access protected routes', function (string $route) {
+    $user = User::factory()->superAdmin()->create();
 
     $response = $this->actingAs($user)->get($route);
 
@@ -45,3 +51,4 @@ test('public routes remain accessible without authentication', function () {
 
     $response->assertStatus(200);
 });
+
