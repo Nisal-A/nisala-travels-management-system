@@ -13,7 +13,7 @@
         "axios": "^1.7.4",
         "class-variance-authority": "^0.7.1",
         "cn": "^0.3.0",
-        "lucide-react": "^0.474.0",
+        "lucide-react": "^1.48.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "shadcn": "^4.21.0",
