@@ -348,8 +348,8 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                                     key={index}
                                                     href={link.url}
                                                     className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border border-input transition-colors ${link.active
-                                                            ? 'z-10 bg-primary text-primary-foreground border-primary focus:z-20'
-                                                            : 'bg-background text-foreground hover:bg-muted focus:z-20'
+                                                        ? 'z-10 bg-primary text-primary-foreground border-primary focus:z-20'
+                                                        : 'bg-background text-foreground hover:bg-muted focus:z-20'
                                                         } ${isPrevious ? 'rounded-l-md' : ''} ${isNext ? 'rounded-r-md' : ''}`}
                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                 />
