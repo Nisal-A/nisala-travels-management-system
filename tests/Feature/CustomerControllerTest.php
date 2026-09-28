@@ -107,3 +107,29 @@ test('validation prevents duplicate nic on creation', function () {
 
     $response->assertSessionHasErrors(['nic']);
 });
+
+test('users can search customers', function () {
+    $user = actAsRole(UserRole::Manager->value);
+    
+    Customer::factory()->create(['full_name' => 'John Doe']);
+    Customer::factory()->create(['full_name' => 'Jane Smith']);
+    
+    $response = $this->actingAs($user)->get('/customers?search=John');
+    
+    $response->assertStatus(200);
+    $response->assertSee('John Doe');
+    $response->assertDontSee('Jane Smith');
+});
+
+test('users can filter customers by status', function () {
+    $user = actAsRole(UserRole::Manager->value);
+    
+    Customer::factory()->create(['full_name' => 'Active Customer', 'status' => 'active']);
+    Customer::factory()->create(['full_name' => 'Inactive Customer', 'status' => 'inactive']);
+    
+    $response = $this->actingAs($user)->get('/customers?status=active');
+    
+    $response->assertStatus(200);
+    $response->assertSee('Active Customer');
+    $response->assertDontSee('Inactive Customer');
+});
