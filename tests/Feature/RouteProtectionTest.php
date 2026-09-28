@@ -5,12 +5,12 @@ use Database\Seeders\RoleSeeder;
 
 /*
 |--------------------------------------------------------------------------
-| NT-004.6 / NT-005.2 Protected Routes Tests
+| NT-004.6 / NT-005.2 / NT-005.4 Protected Routes Tests
 |--------------------------------------------------------------------------
 |
 | Tests to ensure that all authenticated routes enforce the 'auth' middleware
 | properly, and that unauthenticated users are redirected. Updated in
-| NT-005.2 to use a super admin user since routes now enforce role checks.
+| NT-005.4 to include customer portal routes.
 |
 */
 
@@ -28,6 +28,10 @@ dataset('protected_routes', [
     ['/employees'],
     ['/reports'],
     ['/settings'],
+    ['/portal'],
+    ['/portal/bookings'],
+    ['/portal/documents'],
+    ['/portal/payments'],
 ]);
 
 test('guests are redirected to login when accessing protected routes', function (string $route) {
@@ -37,13 +41,30 @@ test('guests are redirected to login when accessing protected routes', function 
     $this->assertGuest();
 })->with('protected_routes');
 
-test('authorized users can access protected routes', function (string $route) {
+test('super admin can access office protected routes', function () {
+    $this->withoutVite();
     $user = User::factory()->superAdmin()->create();
 
-    $response = $this->actingAs($user)->get($route);
+    $officeRoutes = ['/admin', '/customers', '/documents', '/tours',
+                     '/bookings', '/payments', '/employees', '/reports', '/settings'];
 
-    $response->assertStatus(200);
-})->with('protected_routes');
+    foreach ($officeRoutes as $route) {
+        $response = $this->actingAs($user)->get($route);
+        $response->assertStatus(200);
+    }
+});
+
+test('customer can access portal routes', function () {
+    $this->withoutVite();
+    $user = User::factory()->customer()->create();
+
+    $portalRoutes = ['/portal', '/portal/bookings', '/portal/documents', '/portal/payments'];
+
+    foreach ($portalRoutes as $route) {
+        $response = $this->actingAs($user)->get($route);
+        $response->assertStatus(200);
+    }
+});
 
 test('public routes remain accessible without authentication', function () {
     $this->withoutVite();
@@ -51,4 +72,3 @@ test('public routes remain accessible without authentication', function () {
 
     $response->assertStatus(200);
 });
-
