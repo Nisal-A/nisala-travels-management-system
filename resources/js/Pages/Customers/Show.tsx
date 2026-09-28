@@ -284,6 +284,14 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                                         <p className="text-sm text-muted-foreground mt-1">Customer inquiry module pending implementation.</p>
                                     </CardContent>
                                 </Card>
+
+                                <Card className="border-dashed bg-muted/10 sm:col-span-2">
+                                    <CardContent className="flex flex-col items-center justify-center p-8 text-center">
+                                        <FileText className="h-8 w-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-medium">Activity & History</h4>
+                                        <p className="text-sm text-muted-foreground mt-1">System audit and customer activity logging pending implementation.</p>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
 
