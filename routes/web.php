@@ -43,6 +43,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    // Notifications — accessible to all office roles
+    Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', fn () => Inertia::render('Notifications/Index'))->name('index');
+        });
+    });
+
     // ------------------------------------------------------------------
     // Role-Protected Application Routes (NT-005.2 / NT-005.4)
     // ------------------------------------------------------------------

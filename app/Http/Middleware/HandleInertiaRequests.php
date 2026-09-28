@@ -77,6 +77,15 @@ class HandleInertiaRequests extends Middleware
             'icon' => 'LayoutDashboard',
         ];
 
+        // Notifications — all office users
+        if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Staff->value, UserRole::Finance->value])) {
+            $main[] = [
+                'label' => 'Notifications',
+                'route' => 'notifications.index',
+                'icon' => 'Bell',
+            ];
+        }
+
         // Customers — super_admin, manager, staff
         if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Staff->value])) {
             $main[] = [

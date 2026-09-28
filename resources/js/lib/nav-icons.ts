@@ -8,6 +8,7 @@ import {
     UserCog,
     BarChart3,
     Settings,
+    Bell,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ const iconMap: Record<string, LucideIcon> = {
     UserCog,
     BarChart3,
     Settings,
+    Bell,
 };
 
 export function getNavIcon(name: string): LucideIcon {
