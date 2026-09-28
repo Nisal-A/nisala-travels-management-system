@@ -2,19 +2,44 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     /**
-     * Temporarily unguarded — proper $fillable will be defined
-     * when full CRUD is implemented in NT-007/NT-008.
+     * The attributes that are mass assignable.
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'customer_id',
+        'full_name',
+        'nic',
+        'passport_number',
+        'dob',
+        'gender',
+        'nationality',
+        'phone',
+        'whatsapp',
+        'email',
+        'address',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'status',
+        'created_by',
+        'notes',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'dob' => 'date',
+    ];
 
     // ------------------------------------------------------------------
     // Relationships (minimal set for authorization policies — NT-005.3)
@@ -26,5 +51,45 @@ class Customer extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The user who created this customer record.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the documents for the customer.
+     */
+    public function documents()
+    {
+        return $this->hasMany(CustomerDocument::class);
+    }
+
+    /**
+     * Get the bookings for the customer.
+     */
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Get the payments made by the customer.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the inquiries made by the customer.
+     */
+    public function inquiries()
+    {
+        return $this->hasMany(Inquiry::class);
     }
 }

@@ -86,9 +86,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager + Staff (Operational)
     // ==============================
     Route::middleware('role:super_admin,manager,staff')->group(function () {
-        Route::prefix('customers')->name('customers.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Customers/Index'))->name('index');
-        });
+        Route::resource('customers', \App\Http\Controllers\CustomerController::class);
 
         Route::prefix('documents')->name('documents.')->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
