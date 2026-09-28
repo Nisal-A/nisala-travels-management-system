@@ -56,7 +56,7 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this customer?')) {
-            router.delete(route('customers.destroy', customer.id));
+            router.delete(route('customers.destroy', { customer: customer.id }));
         }
     };
 
@@ -107,7 +107,7 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                     
                     <div className="flex items-center gap-2">
                         {canEdit && (
-                            <Link href={route('customers.edit', customer.id)}>
+                            <Link href={route('customers.edit', { customer: customer.id })}>
                                 <Button variant="outline" className="gap-2">
                                     <Edit className="h-4 w-4" />
                                     <span>Edit</span>

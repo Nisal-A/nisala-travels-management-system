@@ -39,7 +39,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
         e.preventDefault();
         
         if (isEdit) {
-            put(route('customers.update', customer.id));
+            put(route('customers.update', { customer: customer.id }));
         } else {
             post(route('customers.store'));
         }

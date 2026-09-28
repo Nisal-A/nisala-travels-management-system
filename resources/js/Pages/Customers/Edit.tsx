@@ -16,7 +16,7 @@ export default function CustomersEdit({ customer }: EditProps) {
             breadcrumbs={[
                 { label: 'Dashboard', href: route('dashboard') },
                 { label: 'Customers', href: route('customers.index') },
-                { label: customer.customer_id, href: route('customers.show', customer.id) },
+                { label: customer.customer_id, href: route('customers.show', { customer: customer.id }) },
                 { label: 'Edit' },
             ]}
         >

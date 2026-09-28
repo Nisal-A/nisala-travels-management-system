@@ -65,7 +65,7 @@ export default function CustomersIndex({ customers }: IndexProps) {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this customer?')) {
-            router.delete(route('customers.destroy', id));
+            router.delete(route('customers.destroy', { customer: id }));
         }
     };
 
@@ -187,7 +187,7 @@ export default function CustomersIndex({ customers }: IndexProps) {
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
                                                         
-                                                        <Link href={route('customers.show', customer.id)}>
+                                                        <Link href={route('customers.show', { customer: customer.id })}>
                                                             <DropdownMenuItem className="cursor-pointer">
                                                                 <Eye className="mr-2 h-4 w-4" />
                                                                 View Profile
@@ -195,7 +195,7 @@ export default function CustomersIndex({ customers }: IndexProps) {
                                                         </Link>
                                                         
                                                         {canCreate && (
-                                                            <Link href={route('customers.edit', customer.id)}>
+                                                            <Link href={route('customers.edit', { customer: customer.id })}>
                                                                 <DropdownMenuItem className="cursor-pointer">
                                                                     <Edit className="mr-2 h-4 w-4" />
                                                                     Edit Details
