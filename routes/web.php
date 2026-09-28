@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -38,10 +39,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('logout');
 
     // Dashboard — accessible to all authenticated users.
-    // Each role sees their own dashboard variant based on shared props.
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    // The controller determines which dashboard variant and data to serve based on role.
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Notifications — accessible to all office roles
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {

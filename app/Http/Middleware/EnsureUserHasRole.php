@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
  *   Route::middleware('role:super_admin')->group(...);
  *   Route::middleware('role:super_admin,manager')->group(...);
  *
- * @see \App\Enums\UserRole for available role identifiers
+ * @see UserRole for available role identifiers
  */
 class EnsureUserHasRole
 {

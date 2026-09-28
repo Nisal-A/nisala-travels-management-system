@@ -1,10 +1,8 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------

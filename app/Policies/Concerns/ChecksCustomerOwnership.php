@@ -16,8 +16,8 @@ trait ChecksCustomerOwnership
     /**
      * Determine if the user owns the resource via their customer profile.
      *
-     * @param  User  $user        The authenticated user
-     * @param  int   $customerId  The customer_id on the resource being accessed
+     * @param  User  $user  The authenticated user
+     * @param  int  $customerId  The customer_id on the resource being accessed
      */
     protected function isOwner(User $user, int $customerId): bool
     {

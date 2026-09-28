@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\User;

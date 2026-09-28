@@ -27,13 +27,23 @@ import {
     Menu,
     PanelLeftClose,
     PanelLeft,
+    Bell,
 } from 'lucide-react';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import type { NavigationItem } from '@/types';
-import { type FormEvent, type ReactNode, useState } from 'react';
+import { Fragment, type FormEvent, type ReactNode, useState } from 'react';
 
 interface AppLayoutProps {
     children: ReactNode;
     title?: string;
+    breadcrumbs?: { label: string; href?: string }[];
 }
 
 /**
@@ -45,8 +55,8 @@ interface AppLayoutProps {
  *
  * NT-005.4 — Protected Route Groups & Role-Based Navigation
  */
-export default function AppLayout({ children, title }: AppLayoutProps) {
-    const { user, navigation } = useAuth();
+export default function AppLayout({ children, title, breadcrumbs }: AppLayoutProps) {
+    const { user, navigation, hasRole } = useAuth();
     const { post, processing } = useForm({});
     const [collapsed, setCollapsed] = useState(false);
     const currentUrl = usePage().url;
@@ -111,9 +121,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                             `}
                         >
                             <Icon
-                                className={`shrink-0 transition-colors ${
-                                    active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                                } ${collapsed ? 'h-5 w-5' : 'h-4 w-4'}`}
+                                className={`shrink-0 transition-colors ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                                    } ${collapsed ? 'h-5 w-5' : 'h-4 w-4'}`}
                             />
                             {!collapsed && (
                                 <span className="truncate">{item.label}</span>
@@ -256,9 +265,8 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
             <div className="flex h-screen bg-background dark">
                 {/* Desktop Sidebar */}
                 <aside
-                    className={`relative hidden lg:flex flex-col border-r border-border/50 bg-card/50 backdrop-blur-xl transition-all duration-300 ease-out ${
-                        collapsed ? 'w-[68px]' : 'w-64'
-                    }`}
+                    className={`relative hidden lg:flex flex-col border-r border-border/50 bg-card/50 backdrop-blur-xl transition-all duration-300 ease-out ${collapsed ? 'w-[68px]' : 'w-64'
+                        }`}
                 >
                     <SidebarContent />
 
@@ -303,14 +311,47 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                 <main className="flex flex-1 flex-col overflow-hidden">
                     {/* Top Bar */}
                     <header className="flex h-16 shrink-0 items-center border-b border-border/50 bg-card/30 px-6 backdrop-blur-sm">
-                        <div className="flex-1 lg:pl-0 pl-12">
-                            {title && (
+                        <div className="flex-1 lg:pl-0 pl-12 flex flex-col justify-center">
+                            {breadcrumbs && breadcrumbs.length > 0 ? (
+                                <Breadcrumb>
+                                    <BreadcrumbList>
+                                        {breadcrumbs.map((crumb, index) => {
+                                            const isLast = index === breadcrumbs.length - 1;
+                                            return (
+                                                <Fragment key={crumb.label}>
+                                                    <BreadcrumbItem>
+                                                        {crumb.href && !isLast ? (
+                                                            <BreadcrumbLink render={<Link href={crumb.href} />}>
+                                                                {crumb.label}
+                                                            </BreadcrumbLink>
+                                                        ) : (
+                                                            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                                                        )}
+                                                    </BreadcrumbItem>
+                                                    {!isLast && <BreadcrumbSeparator />}
+                                                </Fragment>
+                                            );
+                                        })}
+                                    </BreadcrumbList>
+                                </Breadcrumb>
+                            ) : title ? (
                                 <h1 className="text-lg font-semibold text-foreground tracking-tight">
                                     {title}
                                 </h1>
-                            )}
+                            ) : null}
                         </div>
                         <div className="flex items-center gap-3">
+                            {hasRole('super_admin', 'manager', 'staff', 'finance') && (
+                                <Link
+                                    href={route('notifications.index')}
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+                                    aria-label="Notifications"
+                                >
+                                    <Bell className="h-5 w-5 text-muted-foreground" />
+                                    {/* Placeholder indicator for unread notifications */}
+                                    <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
+                                </Link>
+                            )}
                             <Badge variant="outline" className="hidden sm:inline-flex text-[0.65rem] capitalize">
                                 {roleBadge}
                             </Badge>

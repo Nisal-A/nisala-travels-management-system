@@ -160,7 +160,7 @@ test('customer cannot access any office route', function () {
     $customer = createUser('customer');
 
     $officeRoutes = ['/admin', '/settings', '/employees', '/customers',
-                     '/documents', '/tours', '/bookings', '/payments', '/reports', '/notifications'];
+        '/documents', '/tours', '/bookings', '/payments', '/reports', '/notifications'];
 
     foreach ($officeRoutes as $url) {
         $response = $this->actingAs($customer)->get($url);
@@ -174,7 +174,7 @@ test('finance user cannot access operational or admin areas', function () {
     $finance = createUser('finance');
 
     $restrictedRoutes = ['/admin', '/settings', '/employees', '/customers',
-                         '/documents', '/tours', '/bookings'];
+        '/documents', '/tours', '/bookings'];
 
     foreach ($restrictedRoutes as $url) {
         $response = $this->actingAs($finance)->get($url);
@@ -199,7 +199,7 @@ test('staff cannot access admin, employee management, financial areas, or portal
     $staff = createUser('staff');
 
     $restrictedRoutes = ['/admin', '/settings', '/employees',
-                         '/payments', '/reports', '/portal'];
+        '/payments', '/reports', '/portal'];
 
     foreach ($restrictedRoutes as $url) {
         $response = $this->actingAs($staff)->get($url);

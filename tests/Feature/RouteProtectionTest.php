@@ -46,7 +46,7 @@ test('super admin can access office protected routes', function () {
     $user = User::factory()->superAdmin()->create();
 
     $officeRoutes = ['/admin', '/customers', '/documents', '/tours',
-                     '/bookings', '/payments', '/employees', '/reports', '/settings'];
+        '/bookings', '/payments', '/employees', '/reports', '/settings'];
 
     foreach ($officeRoutes as $route) {
         $response = $this->actingAs($user)->get($route);

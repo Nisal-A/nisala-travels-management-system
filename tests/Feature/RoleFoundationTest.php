@@ -3,6 +3,7 @@
 use App\Enums\UserRole;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
 use Spatie\Permission\Models\Role;
 
 /*
@@ -89,7 +90,7 @@ test('assigning a non-existent role throws an exception', function () {
     $user = User::factory()->create();
 
     $user->assignRole('nonexistent_role');
-})->throws(Spatie\Permission\Exceptions\RoleDoesNotExist::class);
+})->throws(RoleDoesNotExist::class);
 
 test('duplicate role assignment does not create duplicates', function () {
     $user = User::factory()->create();
