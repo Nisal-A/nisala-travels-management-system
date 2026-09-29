@@ -109,9 +109,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager + Finance (Financial)
     // ==============================
     Route::middleware('role:super_admin,manager,finance')->group(function () {
-        Route::prefix('payments')->name('payments.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Payments/Index'))->name('index');
-        });
+        // Payments Management (NT-011)
+        Route::resource('payments', \App\Http\Controllers\PaymentController::class)->only(['index', 'store', 'destroy']);
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
