@@ -100,9 +100,9 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Tours/Index'))->name('index');
         });
 
-        Route::prefix('bookings')->name('bookings.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Bookings/Index'))->name('index');
-        });
+        Route::resource('bookings', \App\Http\Controllers\BookingController::class);
+        Route::patch('bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'changeStatus'])->name('bookings.status');
+        Route::post('bookings/{id}/restore', [\App\Http\Controllers\BookingController::class, 'restore'])->name('bookings.restore');
     });
 
     // ==============================
