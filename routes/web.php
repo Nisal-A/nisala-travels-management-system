@@ -96,9 +96,6 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
         });
 
-        Route::prefix('tours')->name('tours.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Tours/Index'))->name('index');
-        });
 
         Route::resource('tour-packages', \App\Http\Controllers\TourPackageController::class);
         Route::patch('tour-packages/{tour_package}/status', [\App\Http\Controllers\TourPackageController::class, 'changeStatus'])->name('tour-packages.status');

@@ -22,7 +22,7 @@ dataset('protected_routes', [
     ['/admin'],
     ['/customers'],
     ['/documents'],
-    ['/tours'],
+    ['/tour-packages'],
     ['/bookings'],
     ['/payments'],
     ['/employees'],
@@ -45,7 +45,7 @@ test('super admin can access office protected routes', function () {
     $this->withoutVite();
     $user = User::factory()->superAdmin()->create();
 
-    $officeRoutes = ['/admin', '/customers', '/documents', '/tours',
+    $officeRoutes = ['/admin', '/customers', '/documents', '/tour-packages',
         '/bookings', '/payments', '/employees', '/reports', '/settings'];
 
     foreach ($officeRoutes as $route) {

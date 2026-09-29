@@ -77,7 +77,7 @@ test('super admin can access all protected route groups', function (string $rout
     '/employees',
     '/customers',
     '/documents',
-    '/tours',
+    '/tour-packages',
     '/bookings',
     '/payments',
     '/reports',
@@ -97,7 +97,7 @@ test('manager can access manager-permitted routes', function (string $route) {
     '/employees',
     '/customers',
     '/documents',
-    '/tours',
+    '/tour-packages',
     '/bookings',
     '/payments',
     '/reports',
@@ -127,7 +127,7 @@ test('staff can access staff-permitted routes', function (string $route) {
 })->with([
     '/customers',
     '/documents',
-    '/tours',
+    '/tour-packages',
     '/bookings',
 ]);
 
@@ -172,7 +172,7 @@ test('finance cannot access non-finance routes', function (string $route) {
     '/employees',
     '/customers',
     '/documents',
-    '/tours',
+    '/tour-packages',
     '/bookings',
 ]);
 
@@ -192,7 +192,7 @@ test('customer cannot access any office routes', function (string $route) {
     '/employees',
     '/customers',
     '/documents',
-    '/tours',
+    '/tour-packages',
     '/bookings',
     '/payments',
     '/reports',

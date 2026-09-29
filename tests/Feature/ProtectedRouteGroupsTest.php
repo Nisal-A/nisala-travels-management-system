@@ -75,7 +75,7 @@ dataset('route_access_matrix', [
     'documents' => ['/documents', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
 
     // Tours — super_admin, manager, staff
-    'tours' => ['/tours', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
+    'tours' => ['/tour-packages', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
 
     // Bookings — super_admin, manager, staff
     'bookings' => ['/bookings', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
@@ -135,7 +135,7 @@ dataset('all_protected_routes', [
     ['/employees'],
     ['/customers'],
     ['/documents'],
-    ['/tours'],
+    ['/tour-packages'],
     ['/bookings'],
     ['/payments'],
     ['/reports'],
@@ -160,7 +160,7 @@ test('customer cannot access any office route', function () {
     $customer = createUser('customer');
 
     $officeRoutes = ['/admin', '/settings', '/employees', '/customers',
-        '/documents', '/tours', '/bookings', '/payments', '/reports', '/notifications'];
+        '/documents', '/tour-packages', '/bookings', '/payments', '/reports', '/notifications'];
 
     foreach ($officeRoutes as $url) {
         $response = $this->actingAs($customer)->get($url);
@@ -174,7 +174,7 @@ test('finance user cannot access operational or admin areas', function () {
     $finance = createUser('finance');
 
     $restrictedRoutes = ['/admin', '/settings', '/employees', '/customers',
-        '/documents', '/tours', '/bookings'];
+        '/documents', '/tour-packages', '/bookings'];
 
     foreach ($restrictedRoutes as $url) {
         $response = $this->actingAs($finance)->get($url);
@@ -212,7 +212,7 @@ test('staff cannot access admin, employee management, financial areas, or portal
 test('staff can access operational areas', function () {
     $staff = createUser('staff');
 
-    foreach (['/customers', '/documents', '/tours', '/bookings'] as $url) {
+    foreach (['/customers', '/documents', '/tour-packages', '/bookings'] as $url) {
         $response = $this->actingAs($staff)->get($url);
 
         expect($response->status())

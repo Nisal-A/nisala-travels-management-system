@@ -108,7 +108,7 @@ class HandleInertiaRequests extends Middleware
         if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Staff->value])) {
             $main[] = [
                 'label' => 'Tours',
-                'route' => 'tours.index',
+                'route' => 'tour-packages.index',
                 'icon' => 'Map',
             ];
         }
