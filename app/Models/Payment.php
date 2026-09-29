@@ -8,9 +8,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+            'payment_date' => 'date',
+            'payment_method' => \App\Enums\PaymentMethod::class,
+            'status' => \App\Enums\PaymentStatus::class,
+        ];
+    }
 
     // ------------------------------------------------------------------
     // Relationships (minimal set for authorization policies — NT-005.3)
@@ -30,5 +40,13 @@ class Payment extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    /**
+     * The user who recorded this payment.
+     */
+    public function recordedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
     }
 }
