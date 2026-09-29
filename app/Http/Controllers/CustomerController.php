@@ -94,8 +94,23 @@ class CustomerController extends Controller
     {
         Gate::authorize('view', $customer);
         
+        // Load documents with their types and uploaders
+        $documents = $customer->documents()
+            ->with(['documentType', 'uploadedBy:id,name', 'verifiedBy:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($doc) {
+                // Ensure we don't leak the physical storage path to the frontend
+                $doc->makeHidden(['storage_path']);
+                return $doc;
+            });
+
+        $documentTypes = \App\Models\DocumentType::where('is_active', true)->get();
+
         return Inertia::render('Customers/Show', [
-            'customer' => $customer->load('creator:id,name')
+            'customer' => $customer->load('creator:id,name'),
+            'documents' => $documents,
+            'documentTypes' => $documentTypes,
         ]);
     }
 

@@ -82,4 +82,26 @@ class CustomerDocumentController extends Controller
             return back()->withErrors(['file' => 'An error occurred while saving the document. Please try again.']);
         }
     }
+
+    /**
+     * Download the specified document.
+     */
+    public function download(Customer $customer, CustomerDocument $document)
+    {
+        Gate::authorize('view', clone $document); // pass document, policy handles ownership
+
+        // Ensure document belongs to this customer
+        if ($document->customer_id !== $customer->id) {
+            abort(404);
+        }
+
+        if (!Storage::disk('private')->exists($document->storage_path)) {
+            abort(404, 'Document file not found.');
+        }
+
+        return Storage::disk('private')->download(
+            $document->storage_path, 
+            $document->original_filename
+        );
+    }
 }
