@@ -25,7 +25,21 @@ class TourPackageController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(15);
 
-        return response()->json($packages); // Returning JSON for backend testing/API purposes if no frontend view exists yet, or we can use Inertia if preferred.
+        return Inertia::render('Tours/Index', [
+            'packages' => $packages,
+            'destinations' => \App\Models\Destination::orderBy('country')->get(),
+            'categories' => \App\Models\TourCategory::orderBy('name')->get()
+        ]);
+    }
+
+    public function create()
+    {
+        Gate::authorize('create', TourPackage::class);
+
+        return Inertia::render('Tours/Form', [
+            'destinations' => \App\Models\Destination::orderBy('country')->get(),
+            'categories' => \App\Models\TourCategory::orderBy('name')->get()
+        ]);
     }
 
     /**
@@ -73,9 +87,29 @@ class TourPackageController extends Controller
     {
         Gate::authorize('view', $tourPackage);
 
-        $tourPackage->load(['destination', 'category', 'itineraries', 'createdBy', 'updatedBy']);
+        $tourPackage->load(['destination', 'category', 'itineraries' => function($q) {
+            $q->orderBy('day_number');
+        }, 'createdBy', 'updatedBy']);
 
-        return response()->json($tourPackage);
+        return Inertia::render('Tours/Show', [
+            'tourPackage' => $tourPackage
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(TourPackage $tourPackage)
+    {
+        Gate::authorize('update', $tourPackage);
+
+        $tourPackage->load('itineraries');
+
+        return Inertia::render('Tours/Form', [
+            'tourPackage' => $tourPackage,
+            'destinations' => \App\Models\Destination::orderBy('country')->get(),
+            'categories' => \App\Models\TourCategory::orderBy('name')->get()
+        ]);
     }
 
     /**
