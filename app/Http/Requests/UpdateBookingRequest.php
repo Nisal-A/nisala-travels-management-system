@@ -23,6 +23,8 @@ class UpdateBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'customer_id' => ['sometimes', 'required', 'exists:customers,id'],
+            'tour_package_id' => ['sometimes', 'required', 'exists:tour_packages,id'],
             'booking_date' => ['sometimes', 'required', 'date'],
             'travel_date' => ['sometimes', 'required', 'date'],
             'return_date' => ['nullable', 'date', 'after_or_equal:travel_date'],

@@ -160,7 +160,22 @@ class BookingController extends Controller
     public function update(UpdateBookingRequest $request, Booking $booking)
     {
         Gate::authorize('update', $booking);
+
+        if (in_array($booking->booking_status->value, [BookingStatus::Cancelled->value, BookingStatus::Completed->value])) {
+            return back()->withErrors(['error' => 'Bookings cannot be modified once completed or cancelled.']);
+        }
+
+        // If booking is confirmed, maybe we shouldn't allow changing package or customers, but we can allow traveler updates?
+        // Let's restrict core fields if confirmed.
+        
         $validated = $request->validated();
+        
+        if ($booking->booking_status === BookingStatus::Confirmed) {
+            // Prevent changing the tour package or customer if confirmed
+            if (isset($validated['tour_package_id']) && $validated['tour_package_id'] != $booking->tour_package_id) {
+                return back()->withErrors(['error' => 'Cannot change the tour package of a confirmed booking.']);
+            }
+        }
 
         $travelers = $validated['travelers'] ?? null;
         unset($validated['travelers']);
@@ -228,14 +243,45 @@ class BookingController extends Controller
         ]);
         
         $newStatus = BookingStatus::from($validated['booking_status']);
-        
-        // Allowed transitions logic could be more strict, but we'll allow standard movement
-        $booking->update([
-            'booking_status' => $newStatus,
-            'updated_by' => $request->user()->id
-        ]);
+        $currentStatus = $booking->booking_status;
 
-        return back()->with('success', 'Booking status updated.');
+        $validTransitions = [
+            BookingStatus::Pending->value => [BookingStatus::Confirmed->value, BookingStatus::Cancelled->value],
+            BookingStatus::Confirmed->value => [BookingStatus::Completed->value, BookingStatus::Cancelled->value],
+            BookingStatus::Completed->value => [],
+            BookingStatus::Cancelled->value => [],
+        ];
+
+        if (!in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? [])) {
+            return back()->withErrors(['error' => "Invalid status transition from {$currentStatus->value} to {$newStatus->value}."]);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            if ($newStatus === BookingStatus::Confirmed) {
+                // Re-validate capacity just in case of concurrent changes before confirmation
+                // Wait, validateCapacity includes Pending, so the capacity is inherently reserved.
+                // But we still re-verify the current state.
+                $this->validateCapacity($booking->tourPackage, $booking->number_of_travelers, $booking->id);
+            }
+
+            if ($newStatus === BookingStatus::Cancelled) {
+                Gate::authorize('cancel', $booking);
+                // The validateCapacity logic ignores cancelled bookings, so this restores availability implicitly.
+            }
+
+            $booking->update([
+                'booking_status' => $newStatus,
+                'updated_by' => $request->user()->id
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Booking status updated to ' . $newStatus->value);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to update booking status: ' . $e->getMessage()]);
+        }
     }
 
     /**
