@@ -49,9 +49,9 @@ class CustomerDocumentPolicy
     /**
      * Determine whether the user can upload a document for a given customer.
      *
-     * When called from a controller, pass the target customer_id to check ownership.
+     * When called from a controller, pass the target customer to check ownership.
      */
-    public function upload(User $user, CustomerDocument $document): bool
+    public function upload(User $user, \App\Models\Customer $customer): bool
     {
         if ($user->hasAnyRole([UserRole::Manager->value, UserRole::Staff->value])) {
             return true;
@@ -59,7 +59,7 @@ class CustomerDocumentPolicy
 
         // Customer can upload documents for their own profile
         if ($user->hasRole(UserRole::Customer->value)) {
-            return $this->isOwner($user, $document->customer_id);
+            return $this->isOwner($user, $customer->id);
         }
 
         return false;

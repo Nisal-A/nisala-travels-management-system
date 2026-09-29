@@ -43,6 +43,7 @@ beforeEach(function () {
         'email' => 'customera@example.com',
     ]);
     $this->documentA = CustomerDocument::create([
+        'document_id' => 'DOC-00001',
         'customer_id' => $this->customerA->id,
         'document_type_id' => 1,
         'storage_path' => 'private/documents/passport_a.pdf',
@@ -59,6 +60,7 @@ beforeEach(function () {
         'email' => 'customerb@example.com',
     ]);
     $this->documentB = CustomerDocument::create([
+        'document_id' => 'DOC-00002',
         'customer_id' => $this->customerB->id,
         'document_type_id' => 1,
         'storage_path' => 'private/documents/passport_b.pdf',
@@ -120,7 +122,7 @@ test('staff can view any document', function () {
 
 test('staff can upload documents', function () {
     $user = User::factory()->staff()->create();
-    expect($user->can('upload', $this->documentA))->toBeTrue();
+    expect($user->can('upload', [CustomerDocument::class, $this->customerA]))->toBeTrue();
 });
 
 test('staff can verify documents', function () {
@@ -149,7 +151,7 @@ test('finance cannot view documents', function () {
 
 test('finance cannot upload documents', function () {
     $user = User::factory()->finance()->create();
-    expect($user->can('upload', $this->documentA))->toBeFalse();
+    expect($user->can('upload', [CustomerDocument::class, $this->customerA]))->toBeFalse();
 });
 
 test('finance cannot verify documents', function () {
@@ -170,11 +172,11 @@ test('customer cannot view another customer document', function () {
 });
 
 test('customer can upload to their own profile', function () {
-    expect($this->customerUserA->can('upload', $this->documentA))->toBeTrue();
+    expect($this->customerUserA->can('upload', [CustomerDocument::class, $this->customerA]))->toBeTrue();
 });
 
 test('customer cannot upload to another customer profile', function () {
-    expect($this->customerUserA->can('upload', $this->documentB))->toBeFalse();
+    expect($this->customerUserA->can('upload', [CustomerDocument::class, $this->customerB]))->toBeFalse();
 });
 
 test('customer cannot verify documents', function () {

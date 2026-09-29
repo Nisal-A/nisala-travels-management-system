@@ -22,6 +22,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import CustomerDocuments from './Partials/CustomerDocuments';
 
 interface CustomerShowProps {
     customer: {
@@ -47,9 +48,11 @@ interface CustomerShowProps {
             name: string;
         };
     };
+    documents: any[];
+    documentTypes: any[];
 }
 
-export default function CustomersShow({ customer }: CustomerShowProps) {
+export default function CustomersShow({ customer, documents, documentTypes }: CustomerShowProps) {
     const { hasRole } = useAuth();
     const canEdit = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
@@ -248,18 +251,16 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                             </div>
                         )}
 
-                        {/* Module Placeholders */}
+                        {/* Module Placeholders & Active Modules */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold tracking-tight">Customer Activity</h3>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Card className="border-dashed bg-muted/10">
-                                    <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <FileText className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Documents</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">Customer document module pending implementation (NT-008).</p>
-                                    </CardContent>
-                                </Card>
+                                <CustomerDocuments 
+                                    customerId={customer.id} 
+                                    documents={documents} 
+                                    documentTypes={documentTypes} 
+                                />
 
                                 <Card className="border-dashed bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">

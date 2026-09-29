@@ -75,14 +75,14 @@ class CustomerController extends Controller
         
         $validated = $request->validated();
         
-        // Auto-generate Customer ID
-        $latestCustomer = Customer::orderBy('id', 'desc')->first();
+        // Auto-generate Customer ID (protected from mass-assignment)
+        $latestCustomer = Customer::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $latestCustomer ? $latestCustomer->id + 1 : 1;
-        $validated['customer_id'] = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
-        
-        $validated['created_by'] = $request->user()->id;
 
-        $customer = Customer::create($validated);
+        $customer = new Customer($validated);
+        $customer->customer_id = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        $customer->created_by = $request->user()->id;
+        $customer->save();
 
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
@@ -94,8 +94,23 @@ class CustomerController extends Controller
     {
         Gate::authorize('view', $customer);
         
+        // Load documents with their types and uploaders
+        $documents = $customer->documents()
+            ->with(['documentType', 'uploadedBy:id,name', 'verifiedBy:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($doc) {
+                // Ensure we don't leak the physical storage path to the frontend
+                $doc->makeHidden(['storage_path']);
+                return $doc;
+            });
+
+        $documentTypes = \App\Models\DocumentType::where('is_active', true)->get();
+
         return Inertia::render('Customers/Show', [
-            'customer' => $customer->load('creator:id,name')
+            'customer' => $customer->load('creator:id,name'),
+            'documents' => $documents,
+            'documentTypes' => $documentTypes,
         ]);
     }
 

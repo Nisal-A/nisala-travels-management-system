@@ -87,6 +87,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ==============================
     Route::middleware('role:super_admin,manager,staff')->group(function () {
         Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+        Route::post('customers/{customer}/documents', [\App\Http\Controllers\CustomerDocumentController::class, 'store'])->name('customers.documents.store');
+        Route::get('customers/{customer}/documents/{document}/download', [\App\Http\Controllers\CustomerDocumentController::class, 'download'])->name('customers.documents.download');
 
         Route::prefix('documents')->name('documents.')->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
