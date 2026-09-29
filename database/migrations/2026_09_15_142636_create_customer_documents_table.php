@@ -10,11 +10,16 @@ return new class extends Migration
     {
         Schema::create('customer_documents', function (Blueprint $table) {
             $table->id();
+            $table->string('document_id')->unique();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('booking_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('document_type_id')->constrained()->restrictOnDelete();
             $table->string('storage_path');
             $table->string('original_filename');
+            $table->string('mime_type')->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
+            $table->string('file_extension')->nullable();
+            $table->string('document_status')->default('active')->index();
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->date('expiry_date')->nullable()->index();
             $table->string('verification_status')->default('Pending')->index();
