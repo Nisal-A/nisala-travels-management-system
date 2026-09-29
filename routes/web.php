@@ -100,6 +100,10 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Tours/Index'))->name('index');
         });
 
+        Route::resource('tour-packages', \App\Http\Controllers\TourPackageController::class);
+        Route::patch('tour-packages/{tour_package}/status', [\App\Http\Controllers\TourPackageController::class, 'changeStatus'])->name('tour-packages.status');
+        Route::post('tour-packages/{id}/restore', [\App\Http\Controllers\TourPackageController::class, 'restore'])->name('tour-packages.restore');
+
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', fn () => Inertia::render('Bookings/Index'))->name('index');
         });
