@@ -75,14 +75,14 @@ class CustomerController extends Controller
         
         $validated = $request->validated();
         
-        // Auto-generate Customer ID
-        $latestCustomer = Customer::orderBy('id', 'desc')->first();
+        // Auto-generate Customer ID (protected from mass-assignment)
+        $latestCustomer = Customer::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $latestCustomer ? $latestCustomer->id + 1 : 1;
-        $validated['customer_id'] = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
-        
-        $validated['created_by'] = $request->user()->id;
 
-        $customer = Customer::create($validated);
+        $customer = new Customer($validated);
+        $customer->customer_id = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        $customer->created_by = $request->user()->id;
+        $customer->save();
 
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
