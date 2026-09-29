@@ -50,6 +50,14 @@ class CustomerDocument extends Model
     }
 
     /**
+     * The document that replaced this one.
+     */
+    public function replacedBy(): BelongsTo
+    {
+        return $this->belongsTo(CustomerDocument::class, 'replaced_by_id');
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @return array<string, string>
