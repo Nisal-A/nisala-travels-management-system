@@ -63,7 +63,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
 
     const handleUpload = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         post(route('customers.documents.store', { customer: customerId }), {
             preserveScroll: true,
             onSuccess: () => {
@@ -165,12 +165,12 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         Upload a new secure document. Accepted formats: PDF, JPG, PNG (Max 10MB).
                                     </DialogDescription>
                                 </DialogHeader>
-                                
+
                                 <div className="grid gap-4 py-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="document_type_id" className={errors.document_type_id ? 'text-destructive' : ''}>Document Type *</Label>
-                                        <Select 
-                                            value={data.document_type_id} 
+                                        <Select
+                                            value={data.document_type_id}
                                             onValueChange={(val) => setData('document_type_id', val || '')}
                                         >
                                             <SelectTrigger id="document_type_id" className={errors.document_type_id ? 'border-destructive' : ''}>
@@ -187,9 +187,9 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
 
                                     <div className="space-y-2">
                                         <Label htmlFor="file" className={errors.file ? 'text-destructive' : ''}>File *</Label>
-                                        <Input 
-                                            id="file" 
-                                            type="file" 
+                                        <Input
+                                            id="file"
+                                            type="file"
                                             accept=".pdf,.jpg,.jpeg,.png"
                                             onChange={(e) => setData('file', e.target.files ? e.target.files[0] : null)}
                                             className={errors.file ? 'border-destructive' : ''}
@@ -205,8 +205,8 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                     {documentTypes.find(t => t.id.toString() === data.document_type_id)?.tracks_expiry && (
                                         <div className="space-y-2">
                                             <Label htmlFor="expiry_date" className={errors.expiry_date ? 'text-destructive' : ''}>Expiry Date</Label>
-                                            <Input 
-                                                id="expiry_date" 
+                                            <Input
+                                                id="expiry_date"
                                                 type="date"
                                                 value={data.expiry_date}
                                                 onChange={(e) => setData('expiry_date', e.target.value)}
@@ -218,8 +218,8 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
 
                                     <div className="space-y-2">
                                         <Label htmlFor="notes">Notes (Optional)</Label>
-                                        <Input 
-                                            id="notes" 
+                                        <Input
+                                            id="notes"
                                             value={data.notes}
                                             onChange={(e) => setData('notes', e.target.value)}
                                             placeholder="Additional information about this document..."
@@ -228,7 +228,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
                                     </div>
                                 </div>
-                                
+
                                 <DialogFooter>
                                     <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)} disabled={processing}>
                                         Cancel
@@ -336,7 +336,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                         <Download className="h-4 w-4" />
                                                         Download
                                                     </DropdownMenuItem>
-                                                    
+
                                                     {canVerify && doc.verification_status !== 'Verified' && (
                                                         <DropdownMenuItem onClick={() => handleVerify(doc)} className="gap-2 cursor-pointer">
                                                             <CheckCircle className="h-4 w-4" />
@@ -350,7 +350,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                             Reject
                                                         </DropdownMenuItem>
                                                     )}
-                                                    
+
                                                     {canDelete && (
                                                         <>
                                                             <DropdownMenuSeparator />
@@ -382,8 +382,8 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                     </DialogHeader>
                     <div className="py-4">
                         <Label htmlFor="reject_reason" className="mb-2 block">Rejection Reason</Label>
-                        <Input 
-                            id="reject_reason" 
+                        <Input
+                            id="reject_reason"
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
                             placeholder="e.g. Document is blurry, Expired passport, etc."
