@@ -89,6 +89,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('customers', \App\Http\Controllers\CustomerController::class);
         Route::post('customers/{customer}/documents', [\App\Http\Controllers\CustomerDocumentController::class, 'store'])->name('customers.documents.store');
         Route::get('customers/{customer}/documents/{document}/download', [\App\Http\Controllers\CustomerDocumentController::class, 'download'])->name('customers.documents.download');
+        Route::patch('customers/{customer}/documents/{document}/verify', [\App\Http\Controllers\CustomerDocumentVerificationController::class, 'verify'])->name('customers.documents.verify');
+        Route::patch('customers/{customer}/documents/{document}/reject', [\App\Http\Controllers\CustomerDocumentVerificationController::class, 'reject'])->name('customers.documents.reject');
 
         Route::prefix('documents')->name('documents.')->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');

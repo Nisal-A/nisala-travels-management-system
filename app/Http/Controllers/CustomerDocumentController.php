@@ -38,6 +38,13 @@ class CustomerDocumentController extends Controller
         try {
             DB::beginTransaction();
 
+            // Find existing active document of the same type
+            $existingActiveDocs = CustomerDocument::where('customer_id', $customer->id)
+                ->where('document_type_id', $request->input('document_type_id'))
+                ->where('document_status', 'active')
+                ->lockForUpdate()
+                ->get();
+
             // Create database record first
             $document = new CustomerDocument([
                 'customer_id' => $customer->id,
@@ -55,6 +62,13 @@ class CustomerDocumentController extends Controller
             ]);
             $document->document_id = $documentId;
             $document->save();
+
+            // Mark old documents as superseded
+            foreach ($existingActiveDocs as $oldDoc) {
+                $oldDoc->document_status = 'superseded';
+                $oldDoc->replaced_by_id = $document->id;
+                $oldDoc->save();
+            }
 
             // Store file
             $path = Storage::disk('private')->putFileAs(

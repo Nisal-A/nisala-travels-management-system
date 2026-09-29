@@ -29,6 +29,7 @@ interface CustomerDocument {
     file_extension: string;
     document_status: string;
     verification_status: string;
+    rejection_reason: string | null;
     expiry_date: string | null;
     notes: string | null;
     created_at: string;
@@ -48,8 +49,11 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const canUpload = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
     const canVerify = hasRole('super_admin', 'manager', 'staff');
+    const canReject = hasRole('super_admin', 'manager', 'staff');
 
     const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [rejectDocId, setRejectDocId] = useState<number | null>(null);
+    const [rejectReason, setRejectReason] = useState('');
     const { data, setData, post, processing, errors, reset, clearErrors, progress } = useForm({
         document_type_id: '',
         file: null as File | null,
@@ -76,6 +80,40 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const handleDownload = (doc: CustomerDocument) => {
         // Direct download approach since it's a file response
         window.open(route('customers.documents.download', { customer: customerId, document: doc.id }), '_blank');
+    };
+
+    const handleVerify = (doc: CustomerDocument) => {
+        if (confirm('Are you sure you want to verify this document?')) {
+            router.patch(route('customers.documents.verify', { customer: customerId, document: doc.id }), {}, {
+                preserveScroll: true,
+                onSuccess: () => alert('Document verified successfully.')
+            });
+        }
+    };
+
+    const handleReject = () => {
+        if (!rejectDocId || !rejectReason.trim()) return;
+
+        router.patch(route('customers.documents.reject', { customer: customerId, document: rejectDocId }), { reason: rejectReason }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setRejectDocId(null);
+                setRejectReason('');
+                alert('Document rejected.');
+            }
+        });
+    };
+
+    const isExpired = (dateString: string | null) => {
+        if (!dateString) return false;
+        return new Date(dateString).getTime() < new Date().getTime();
+    };
+
+    const isExpiringSoon = (dateString: string | null) => {
+        if (!dateString) return false;
+        const diff = new Date(dateString).getTime() - new Date().getTime();
+        const days = diff / (1000 * 3600 * 24);
+        return days > 0 && days <= 30;
     };
 
     const formatBytes = (bytes: number, decimals = 2) => {
@@ -240,7 +278,12 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                 {documents.map((doc) => (
                                     <TableRow key={doc.id}>
                                         <TableCell>
-                                            <div className="font-medium">{doc.document_type.name}</div>
+                                            <div className="font-medium flex items-center gap-2">
+                                                {doc.document_type.name}
+                                                {doc.document_status === 'superseded' && (
+                                                    <Badge variant="outline" className="text-xs font-normal">Superseded</Badge>
+                                                )}
+                                            </div>
                                             {doc.document_id && <div className="text-xs text-muted-foreground font-mono">{doc.document_id}</div>}
                                         </TableCell>
                                         <TableCell>
@@ -249,11 +292,26 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                 <span className="truncate">{doc.original_filename}</span>
                                             </div>
                                             {doc.expiry_date && (
-                                                <div className="text-xs text-amber-600 mt-1">Exp: {new Date(doc.expiry_date).toLocaleDateString()}</div>
+                                                <div className={`text-xs mt-1 ${isExpired(doc.expiry_date) ? 'text-destructive font-medium' : isExpiringSoon(doc.expiry_date) ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                                                    {isExpired(doc.expiry_date) ? 'Expired: ' : 'Exp: '}
+                                                    {new Date(doc.expiry_date).toLocaleDateString()}
+                                                </div>
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {getVerificationBadge(doc.verification_status)}
+                                            <div className="space-y-1">
+                                                {getVerificationBadge(doc.verification_status)}
+                                                {doc.verification_status === 'Rejected' && doc.rejection_reason && (
+                                                    <div className="text-xs text-destructive max-w-[200px] truncate" title={doc.rejection_reason}>
+                                                        Reason: {doc.rejection_reason}
+                                                    </div>
+                                                )}
+                                                {doc.verification_status === 'Verified' && doc.verified_by && (
+                                                    <div className="text-xs text-muted-foreground">
+                                                        by {doc.verified_by.name}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm">
                                             {formatBytes(doc.file_size)}
@@ -280,9 +338,16 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                     </DropdownMenuItem>
                                                     
                                                     {canVerify && doc.verification_status !== 'Verified' && (
-                                                        <DropdownMenuItem disabled className="gap-2">
+                                                        <DropdownMenuItem onClick={() => handleVerify(doc)} className="gap-2 cursor-pointer">
                                                             <CheckCircle className="h-4 w-4" />
-                                                            Verify (Coming Soon)
+                                                            Verify
+                                                        </DropdownMenuItem>
+                                                    )}
+
+                                                    {canReject && doc.verification_status !== 'Rejected' && (
+                                                        <DropdownMenuItem onClick={() => setRejectDocId(doc.id)} className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600">
+                                                            <AlertCircle className="h-4 w-4" />
+                                                            Reject
                                                         </DropdownMenuItem>
                                                     )}
                                                     
@@ -305,6 +370,32 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                     </div>
                 )}
             </CardContent>
+
+            {/* Reject Dialog */}
+            <Dialog open={!!rejectDocId} onOpenChange={(open) => !open && setRejectDocId(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject Document</DialogTitle>
+                        <DialogDescription>
+                            Please provide a reason for rejecting this document. This reason will be visible to other staff and the customer.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="reject_reason" className="mb-2 block">Rejection Reason</Label>
+                        <Input 
+                            id="reject_reason" 
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="e.g. Document is blurry, Expired passport, etc."
+                            autoFocus
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRejectDocId(null)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim()}>Reject Document</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }
