@@ -1,0 +1,174 @@
+import React from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import AppLayout from '@/components/layouts/AppLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/hooks/use-auth';
+import { Edit, Trash, CheckCircle, XCircle } from 'lucide-react';
+
+interface BookingShowProps {
+    booking: any;
+}
+
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'pending': return 'bg-yellow-100 text-yellow-800';
+        case 'confirmed': return 'bg-blue-100 text-blue-800';
+        case 'completed': return 'bg-green-100 text-green-800';
+        case 'cancelled': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+};
+
+export default function Show({ booking }: BookingShowProps) {
+    const { hasRole } = useAuth();
+    const canUpdate = hasRole(['super_admin', 'manager', 'staff']);
+    const canCancel = hasRole(['super_admin', 'manager']);
+    
+    const { patch: updateStatus, delete: deleteBooking, processing } = useForm();
+
+    const changeStatus = (status: string) => {
+        if (confirm(`Are you sure you want to change the status to ${status}?`)) {
+            updateStatus(route('bookings.status', booking.id), {
+                data: { booking_status: status }
+            });
+        }
+    };
+
+    const handleDelete = () => {
+        if (confirm('Are you sure you want to archive this booking? This cannot be undone.')) {
+            deleteBooking(route('bookings.destroy', booking.id));
+        }
+    };
+
+    return (
+        <AppLayout>
+            <Head title={`Booking ${booking.booking_reference}`} />
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Booking {booking.booking_reference}</h1>
+                    <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className={getStatusColor(booking.booking_status)}>
+                            {booking.booking_status.toUpperCase()}
+                        </Badge>
+                        <span className="text-muted-foreground text-sm">
+                            Created on {new Date(booking.created_at).toLocaleDateString()}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex space-x-2">
+                    {canUpdate && (
+                        <Button asChild variant="outline">
+                            <Link href={route('bookings.edit', booking.id)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                            </Link>
+                        </Button>
+                    )}
+                    {canCancel && booking.booking_status !== 'cancelled' && (
+                        <Button variant="destructive" onClick={handleDelete} disabled={processing}>
+                            <Trash className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Customer Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <p><strong>Name:</strong> {booking.customer?.first_name} {booking.customer?.last_name}</p>
+                        <p><strong>Email:</strong> {booking.customer?.email}</p>
+                        <p><strong>Phone:</strong> {booking.customer?.phone}</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Package & Travel</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <p><strong>Package:</strong> {booking.tour_package?.name}</p>
+                        <p><strong>Travel Date:</strong> {booking.travel_date}</p>
+                        <p><strong>Return Date:</strong> {booking.return_date || 'N/A'}</p>
+                        <p><strong>Travelers:</strong> {booking.number_of_travelers}</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Financial Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <p><strong>Base Amount:</strong> {Number(booking.base_amount).toLocaleString()} {booking.currency}</p>
+                        <p><strong>Discount:</strong> {Number(booking.discount_amount).toLocaleString()} {booking.currency}</p>
+                        <p className="text-lg font-bold"><strong>Final Total:</strong> {Number(booking.final_amount).toLocaleString()} {booking.currency}</p>
+                        <p className="text-lg text-red-600 font-bold"><strong>Balance Due:</strong> {Number(booking.balance_amount).toLocaleString()} {booking.currency}</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle>Travelers</CardTitle>
+                    <CardDescription>People included in this booking</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Passport</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {booking.travelers?.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No travelers added.</TableCell>
+                                </TableRow>
+                            ) : (
+                                booking.travelers?.map((t: any) => (
+                                    <TableRow key={t.id}>
+                                        <TableCell className="font-medium">{t.full_name}</TableCell>
+                                        <TableCell className="capitalize">{t.traveler_type}</TableCell>
+                                        <TableCell>{t.passport_number || 'N/A'}</TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            {canUpdate && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Workflow Actions</CardTitle>
+                        <CardDescription>Update the lifecycle status of this booking</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-4">
+                        {booking.booking_status === 'pending' && (
+                            <Button onClick={() => changeStatus('confirmed')} disabled={processing} className="bg-blue-600 hover:bg-blue-700">
+                                <CheckCircle className="mr-2 h-4 w-4" /> Confirm Booking
+                            </Button>
+                        )}
+                        {booking.booking_status === 'confirmed' && (
+                            <Button onClick={() => changeStatus('completed')} disabled={processing} className="bg-green-600 hover:bg-green-700">
+                                <CheckCircle className="mr-2 h-4 w-4" /> Mark as Completed
+                            </Button>
+                        )}
+                        {canCancel && ['pending', 'confirmed'].includes(booking.booking_status) && (
+                            <Button variant="destructive" onClick={() => changeStatus('cancelled')} disabled={processing}>
+                                <XCircle className="mr-2 h-4 w-4" /> Cancel Booking
+                            </Button>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+        </AppLayout>
+    );
+}

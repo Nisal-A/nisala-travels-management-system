@@ -53,6 +53,23 @@ class BookingController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        Gate::authorize('create', Booking::class);
+
+        $customers = \App\Models\Customer::select('id', 'first_name', 'last_name', 'email')->orderBy('first_name')->get();
+        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')->where('status', 'active')->orderBy('name')->get();
+
+        return Inertia::render('Bookings/Create', [
+            'customers' => $customers,
+            'packages' => $packages,
+            'travelerTypes' => array_column(\App\Enums\TravelerType::cases(), 'value'),
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreBookingRequest $request)
@@ -115,6 +132,25 @@ class BookingController extends Controller
 
         return Inertia::render('Bookings/Show', [
             'booking' => $booking
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Booking $booking)
+    {
+        Gate::authorize('update', $booking);
+
+        $booking->load(['travelers']);
+        $customers = \App\Models\Customer::select('id', 'first_name', 'last_name', 'email')->orderBy('first_name')->get();
+        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')->where('status', 'active')->orderBy('name')->get();
+
+        return Inertia::render('Bookings/Edit', [
+            'booking' => $booking,
+            'customers' => $customers,
+            'packages' => $packages,
+            'travelerTypes' => array_column(\App\Enums\TravelerType::cases(), 'value'),
         ]);
     }
 
