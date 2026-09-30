@@ -133,9 +133,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                     if (collapsed) {
                         return (
                             <Tooltip key={item.route}>
-                                <TooltipTrigger
-                                    render={linkContent}
-                                />
+                                <TooltipTrigger render={<div className="w-full flex justify-center" />}>
+                                    {linkContent}
+                                </TooltipTrigger>
                                 <TooltipContent side="right" sideOffset={8}>
                                     {item.label}
                                 </TooltipContent>

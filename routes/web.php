@@ -77,9 +77,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
-        Route::prefix('employees')->name('employees.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Employees/Index'))->name('index');
-        });
+        Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
     });
 
     // ==============================
@@ -96,22 +94,20 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
         });
 
-        Route::prefix('tours')->name('tours.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Tours/Index'))->name('index');
-        });
+        Route::resource('destinations', \App\Http\Controllers\DestinationController::class);
+        Route::resource('tours', \App\Http\Controllers\TourPackageController::class);
 
-        Route::prefix('bookings')->name('bookings.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Bookings/Index'))->name('index');
-        });
+        Route::resource('bookings', \App\Http\Controllers\BookingController::class);
+        Route::patch('bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'changeStatus'])->name('bookings.status');
+        Route::post('bookings/{id}/restore', [\App\Http\Controllers\BookingController::class, 'restore'])->name('bookings.restore');
     });
 
     // ==============================
     // Super Admin + Manager + Finance (Financial)
     // ==============================
     Route::middleware('role:super_admin,manager,finance')->group(function () {
-        Route::prefix('payments')->name('payments.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Payments/Index'))->name('index');
-        });
+        // Payments Management (NT-011)
+        Route::resource('payments', \App\Http\Controllers\PaymentController::class)->only(['index', 'store', 'destroy']);
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
@@ -130,3 +126,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/payments', fn () => Inertia::render('Portal/Payments'))->name('payments');
     });
 });
+
+if (app()->environment('local')) {
+    Route::get('/dev/styleguide', function () {
+        return Inertia::render('Dev/Styleguide');
+    });
+}

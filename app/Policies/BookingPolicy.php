@@ -85,10 +85,34 @@ class BookingPolicy
         ]);
     }
 
-    /**
-     * Determine whether the user can cancel a booking.
-     */
     public function cancel(User $user, Booking $booking): bool
+    {
+        return $user->hasRole(UserRole::Manager->value);
+    }
+
+    /**
+     * Determine whether the user can change the status of a booking.
+     */
+    public function changeStatus(User $user, Booking $booking): bool
+    {
+        return $user->hasAnyRole([
+            UserRole::Manager->value,
+            UserRole::Staff->value,
+        ]);
+    }
+
+    /**
+     * Determine whether the user can delete/archive a booking.
+     */
+    public function delete(User $user, Booking $booking): bool
+    {
+        return $user->hasRole(UserRole::Manager->value);
+    }
+
+    /**
+     * Determine whether the user can restore a booking.
+     */
+    public function restore(User $user, Booking $booking): bool
     {
         return $user->hasRole(UserRole::Manager->value);
     }
