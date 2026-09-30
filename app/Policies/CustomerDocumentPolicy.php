@@ -92,6 +92,14 @@ class CustomerDocumentPolicy
      */
     public function delete(User $user, CustomerDocument $document): bool
     {
-        return $user->hasRole(UserRole::Manager->value);
+        if ($user->hasRole(UserRole::Manager->value)) {
+            return true;
+        }
+
+        if ($user->hasRole(UserRole::Customer->value)) {
+            return $this->isOwner($user, $document->customer_id) && strtolower($document->verification_status) !== 'verified';
+        }
+
+        return false;
     }
 }

@@ -119,11 +119,23 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ==============================
     // Customers access their own data through the portal. Server-side
     // policies further restrict them to their own records only.
-    Route::middleware('role:customer')->prefix('portal')->name('portal.')->group(function () {
-        Route::get('/', fn () => Inertia::render('Portal/Dashboard'))->name('dashboard');
-        Route::get('/bookings', fn () => Inertia::render('Portal/Bookings'))->name('bookings');
-        Route::get('/documents', fn () => Inertia::render('Portal/Documents'))->name('documents');
-        Route::get('/payments', fn () => Inertia::render('Portal/Payments'))->name('payments');
+    Route::middleware(['role:customer', 'customer'])->prefix('portal')->name('portal.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Portal\DashboardController::class, 'index'])->name('dashboard');
+        
+        Route::get('/bookings', [\App\Http\Controllers\Portal\BookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}', [\App\Http\Controllers\Portal\BookingController::class, 'show'])->name('bookings.show');
+        Route::get('/bookings/{booking}/itinerary', [\App\Http\Controllers\Portal\BookingController::class, 'itinerary'])->name('bookings.itinerary');
+        
+        Route::get('/documents', [\App\Http\Controllers\Portal\DocumentController::class, 'index'])->name('documents.index');
+        Route::post('/documents', [\App\Http\Controllers\Portal\DocumentController::class, 'store'])->name('documents.store');
+        Route::delete('/documents/{document}', [\App\Http\Controllers\Portal\DocumentController::class, 'destroy'])->name('documents.destroy');
+        
+        Route::get('/payments', [\App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}/receipt', [\App\Http\Controllers\Portal\PaymentController::class, 'receipt'])->name('payments.receipt');
+        
+        Route::get('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/password', [\App\Http\Controllers\Portal\ProfileController::class, 'updatePassword'])->name('password.update');
     });
 });
 

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge"
 import { CheckCircle, Clock, AlertCircle, XCircle, FileWarning, HelpCircle } from "lucide-react"
 
 type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed"
-type PaymentStatus = "Unpaid" | "Partial" | "Paid" | "Refunded"
+type PaymentStatus = "Pending" | "Verified" | "Completed" | "Failed" | "Unpaid" | "Partial" | "Paid" | "Refunded"
 type DocumentStatus = "Pending Review" | "Verified" | "Rejected" | "Expired"
 
 export type StatusBadgeProps = 
@@ -40,16 +40,19 @@ export function StatusBadge({ type, status }: StatusBadgeProps) {
         break
     }
   } else if (type === "payment") {
-    switch (status) {
+    switch (status as any) {
+      case "Pending":
       case "Unpaid":
-        colorClass = "bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50"
-        Icon = AlertCircle
-        break
-      case "Partial":
         colorClass = "bg-warning/20 text-warning hover:bg-warning/30 border-warning/50"
         Icon = Clock
         break
+      case "Failed":
+        colorClass = "bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50"
+        Icon = AlertCircle
+        break
+      case "Completed":
       case "Paid":
+      case "Verified":
         colorClass = "bg-success/20 text-success hover:bg-success/30 border-success/50"
         Icon = CheckCircle
         break
