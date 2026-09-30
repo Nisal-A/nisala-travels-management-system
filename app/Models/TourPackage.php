@@ -11,6 +11,16 @@ class TourPackage extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+
+    public function destination()
+    {
+        return $this->belongsTo(Destination::class);
+    }
+
     /**
      * Get the bookings for this tour package.
      */

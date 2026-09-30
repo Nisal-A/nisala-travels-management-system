@@ -44,10 +44,10 @@ interface IndexProps {
 export default function CustomersIndex({ customers, filters }: IndexProps) {
     const { hasRole } = useAuth();
 
-    const [searchQuery, setSearchQuery] = useState(filters.search || '');
-    const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
-    const [sortField, setSortField] = useState(filters.sort || 'created_at');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters.direction || 'desc');
+    const [searchQuery, setSearchQuery] = useState(typeof filters?.search === 'string' ? filters.search : '');
+    const [statusFilter, setStatusFilter] = useState(typeof filters?.status === 'string' ? filters.status : 'all');
+    const [sortField, setSortField] = useState(typeof filters?.sort === 'string' ? filters.sort : 'created_at');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc');
 
     const canCreate = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
@@ -99,6 +99,15 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
             router.delete(route('customers.destroy', { customer: id }));
         }
     };
+
+    if (!customers || !customers.data) {
+        return (
+            <div className="p-10 text-red-500">
+                <h1>Fatal Error: Customers prop is malformed</h1>
+                <pre>{JSON.stringify({ customers, filters }, null, 2)}</pre>
+            </div>
+        );
+    }
 
     return (
         <AppLayout
@@ -207,7 +216,7 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-foreground">{customer.full_name}</span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        Added {new Date(customer.created_at || '').toLocaleDateString()}
+                                                        Added {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'Unknown'}
                                                     </span>
                                                 </div>
                                             </TableCell>
@@ -241,10 +250,10 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger render={
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0">
                                                             <span className="sr-only">Open menu</span>
                                                             <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
+                                                        </button>
                                                     } />
                                                     <DropdownMenuContent align="end" className="w-[160px]">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -288,7 +297,7 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                     </div>
 
                     {/* Pagination */}
-                    {Number(customers.last_page) > 1 && (
+                    {(customers.last_page ?? 0) > 1 && (
                         <div className="flex items-center justify-between border-t border-border/50 px-4 py-3 bg-muted/10 sm:px-6">
                             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                                 <div>
@@ -299,9 +308,9 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                 </div>
                                 <div>
                                     <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                        {customers.links.map((link, index) => {
+                                        {customers.links?.map((link, index) => {
                                             const isPrevious = index === 0;
-                                            const isNext = index === customers.links.length - 1;
+                                            const isNext = index === (customers.links?.length || 0) - 1;
 
                                             // Handle disabled state
                                             if (!link.url) {

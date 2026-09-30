@@ -5,6 +5,8 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from './components/theme-provider';
 
+import { GlobalErrorBoundary } from './GlobalErrorBoundary';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Nisala Travels';
 
 createInertiaApp({
@@ -17,9 +19,11 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(
-            <ThemeProvider defaultTheme="system" storageKey="theme">
-                <App {...props} />
-            </ThemeProvider>
+            <GlobalErrorBoundary>
+                <ThemeProvider defaultTheme="system" storageKey="theme">
+                    <App {...props} />
+                </ThemeProvider>
+            </GlobalErrorBoundary>
         );
     },
     progress: {

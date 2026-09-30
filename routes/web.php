@@ -77,9 +77,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
-        Route::prefix('employees')->name('employees.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Employees/Index'))->name('index');
-        });
+        Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
     });
 
     // ==============================
@@ -96,9 +94,8 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
         });
 
-        Route::prefix('tours')->name('tours.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Tours/Index'))->name('index');
-        });
+        Route::resource('destinations', \App\Http\Controllers\DestinationController::class);
+        Route::resource('tours', \App\Http\Controllers\TourPackageController::class);
 
         Route::resource('bookings', \App\Http\Controllers\BookingController::class);
         Route::patch('bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'changeStatus'])->name('bookings.status');
