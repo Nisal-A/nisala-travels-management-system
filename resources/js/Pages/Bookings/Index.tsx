@@ -1,13 +1,109 @@
-import PlaceholderPage from '@/components/PlaceholderPage';
-import { CalendarCheck } from 'lucide-react';
+import React from 'react';
+import { Head, Link } from '@inertiajs/react';
+import AppLayout from '@/components/layouts/AppLayout';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Eye, Filter } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
-export default function BookingsIndex() {
+import { PaginatedData, Booking } from '@/types';
+
+interface BookingIndexProps {
+    bookings: PaginatedData<Booking>;
+}
+
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'pending': return 'bg-warning/20 text-warning-foreground border-warning/30';
+        case 'confirmed': return 'bg-info/20 text-info-foreground border-info/30';
+        case 'completed': return 'bg-success/20 text-success-foreground border-success/30';
+        case 'cancelled': return 'bg-error/20 text-error-foreground border-error/30';
+        default: return 'bg-muted text-muted-foreground border-border';
+    }
+};
+
+export default function BookingIndex({ bookings }: BookingIndexProps) {
+    const { hasRole } = useAuth();
+    const canCreate = hasRole('super_admin', 'manager', 'staff');
+
     return (
-        <PlaceholderPage
-            title="Bookings"
-            description="Booking management — create, view, and manage customer bookings and reservations."
-            icon={CalendarCheck}
-            module="NT-Bookings"
-        />
+        <AppLayout>
+            <Head title="Bookings" />
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
+                    <p className="text-muted-foreground mt-1">Manage tour and travel bookings.</p>
+                </div>
+                <div className="flex space-x-2">
+                    {canCreate && (
+                        <Link href={route('bookings.create')} className={buttonVariants({ variant: 'default' })}>
+                            <Plus className="mr-2 h-4 w-4" /> New Booking
+                        </Link>
+                    )}
+                </div>
+            </div>
+
+            <Card className="mb-6">
+                <CardContent className="p-4 flex gap-4 flex-wrap">
+                    <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Search bookings..." className="pl-9" />
+                    </div>
+                    <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Filters</Button>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Reference</TableHead>
+                                <TableHead>Customer</TableHead>
+                                <TableHead>Package</TableHead>
+                                <TableHead>Travel Date</TableHead>
+                                <TableHead>Travelers</TableHead>
+                                <TableHead>Amount</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {bookings.data.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                        No bookings found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                bookings.data.map((booking) => (
+                                    <TableRow key={booking.id}>
+                                        <TableCell className="font-medium">{booking.booking_reference}</TableCell>
+                                        <TableCell>{booking.customer?.first_name} {booking.customer?.last_name}</TableCell>
+                                        <TableCell>{booking.tour_package?.name}</TableCell>
+                                        <TableCell>{booking.travel_date}</TableCell>
+                                        <TableCell>{booking.number_of_travelers}</TableCell>
+                                        <TableCell>{Number(booking.final_amount).toLocaleString()} {booking.currency}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={getStatusColor(booking.booking_status)}>
+                                                {booking.booking_status.toUpperCase()}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Link href={route('bookings.show', booking.id as any)} className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </AppLayout>
     );
 }

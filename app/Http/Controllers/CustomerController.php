@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -15,16 +16,43 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('viewAny', Customer::class);
         
-        $customers = Customer::query()
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Customer::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('customer_id', 'like', "%{$search}%")
+                  ->orWhere('full_name', 'like', "%{$search}%")
+                  ->orWhere('nic', 'like', "%{$search}%")
+                  ->orWhere('passport_number', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $sortField = $request->input('sort', 'created_at');
+        $sortDirection = $request->input('direction', 'desc');
+        $allowedSortFields = ['created_at', 'updated_at', 'full_name', 'customer_id'];
+        
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $customers = $query->paginate(10)->withQueryString();
             
         return Inertia::render('Customers/Index', [
-            'customers' => $customers
+            'customers' => $customers,
+            'filters' => $request->only(['search', 'status', 'sort', 'direction'])
         ]);
     }
 
@@ -47,14 +75,14 @@ class CustomerController extends Controller
         
         $validated = $request->validated();
         
-        // Auto-generate Customer ID
-        $latestCustomer = Customer::orderBy('id', 'desc')->first();
+        // Auto-generate Customer ID (protected from mass-assignment)
+        $latestCustomer = Customer::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $latestCustomer ? $latestCustomer->id + 1 : 1;
-        $validated['customer_id'] = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
-        
-        $validated['created_by'] = $request->user()->id;
 
-        $customer = Customer::create($validated);
+        $customer = new Customer($validated);
+        $customer->customer_id = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        $customer->created_by = $request->user()->id;
+        $customer->save();
 
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
@@ -66,8 +94,23 @@ class CustomerController extends Controller
     {
         Gate::authorize('view', $customer);
         
+        // Load documents with their types and uploaders
+        $documents = $customer->documents()
+            ->with(['documentType', 'uploadedBy:id,name', 'verifiedBy:id,name'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($doc) {
+                // Ensure we don't leak the physical storage path to the frontend
+                $doc->makeHidden(['storage_path']);
+                return $doc;
+            });
+
+        $documentTypes = \App\Models\DocumentType::where('is_active', true)->get();
+
         return Inertia::render('Customers/Show', [
-            'customer' => $customer->load('creator:id,name')
+            'customer' => $customer->load('creator:id,name'),
+            'documents' => $documents,
+            'documentTypes' => $documentTypes,
         ]);
     }
 

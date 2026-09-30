@@ -1,17 +1,17 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-    User, 
-    Phone, 
-    Mail, 
-    MapPin, 
-    CreditCard, 
-    Calendar, 
-    Globe, 
+import {
+    User,
+    Phone,
+    Mail,
+    MapPin,
+    CreditCard,
+    Calendar,
+    Globe,
     MessageCircle,
     Clock,
     FileText,
@@ -22,6 +22,7 @@ import {
     Trash2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import CustomerDocuments from './Partials/CustomerDocuments';
 
 interface CustomerShowProps {
     customer: {
@@ -47,9 +48,11 @@ interface CustomerShowProps {
             name: string;
         };
     };
+    documents: any[];
+    documentTypes: any[];
 }
 
-export default function CustomersShow({ customer }: CustomerShowProps) {
+export default function CustomersShow({ customer, documents, documentTypes }: CustomerShowProps) {
     const { hasRole } = useAuth();
     const canEdit = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
@@ -75,16 +78,14 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                 {/* Header Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <Link href={route('customers.index')}>
-                            <Button variant="outline" size="icon" className="h-8 w-8 shrink-0">
-                                <ArrowLeft className="h-4 w-4" />
-                                <span className="sr-only">Back</span>
-                            </Button>
+                        <Link href={route('customers.index')} className={buttonVariants({ variant: 'outline', size: 'icon' }) + " h-8 w-8 shrink-0"}>
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="sr-only">Back</span>
                         </Link>
                         <div>
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-bold tracking-tight">{customer.full_name}</h2>
-                                <Badge 
+                                <Badge
                                     variant={customer.status === 'active' ? 'default' : 'secondary'}
                                     className={customer.status === 'active' ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20' : ''}
                                 >
@@ -104,14 +105,12 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                             </p>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                         {canEdit && (
-                            <Link href={route('customers.edit', { customer: customer.id })}>
-                                <Button variant="outline" className="gap-2">
-                                    <Edit className="h-4 w-4" />
-                                    <span>Edit</span>
-                                </Button>
+                            <Link href={route('customers.edit', { customer: customer.id })} className={buttonVariants({ variant: 'outline' }) + " gap-2"}>
+                                <Edit className="h-4 w-4" />
+                                <span>Edit</span>
                             </Link>
                         )}
                         {canDelete && (
@@ -218,7 +217,7 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
 
                     {/* Right Column - Secondary Info & Modules */}
                     <div className="md:col-span-2 space-y-6">
-                        
+
                         {(customer.emergency_contact_name || customer.notes) && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {customer.emergency_contact_name && (
@@ -234,7 +233,7 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                                         </CardContent>
                                     </Card>
                                 )}
-                                
+
                                 {customer.notes && (
                                     <Card className={!customer.emergency_contact_name ? 'sm:col-span-2' : ''}>
                                         <CardHeader className="pb-3 border-b border-border/50">
@@ -248,18 +247,16 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                             </div>
                         )}
 
-                        {/* Module Placeholders */}
+                        {/* Module Placeholders & Active Modules */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold tracking-tight">Customer Activity</h3>
-                            
+
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Card className="border-dashed bg-muted/10">
-                                    <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <FileText className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Documents</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">Customer document module pending implementation (NT-008).</p>
-                                    </CardContent>
-                                </Card>
+                                <CustomerDocuments
+                                    customerId={customer.id}
+                                    documents={documents}
+                                    documentTypes={documentTypes}
+                                />
 
                                 <Card className="border-dashed bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
@@ -276,12 +273,20 @@ export default function CustomersShow({ customer }: CustomerShowProps) {
                                         <p className="text-sm text-muted-foreground mt-1">Payment and invoicing module pending implementation.</p>
                                     </CardContent>
                                 </Card>
-                                
+
                                 <Card className="border-dashed bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
                                         <Clock className="h-8 w-8 text-muted-foreground/50 mb-3" />
                                         <h4 className="font-medium">Inquiries</h4>
                                         <p className="text-sm text-muted-foreground mt-1">Customer inquiry module pending implementation.</p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-dashed bg-muted/10 sm:col-span-2">
+                                    <CardContent className="flex flex-col items-center justify-center p-8 text-center">
+                                        <FileText className="h-8 w-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-medium">Activity & History</h4>
+                                        <p className="text-sm text-muted-foreground mt-1">System audit and customer activity logging pending implementation.</p>
                                     </CardContent>
                                 </Card>
                             </div>

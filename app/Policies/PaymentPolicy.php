@@ -79,4 +79,15 @@ class PaymentPolicy
             UserRole::Finance->value,
         ]);
     }
+
+    /**
+     * Determine whether the user can delete/void a payment.
+     */
+    public function delete(User $user, Payment $payment): bool
+    {
+        return $user->hasAnyRole([
+            UserRole::Manager->value,
+            UserRole::Finance->value,
+        ]);
+    }
 }

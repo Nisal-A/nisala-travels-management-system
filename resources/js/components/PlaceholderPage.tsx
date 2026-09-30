@@ -41,6 +41,12 @@ export default function PlaceholderPage({
                         <CardDescription className="mb-4 max-w-sm">
                             {description}
                         </CardDescription>
+                        <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-md p-3 mb-6 text-sm flex flex-col items-center gap-1 max-w-sm">
+                            <span className="font-semibold">Backend Implementation Missing</span>
+                            <span className="text-center opacity-90">
+                                This module cannot be fully implemented because the corresponding Laravel models, controllers, and API routes do not exist.
+                            </span>
+                        </div>
                         <Badge variant="outline" className="text-[0.65rem]">
                             Module: {module}
                         </Badge>
