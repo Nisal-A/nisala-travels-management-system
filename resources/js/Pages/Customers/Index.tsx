@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,29 +29,7 @@ import {
 import { MoreHorizontal, Plus, Search, Eye, Edit, Trash2, Filter, X, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useState, useEffect } from 'react';
-
-// Define the paginated response structure
-interface PaginatedData<T> {
-    data: T[];
-    links: { url: string | null; label: string; active: boolean }[];
-    current_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-    total: number;
-}
-
-interface Customer {
-    id: number;
-    customer_id: string;
-    full_name: string;
-    nic: string | null;
-    passport_number: string | null;
-    email: string;
-    phone: string;
-    status: 'active' | 'inactive';
-    created_at: string;
-}
+import { Customer, PaginatedData } from '@/types';
 
 interface IndexProps {
     customers: PaginatedData<Customer>;
@@ -176,11 +154,9 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                         )}
 
                         {canCreate && (
-                            <Link href={route('customers.create')}>
-                                <Button className="shrink-0 gap-2">
-                                    <Plus className="h-4 w-4" />
-                                    <span>Add Customer</span>
-                                </Button>
+                            <Link href={route('customers.create')} className={buttonVariants({ variant: 'default' }) + " shrink-0 gap-2"}>
+                                <Plus className="h-4 w-4" />
+                                <span>Add Customer</span>
                             </Link>
                         )}
                     </div>
@@ -191,7 +167,7 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                    <TableHead className="font-semibold w-[120px]">
+                                    <TableHead className="font-semibold min-w-[120px]">
                                         <Button variant="ghost" onClick={() => handleSort('customer_id')} className="p-0 h-auto font-semibold hover:bg-transparent">
                                             ID {sortField === 'customer_id' && <ArrowUpDown className="ml-2 h-3 w-3" />}
                                         </Button>
@@ -231,7 +207,7 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-foreground">{customer.full_name}</span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        Added {new Date(customer.created_at).toLocaleDateString()}
+                                                        Added {new Date(customer.created_at || '').toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </TableCell>
@@ -274,20 +250,16 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
 
-                                                        <Link href={route('customers.show', { customer: customer.id })}>
-                                                            <DropdownMenuItem className="cursor-pointer">
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                View Profile
-                                                            </DropdownMenuItem>
-                                                        </Link>
+                                                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.show', { customer: customer.id }))}>
+                                                            <Eye className="mr-2 h-4 w-4" />
+                                                            View Profile
+                                                        </DropdownMenuItem>
 
                                                         {canCreate && (
-                                                            <Link href={route('customers.edit', { customer: customer.id })}>
-                                                                <DropdownMenuItem className="cursor-pointer">
-                                                                    <Edit className="mr-2 h-4 w-4" />
-                                                                    Edit Details
-                                                                </DropdownMenuItem>
-                                                            </Link>
+                                                            <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.edit', { customer: customer.id }))}>
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                Edit Details
+                                                            </DropdownMenuItem>
                                                         )}
 
                                                         {canDelete && (
@@ -316,7 +288,7 @@ export default function CustomersIndex({ customers, filters }: IndexProps) {
                     </div>
 
                     {/* Pagination */}
-                    {customers.last_page > 1 && (
+                    {Number(customers.last_page) > 1 && (
                         <div className="flex items-center justify-between border-t border-border/50 px-4 py-3 bg-muted/10 sm:px-6">
                             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                                 <div>

@@ -2,21 +2,22 @@ import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import CustomerForm from './Partials/CustomerForm';
+import { Customer } from '@/types';
 
 interface EditProps {
-    customer: any;
+    customer: Customer;
 }
 
 export default function CustomersEdit({ customer }: EditProps) {
     return (
         <AppLayout
-            title={`Edit Customer: ${customer.customer_id}`}
+            title={`Edit Customer: ${customer.customer_id || 'Unknown'}`}
             breadcrumbs={[
                 { label: 'Dashboard', href: route('dashboard') },
                 { label: 'Customers', href: route('customers.index') },
-                { label: customer.customer_id, href: route('customers.show', { customer: customer.id }) },
+                { label: customer.customer_id || 'Customer', href: route('customers.show', { customer: customer.id }) },
                 { label: 'Edit' },
             ]}
         >
@@ -24,11 +25,9 @@ export default function CustomersEdit({ customer }: EditProps) {
 
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center gap-4">
-                    <Link href={route('customers.index')}>
-                        <Button variant="outline" size="icon" className="h-8 w-8">
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="sr-only">Back</span>
-                        </Button>
+                    <Link href={route('customers.index')} className={buttonVariants({ variant: 'outline', size: 'icon' }) + " h-8 w-8"}>
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="sr-only">Back</span>
                     </Link>
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">Edit Customer</h2>

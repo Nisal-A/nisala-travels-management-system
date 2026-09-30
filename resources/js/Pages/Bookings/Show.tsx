@@ -1,15 +1,17 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/hooks/use-auth';
 import { Edit, Trash, CheckCircle, XCircle } from 'lucide-react';
 
+import { Booking, Traveler } from '@/types';
+
 interface BookingShowProps {
-    booking: any;
+    booking: Booking;
 }
 
 const getStatusColor = (status: string) => {
@@ -24,22 +26,20 @@ const getStatusColor = (status: string) => {
 
 export default function Show({ booking }: BookingShowProps) {
     const { hasRole } = useAuth();
-    const canUpdate = hasRole(['super_admin', 'manager', 'staff']);
-    const canCancel = hasRole(['super_admin', 'manager']);
-    
+    const canUpdate = hasRole('super_admin', 'manager', 'staff');
+    const canCancel = hasRole('super_admin', 'manager');
+
     const { patch: updateStatus, delete: deleteBooking, processing } = useForm();
 
     const changeStatus = (status: string) => {
         if (confirm(`Are you sure you want to change the status to ${status}?`)) {
-            updateStatus(route('bookings.status', booking.id), {
-                data: { booking_status: status }
-            });
+            updateStatus(route('bookings.status', booking.id as any), { booking_status: status } as Record<string, unknown>);
         }
     };
 
     const handleDelete = () => {
         if (confirm('Are you sure you want to archive this booking? This cannot be undone.')) {
-            deleteBooking(route('bookings.destroy', booking.id));
+            deleteBooking(route('bookings.destroy', booking.id as any));
         }
     };
 
@@ -54,17 +54,15 @@ export default function Show({ booking }: BookingShowProps) {
                             {booking.booking_status.toUpperCase()}
                         </Badge>
                         <span className="text-muted-foreground text-sm">
-                            Created on {new Date(booking.created_at).toLocaleDateString()}
+                            Created on {new Date(booking.created_at || '').toLocaleDateString()}
                         </span>
                     </div>
                 </div>
                 <div className="flex space-x-2">
                     {canUpdate && (
-                        <Button asChild variant="outline">
-                            <Link href={route('bookings.edit', booking.id)}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit
-                            </Link>
-                        </Button>
+                        <Link href={route('bookings.edit', booking.id as any)} className={buttonVariants({ variant: 'outline' })}>
+                            <Edit className="mr-2 h-4 w-4" /> Edit
+                        </Link>
                     )}
                     {canCancel && booking.booking_status !== 'cancelled' && (
                         <Button variant="destructive" onClick={handleDelete} disabled={processing}>
@@ -131,7 +129,7 @@ export default function Show({ booking }: BookingShowProps) {
                                     <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No travelers added.</TableCell>
                                 </TableRow>
                             ) : (
-                                booking.travelers?.map((t: any) => (
+                                booking.travelers?.map((t: Traveler) => (
                                     <TableRow key={t.id}>
                                         <TableCell className="font-medium">{t.full_name}</TableCell>
                                         <TableCell className="capitalize">{t.traveler_type}</TableCell>

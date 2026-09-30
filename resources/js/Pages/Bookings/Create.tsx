@@ -3,9 +3,11 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import BookingForm from './Form';
 
+import { Customer, TourPackage } from '@/types';
+
 interface Props {
-    customers: any[];
-    packages: any[];
+    customers: Customer[];
+    packages: TourPackage[];
     travelerTypes: string[];
 }
 

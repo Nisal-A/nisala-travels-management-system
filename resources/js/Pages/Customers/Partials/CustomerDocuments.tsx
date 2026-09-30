@@ -54,6 +54,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [rejectDocId, setRejectDocId] = useState<number | null>(null);
     const [rejectReason, setRejectReason] = useState('');
+    const [actionDocId, setActionDocId] = useState<number | null>(null);
     const { data, setData, post, processing, errors, reset, clearErrors, progress } = useForm({
         document_type_id: '',
         file: null as File | null,
@@ -84,9 +85,11 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
 
     const handleVerify = (doc: CustomerDocument) => {
         if (confirm('Are you sure you want to verify this document?')) {
+            setActionDocId(doc.id);
             router.patch(route('customers.documents.verify', { customer: customerId, document: doc.id }), {}, {
                 preserveScroll: true,
-                onSuccess: () => alert('Document verified successfully.')
+                onSuccess: () => alert('Document verified successfully.'),
+                onFinish: () => setActionDocId(null),
             });
         }
     };
@@ -94,13 +97,15 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const handleReject = () => {
         if (!rejectDocId || !rejectReason.trim()) return;
 
+        setActionDocId(rejectDocId);
         router.patch(route('customers.documents.reject', { customer: customerId, document: rejectDocId }), { reason: rejectReason }, {
             preserveScroll: true,
             onSuccess: () => {
                 setRejectDocId(null);
                 setRejectReason('');
                 alert('Document rejected.');
-            }
+            },
+            onFinish: () => setActionDocId(null),
         });
     };
 
@@ -151,11 +156,9 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                         setIsUploadOpen(open);
                         if (!open) { reset(); clearErrors(); }
                     }}>
-                        <DialogTrigger>
-                            <Button className="gap-2">
-                                <UploadCloud className="h-4 w-4" />
-                                Upload Document
-                            </Button>
+                        <DialogTrigger render={<Button className="gap-2" />}>
+                            <UploadCloud className="h-4 w-4" />
+                            Upload Document
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[500px]">
                             <form onSubmit={handleUpload}>
@@ -323,11 +326,9 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                        <span className="sr-only">Open menu</span>
-                                                    </Button>
+                                                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                    <span className="sr-only">Open menu</span>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -338,14 +339,14 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                     </DropdownMenuItem>
 
                                                     {canVerify && doc.verification_status !== 'Verified' && (
-                                                        <DropdownMenuItem onClick={() => handleVerify(doc)} className="gap-2 cursor-pointer">
-                                                            <CheckCircle className="h-4 w-4" />
+                                                        <DropdownMenuItem onClick={() => handleVerify(doc)} disabled={actionDocId === doc.id} className="gap-2 cursor-pointer">
+                                                            {actionDocId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                                                             Verify
                                                         </DropdownMenuItem>
                                                     )}
 
                                                     {canReject && doc.verification_status !== 'Rejected' && (
-                                                        <DropdownMenuItem onClick={() => setRejectDocId(doc.id)} className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600">
+                                                        <DropdownMenuItem onClick={() => setRejectDocId(doc.id)} disabled={actionDocId === doc.id} className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600">
                                                             <AlertCircle className="h-4 w-4" />
                                                             Reject
                                                         </DropdownMenuItem>
@@ -391,8 +392,11 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setRejectDocId(null)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim()}>Reject Document</Button>
+                        <Button variant="outline" onClick={() => setRejectDocId(null)} disabled={actionDocId !== null}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim() || actionDocId !== null}>
+                            {actionDocId !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Reject Document
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

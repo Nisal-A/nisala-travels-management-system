@@ -129,3 +129,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/payments', fn () => Inertia::render('Portal/Payments'))->name('payments');
     });
 });
+
+if (app()->environment('local')) {
+    Route::get('/dev/styleguide', function () {
+        return Inertia::render('Dev/Styleguide');
+    });
+}

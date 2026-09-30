@@ -1,5 +1,5 @@
-import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { useForm, Link } from '@inertiajs/react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -11,9 +11,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Customer } from '@/types';
 
 interface CustomerFormProps {
-    customer?: any;
+    customer?: Customer;
     isEdit?: boolean;
 }
 
@@ -37,9 +38,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (isEdit) {
-            put(route('customers.update', { customer: customer.id }));
+
+        if (isEdit && customer) {
+            put(route('customers.update', { customer: customer.id as any }));
         } else {
             post(route('customers.store'));
         }
@@ -51,7 +52,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                 {/* Personal Information */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium border-b pb-2">Personal Information</h3>
-                    
+
                     <div className="space-y-2">
                         <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
                         <Input
@@ -77,7 +78,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="gender">Gender</Label>
-                            <Select value={data.gender} onValueChange={(value) => setData('gender', value)}>
+                            <Select value={data.gender || undefined} onValueChange={(value) => setData('gender', value as string)}>
                                 <SelectTrigger className={errors.gender ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
@@ -106,7 +107,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                 {/* Identification */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium border-b pb-2">Identification</h3>
-                    
+
                     <div className="space-y-2">
                         <Label htmlFor="nic">NIC Number</Label>
                         <Input
@@ -128,10 +129,10 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                         />
                         {errors.passport_number && <p className="text-sm text-destructive">{errors.passport_number}</p>}
                     </div>
-                    
+
                     <div className="space-y-2">
                         <Label htmlFor="status">Account Status <span className="text-destructive">*</span></Label>
-                        <Select value={data.status} onValueChange={(value) => setData('status', value)}>
+                        <Select value={data.status || undefined} onValueChange={(value) => setData('status', value as 'active' | 'inactive')}>
                             <SelectTrigger className={errors.status ? 'border-destructive' : ''}>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
@@ -147,7 +148,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                 {/* Contact Information */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium border-b pb-2">Contact Information</h3>
-                    
+
                     <div className="space-y-2">
                         <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
                         <Input
@@ -199,7 +200,7 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                 {/* Emergency Contact & Notes */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium border-b pb-2">Emergency & Notes</h3>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
@@ -238,14 +239,12 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
             </div>
 
             <div className="flex items-center justify-end gap-4 border-t pt-6">
-                <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => window.history.back()}
-                    disabled={processing}
+                <Link
+                    href={customer?.id ? route('customers.show', { customer: customer.id }) : route('customers.index')}
+                    className={buttonVariants({ variant: 'outline' }) + (processing ? ' pointer-events-none opacity-50' : '')}
                 >
                     Cancel
-                </Button>
+                </Link>
                 <Button type="submit" disabled={processing} className="min-w-[120px]">
                     {processing ? (
                         <>

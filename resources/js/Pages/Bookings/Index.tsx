@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,26 +9,25 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Filter } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
+import { PaginatedData, Booking } from '@/types';
+
 interface BookingIndexProps {
-    bookings: {
-        data: any[];
-        links: any[];
-    };
+    bookings: PaginatedData<Booking>;
 }
 
 const getStatusColor = (status: string) => {
     switch (status) {
-        case 'pending': return 'bg-yellow-100 text-yellow-800';
-        case 'confirmed': return 'bg-blue-100 text-blue-800';
-        case 'completed': return 'bg-green-100 text-green-800';
-        case 'cancelled': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
+        case 'pending': return 'bg-warning/20 text-warning-foreground border-warning/30';
+        case 'confirmed': return 'bg-info/20 text-info-foreground border-info/30';
+        case 'completed': return 'bg-success/20 text-success-foreground border-success/30';
+        case 'cancelled': return 'bg-error/20 text-error-foreground border-error/30';
+        default: return 'bg-muted text-muted-foreground border-border';
     }
 };
 
 export default function BookingIndex({ bookings }: BookingIndexProps) {
     const { hasRole } = useAuth();
-    const canCreate = hasRole(['super_admin', 'manager', 'staff']);
+    const canCreate = hasRole('super_admin', 'manager', 'staff');
 
     return (
         <AppLayout>
@@ -40,11 +39,9 @@ export default function BookingIndex({ bookings }: BookingIndexProps) {
                 </div>
                 <div className="flex space-x-2">
                     {canCreate && (
-                        <Button asChild>
-                            <Link href={route('bookings.create')}>
-                                <Plus className="mr-2 h-4 w-4" /> New Booking
-                            </Link>
-                        </Button>
+                        <Link href={route('bookings.create')} className={buttonVariants({ variant: 'default' })}>
+                            <Plus className="mr-2 h-4 w-4" /> New Booking
+                        </Link>
                     )}
                 </div>
             </div>
@@ -96,11 +93,9 @@ export default function BookingIndex({ bookings }: BookingIndexProps) {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={route('bookings.show', booking.id)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                            <Link href={route('bookings.show', booking.id as any)} className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
                                         </TableCell>
                                     </TableRow>
                                 ))

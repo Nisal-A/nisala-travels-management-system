@@ -9,56 +9,55 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Trash2, Plus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-interface Customer {
-    id: number;
-    first_name: string;
-    last_name: string;
-}
-
-interface Package {
-    id: number;
-    name: string;
-    price: number;
-    currency: string;
-    capacity: number;
-    duration_days: number;
-}
+import { Booking, Traveler, Customer, TourPackage } from '@/types';
 
 interface BookingFormProps {
-    booking?: any;
+    booking?: Booking;
     customers: Customer[];
-    packages: Package[];
+    packages: TourPackage[];
     travelerTypes: string[];
     isEditing?: boolean;
 }
 
+interface BookingFormData {
+    customer_id: string;
+    tour_package_id: string;
+    booking_date: string;
+    travel_date: string;
+    return_date: string;
+    discount_amount: number;
+    notes: string;
+    travelers: Partial<Traveler>[];
+}
+
 export default function BookingForm({ booking, customers, packages, travelerTypes, isEditing = false }: BookingFormProps) {
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, put, processing, errors, transform } = useForm<BookingFormData>({
         customer_id: booking?.customer_id?.toString() || '',
         tour_package_id: booking?.tour_package_id?.toString() || '',
-        booking_date: booking?.booking_date || new Date().toISOString().split('T')[0],
+        booking_date: booking?.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
         travel_date: booking?.travel_date || '',
         return_date: booking?.return_date || '',
-        discount_amount: booking?.discount_amount || 0,
+        discount_amount: booking?.discount_amount ? Number(booking.discount_amount) : 0,
         notes: booking?.notes || '',
-        travelers: booking?.travelers || [{ full_name: '', traveler_type: 'adult' }]
+        travelers: (booking?.travelers || [{ full_name: '', traveler_type: 'adult' }]) as Partial<Traveler>[]
     });
+
+    React.useEffect(() => {
+        transform((data: BookingFormData) => ({
+            ...data,
+            discount_amount: data.discount_amount || 0,
+        }));
+    }, []);
 
     const selectedPackage = packages.find(p => p.id.toString() === data.tour_package_id);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Clean up empty optional fields
-        const payload = {
-            ...data,
-            discount_amount: data.discount_amount || 0,
-        };
-        
-        if (isEditing) {
-            put(route('bookings.update', booking.id), payload);
+
+        if (isEditing && booking) {
+            put(route('bookings.update', booking.id as any));
         } else {
-            post(route('bookings.store'), payload);
+            post(route('bookings.store'));
         }
     };
 
@@ -69,24 +68,24 @@ export default function BookingForm({ booking, customers, packages, travelerType
     const removeTraveler = (index: number) => {
         const newTravelers = [...data.travelers];
         newTravelers.splice(index, 1);
-        setData('travelers', newTravelers);
+        setData('travelers', newTravelers as Partial<Traveler>[]);
     };
 
-    const updateTraveler = (index: number, field: string, value: any) => {
+    const updateTraveler = (index: number, field: string, value: string) => {
         const newTravelers = [...data.travelers];
         newTravelers[index] = { ...newTravelers[index], [field]: value };
-        setData('travelers', newTravelers);
+        setData('travelers', newTravelers as Partial<Traveler>[]);
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.error && (
+            {(errors as Record<string, string>).error && (
                 <Alert variant="destructive">
                     <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{errors.error}</AlertDescription>
+                    <AlertDescription>{(errors as Record<string, string>).error}</AlertDescription>
                 </Alert>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
@@ -96,9 +95,9 @@ export default function BookingForm({ booking, customers, packages, travelerType
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="customer_id">Customer *</Label>
-                            <Select 
-                                value={data.customer_id} 
-                                onValueChange={(v) => setData('customer_id', v)}
+                            <Select
+                                value={data.customer_id}
+                                onValueChange={(v) => setData('customer_id', v as string)}
                                 disabled={isEditing}
                             >
                                 <SelectTrigger>
@@ -115,9 +114,9 @@ export default function BookingForm({ booking, customers, packages, travelerType
 
                         <div className="space-y-2">
                             <Label htmlFor="tour_package_id">Tour Package *</Label>
-                            <Select 
-                                value={data.tour_package_id} 
-                                onValueChange={(v) => setData('tour_package_id', v)}
+                            <Select
+                                value={data.tour_package_id}
+                                onValueChange={(v) => setData('tour_package_id', v as string)}
                                 disabled={isEditing}
                             >
                                 <SelectTrigger>
@@ -139,14 +138,14 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                 <p className="text-sm">Capacity: {selectedPackage.capacity} travelers</p>
                             </div>
                         )}
-                        
+
                         <div className="space-y-2">
                             <Label htmlFor="discount_amount">Discount Amount</Label>
-                            <Input 
-                                type="number" 
-                                id="discount_amount" 
-                                value={data.discount_amount} 
-                                onChange={e => setData('discount_amount', parseFloat(e.target.value) || 0)} 
+                            <Input
+                                type="number"
+                                id="discount_amount"
+                                value={data.discount_amount}
+                                onChange={e => setData('discount_amount', parseFloat(e.target.value) || 0)}
                             />
                             {errors.discount_amount && <p className="text-sm text-red-500">{errors.discount_amount}</p>}
                         </div>
@@ -161,43 +160,43 @@ export default function BookingForm({ booking, customers, packages, travelerType
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="booking_date">Booking Date *</Label>
-                            <Input 
-                                type="date" 
-                                id="booking_date" 
-                                value={data.booking_date} 
-                                onChange={e => setData('booking_date', e.target.value)} 
+                            <Input
+                                type="date"
+                                id="booking_date"
+                                value={data.booking_date}
+                                onChange={e => setData('booking_date', e.target.value)}
                             />
                             {errors.booking_date && <p className="text-sm text-red-500">{errors.booking_date}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="travel_date">Travel Date *</Label>
-                            <Input 
-                                type="date" 
-                                id="travel_date" 
-                                value={data.travel_date} 
-                                onChange={e => setData('travel_date', e.target.value)} 
+                            <Input
+                                type="date"
+                                id="travel_date"
+                                value={data.travel_date}
+                                onChange={e => setData('travel_date', e.target.value)}
                             />
                             {errors.travel_date && <p className="text-sm text-red-500">{errors.travel_date}</p>}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="return_date">Return Date</Label>
-                            <Input 
-                                type="date" 
-                                id="return_date" 
-                                value={data.return_date || ''} 
-                                onChange={e => setData('return_date', e.target.value)} 
+                            <Input
+                                type="date"
+                                id="return_date"
+                                value={data.return_date || ''}
+                                onChange={e => setData('return_date', e.target.value)}
                             />
                             {errors.return_date && <p className="text-sm text-red-500">{errors.return_date}</p>}
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label htmlFor="notes">Notes</Label>
-                            <Textarea 
-                                id="notes" 
-                                value={data.notes} 
-                                onChange={e => setData('notes', e.target.value)} 
+                            <Textarea
+                                id="notes"
+                                value={data.notes}
+                                onChange={e => setData('notes', e.target.value)}
                             />
                             {errors.notes && <p className="text-sm text-red-500">{errors.notes}</p>}
                         </div>
@@ -217,22 +216,22 @@ export default function BookingForm({ booking, customers, packages, travelerType
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {errors.travelers && <p className="text-sm text-red-500 font-medium">{errors.travelers}</p>}
-                    {data.travelers.map((traveler: any, index: number) => (
+                    {data.travelers.map((traveler: Partial<Traveler>, index: number) => (
                         <div key={index} className="flex flex-col md:flex-row gap-4 items-start p-4 border rounded-lg relative">
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Full Name *</Label>
-                                <Input 
-                                    value={traveler.full_name} 
+                                <Input
+                                    value={traveler.full_name || ''}
                                     onChange={e => updateTraveler(index, 'full_name', e.target.value)}
                                     placeholder="Traveler Name"
                                 />
-                                {errors[`travelers.${index}.full_name`] && <p className="text-sm text-red-500">{errors[`travelers.${index}.full_name`]}</p>}
+                                {(errors as Record<string, string>)[`travelers.${index}.full_name`] && <p className="text-sm text-red-500">{(errors as Record<string, string>)[`travelers.${index}.full_name`]}</p>}
                             </div>
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Type *</Label>
-                                <Select 
-                                    value={traveler.traveler_type} 
-                                    onValueChange={(v) => updateTraveler(index, 'traveler_type', v)}
+                                <Select
+                                    value={traveler.traveler_type || 'adult'}
+                                    onValueChange={(v) => updateTraveler(index, 'traveler_type', v as string)}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
@@ -243,22 +242,22 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors[`travelers.${index}.traveler_type`] && <p className="text-sm text-red-500">{errors[`travelers.${index}.traveler_type`]}</p>}
+                                {(errors as Record<string, string>)[`travelers.${index}.traveler_type`] && <p className="text-sm text-red-500">{(errors as Record<string, string>)[`travelers.${index}.traveler_type`]}</p>}
                             </div>
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Passport (Optional)</Label>
-                                <Input 
-                                    value={traveler.passport_number || ''} 
+                                <Input
+                                    value={traveler.passport_number || ''}
                                     onChange={e => updateTraveler(index, 'passport_number', e.target.value)}
                                     placeholder="Passport Number"
                                 />
                             </div>
                             {data.travelers.length > 1 && (
-                                <Button 
-                                    type="button" 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="md:mt-8 text-red-500" 
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="md:mt-8 text-red-500"
                                     onClick={() => removeTraveler(index)}
                                 >
                                     <Trash2 className="h-4 w-4" />
