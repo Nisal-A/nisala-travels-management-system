@@ -18,7 +18,9 @@ class BookingCardResource extends JsonResource
             'booking_status' => $this->booking_status,
             'payment_status' => $this->payment_status,
             'number_of_travelers' => $this->number_of_travelers,
-            // Only expose necessary fields for the portal
+            'final_amount' => $this->final_amount,
+            'paid_amount' => $this->paid_amount,
+            'currency' => $this->currency,
         ];
     }
 }

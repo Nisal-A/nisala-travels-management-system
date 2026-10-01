@@ -5,10 +5,11 @@ type BookingStatus = "Pending" | "Confirmed" | "Cancelled" | "Completed"
 type PaymentStatus = "Pending" | "Verified" | "Completed" | "Failed" | "Unpaid" | "Partial" | "Paid" | "Refunded"
 type DocumentStatus = "Pending Review" | "Verified" | "Rejected" | "Expired"
 
-export type StatusBadgeProps = 
+export type StatusBadgeProps = (
   | { type: "booking", status: BookingStatus }
   | { type: "payment", status: PaymentStatus }
   | { type: "document", status: DocumentStatus }
+) & { className?: string }
 
 /**
  * StatusBadge displays a consistently styled badge for domain states.
@@ -16,7 +17,7 @@ export type StatusBadgeProps =
  * @example
  * <StatusBadge type="booking" status="Confirmed" />
  */
-export function StatusBadge({ type, status }: StatusBadgeProps) {
+export function StatusBadge({ type, status, className }: StatusBadgeProps) {
   let colorClass = "bg-muted text-muted-foreground"
   let Icon = HelpCircle
 
@@ -83,7 +84,7 @@ export function StatusBadge({ type, status }: StatusBadgeProps) {
   }
 
   return (
-    <Badge variant="outline" className={`gap-1.5 whitespace-nowrap font-medium ${colorClass}`}>
+    <Badge variant="outline" className={`gap-1.5 whitespace-nowrap font-medium ${colorClass} ${className || ""}`}>
       <Icon className="h-3.5 w-3.5" />
       {status}
     </Badge>

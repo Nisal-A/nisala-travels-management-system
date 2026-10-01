@@ -16,6 +16,7 @@ class DashboardController extends Controller
         
         $nextBooking = Booking::where('customer_id', $customer->id)
             ->where('travel_date', '>=', now())
+            ->with('tourPackage')
             ->orderBy('travel_date', 'asc')
             ->first();
             

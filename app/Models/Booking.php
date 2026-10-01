@@ -53,6 +53,14 @@ class Booking extends Model
     }
 
     /**
+     * The payments for this booking.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * User who created the booking.
      */
     public function createdBy(): BelongsTo

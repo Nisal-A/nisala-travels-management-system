@@ -136,6 +136,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'update'])->name('profile.update');
         Route::put('/password', [\App\Http\Controllers\Portal\ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::delete('/profile/sessions', [\App\Http\Controllers\Portal\ProfileController::class, 'logoutOtherBrowserSessions'])->name('profile.sessions.destroy');
     });
 });
 
