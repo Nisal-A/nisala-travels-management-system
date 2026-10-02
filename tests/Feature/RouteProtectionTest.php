@@ -57,6 +57,7 @@ test('super admin can access office protected routes', function () {
 test('customer can access portal routes', function () {
     $this->withoutVite();
     $user = User::factory()->customer()->create();
+    \App\Models\Customer::factory()->create(['user_id' => $user->id]);
 
     $portalRoutes = ['/portal', '/portal/bookings', '/portal/documents', '/portal/payments'];
 

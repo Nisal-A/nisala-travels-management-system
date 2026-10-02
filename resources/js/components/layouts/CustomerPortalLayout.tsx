@@ -60,7 +60,7 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                                 Nisala Travels
                             </span>
                         </Link>
-                        
+
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-1">
                             {NAV_LINKS.map((link) => {
@@ -72,8 +72,8 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                                         href={route(link.href)}
                                         className={cn(
                                             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
-                                            active 
-                                                ? "bg-primary/10 text-primary" 
+                                            active
+                                                ? "bg-primary/10 text-primary"
                                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                         )}
                                     >

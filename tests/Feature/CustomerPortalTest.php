@@ -46,7 +46,7 @@ it('shows only the customer\'s own bookings', function () {
     $booking1 = Booking::factory()->create(['customer_id' => $customer1->id, 'tour_package_id' => $tour->id]);
     $booking2 = Booking::factory()->create(['customer_id' => $customer2->id, 'tour_package_id' => $tour->id]);
     
-    $response = $this->actingAs($user1)->get(route('portal.bookings'));
+    $response = $this->actingAs($user1)->get(route('portal.bookings.index'));
     $response->assertStatus(200);
     
     $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
@@ -65,7 +65,7 @@ it('shows only the customer\'s own documents', function () {
     $doc1 = CustomerDocument::factory()->create(['customer_id' => $customer1->id, 'document_type_id' => $docType->id]);
     $doc2 = CustomerDocument::factory()->create(['customer_id' => $customer2->id, 'document_type_id' => $docType->id]);
     
-    $response = $this->actingAs($user1)->get(route('portal.documents'));
+    $response = $this->actingAs($user1)->get(route('portal.documents.index'));
     $response->assertStatus(200);
     
     $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
@@ -86,7 +86,7 @@ it('shows only the customer\'s own payments', function () {
     $payment1 = Payment::factory()->create(['customer_id' => $customer1->id, 'booking_id' => $booking1->id]);
     $payment2 = Payment::factory()->create(['customer_id' => $customer2->id, 'booking_id' => $booking2->id]);
     
-    $response = $this->actingAs($user1)->get(route('portal.payments'));
+    $response = $this->actingAs($user1)->get(route('portal.payments.index'));
     $response->assertStatus(200);
     
     $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page

@@ -74,12 +74,12 @@ class ProfileController extends Controller
 
         if ($user->customer) {
             $user->customer->update([
-                'full_name' => $validated['full_name'],
-                'phone' => $validated['phone'],
-                'whatsapp' => $validated['whatsapp'],
-                'address' => $validated['address'],
-                'emergency_contact_name' => $validated['emergency_contact_name'],
-                'emergency_contact_phone' => $validated['emergency_contact_phone'],
+                'full_name' => $validated['full_name'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'whatsapp' => $validated['whatsapp'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
             ]);
         }
 

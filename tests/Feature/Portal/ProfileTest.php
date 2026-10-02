@@ -58,7 +58,7 @@ class ProfileTest extends TestCase
         $user->assignRole('customer');
         $customer = Customer::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->put(route('password.update'), [
+        $response = $this->actingAs($user)->put(route('portal.password.update'), [
             'current_password' => 'WrongPassword!',
             'password' => 'New', // Too short
             'password_confirmation' => 'New',
@@ -67,7 +67,7 @@ class ProfileTest extends TestCase
         $response->assertSessionHasErrors(['current_password', 'password']);
 
         // Correct format but no match
-        $response = $this->actingAs($user)->put(route('password.update'), [
+        $response = $this->actingAs($user)->put(route('portal.password.update'), [
             'current_password' => 'OldPassword123!',
             'password' => 'NewPassword123!',
             'password_confirmation' => 'DifferentPassword123!',
@@ -76,7 +76,7 @@ class ProfileTest extends TestCase
         $response->assertSessionHasErrors(['password']);
 
         // Success
-        $response = $this->actingAs($user)->put(route('password.update'), [
+        $response = $this->actingAs($user)->put(route('portal.password.update'), [
             'current_password' => 'OldPassword123!',
             'password' => 'NewPassword123!',
             'password_confirmation' => 'NewPassword123!',

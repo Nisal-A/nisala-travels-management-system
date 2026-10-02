@@ -31,7 +31,7 @@
         <tr>
             <td>
                 <strong>Billed To:</strong><br>
-                {{ $customer->first_name }} {{ $customer->last_name }}<br>
+                {{ $customer->full_name }}<br>
                 {{ $customer->email }}<br>
                 {{ $customer->phone }}
             </td>
