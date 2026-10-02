@@ -36,7 +36,7 @@ const passwordSchema = z.object({
 
 export default function ProfileEdit({ user, sessions }: any) {
     const { props } = usePage<any>();
-    
+
     // Forms
     const personalForm = useForm({
         full_name: user.full_name || user.name || '',
@@ -64,11 +64,11 @@ export default function ProfileEdit({ user, sessions }: any) {
 
     const onPersonalSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         try {
             personalDetailsSchema.parse(personalForm.data);
             setZodErrors({});
-            
+
             personalForm.patch(route('portal.profile.update'), {
                 preserveScroll: true,
                 onSuccess: () => toast.success('Profile updated successfully'),
@@ -88,11 +88,11 @@ export default function ProfileEdit({ user, sessions }: any) {
 
     const onPasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         try {
             passwordSchema.parse(passwordForm.data);
             setPasswordZodErrors({});
-            
+
             passwordForm.put(route('portal.password.update'), {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -140,7 +140,7 @@ export default function ProfileEdit({ user, sessions }: any) {
         if (/[A-Z]/.test(pass)) score += 1;
         if (/[0-9]/.test(pass)) score += 1;
         if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-        
+
         if (score <= 1) return { score, text: 'Weak', color: 'bg-destructive' };
         if (score <= 3) return { score, text: 'Medium', color: 'bg-orange-500' };
         return { score, text: 'Strong', color: 'bg-emerald-500' };
@@ -219,7 +219,7 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <Label htmlFor="address">Address</Label>
                                         <div className="relative">
@@ -291,7 +291,7 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             <p className="text-sm text-destructive">{passwordZodErrors.current_password || passwordForm.errors.current_password}</p>
                                         )}
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <Label htmlFor="password">New Password</Label>
                                         <Input
@@ -300,18 +300,18 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             value={passwordForm.data.password}
                                             onChange={(e) => passwordForm.setData('password', e.target.value)}
                                         />
-                                        
+
                                         {passwordForm.data.password && (
                                             <div className="flex gap-1 mt-2">
                                                 {[1, 2, 3, 4].map((i) => (
-                                                    <div 
-                                                        key={i} 
+                                                    <div
+                                                        key={i}
                                                         className={`h-1.5 w-full rounded-full ${i <= strength.score ? strength.color : 'bg-muted'}`}
                                                     />
                                                 ))}
                                             </div>
                                         )}
-                                        
+
                                         {(passwordZodErrors.password || passwordForm.errors.password) && (
                                             <p className="text-sm text-destructive">{passwordZodErrors.password || passwordForm.errors.password}</p>
                                         )}
@@ -366,7 +366,7 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                         {session.agent.platform} - {session.agent.browser}
                                                     </div>
                                                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                                        {session.ip_address} • 
+                                                        {session.ip_address} •
                                                         {session.is_current_device ? (
                                                             <span className="text-emerald-500 font-medium">This device</span>
                                                         ) : (
