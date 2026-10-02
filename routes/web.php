@@ -9,6 +9,14 @@ Route::get('/', function () {
     return Inertia::render('Public/Home');
 })->name('home');
 
+Route::get('/tours', function () {
+    return Inertia::render('Public/Tours/Index');
+})->name('tours.index');
+
+Route::get('/tours/{slug}', function ($slug) {
+    return Inertia::render('Public/Tours/Show', ['slug' => $slug]);
+})->name('tours.show');
+
 Route::prefix('api/public')->group(function () {
     Route::get('tours', [\App\Http\Controllers\Api\PublicTourController::class, 'index']);
     Route::get('tours/featured', [\App\Http\Controllers\Api\PublicTourController::class, 'featured']);
