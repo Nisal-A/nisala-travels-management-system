@@ -33,6 +33,7 @@ class Customer extends Model
         'status',
         'created_by',
         'notes',
+        'source',
     ];
 
     /**

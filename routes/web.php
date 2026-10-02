@@ -9,6 +9,17 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+Route::prefix('api/public')->group(function () {
+    Route::get('tours', [\App\Http\Controllers\Api\PublicTourController::class, 'index']);
+    Route::get('tours/featured', [\App\Http\Controllers\Api\PublicTourController::class, 'featured']);
+    Route::get('tours/{slug}', [\App\Http\Controllers\Api\PublicTourController::class, 'show']);
+    Route::get('destinations', [\App\Http\Controllers\Api\PublicTourController::class, 'destinations']);
+});
+
+Route::post('/inquiries', [\App\Http\Controllers\InquiryController::class, 'store'])
+    ->middleware('throttle:5,60')
+    ->name('inquiries.store');
+
 /*
 |--------------------------------------------------------------------------
 | Guest Routes
@@ -108,8 +119,16 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('destinations', \App\Http\Controllers\DestinationController::class);
         Route::resource('tours', \App\Http\Controllers\TourPackageController::class);
 
+        Route::get('admin/customers/search', [\App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
+
+        Route::post('bookings/draft', [\App\Http\Controllers\BookingController::class, 'saveDraft'])->name('bookings.draft.save');
+        Route::get('bookings/draft', [\App\Http\Controllers\BookingController::class, 'getDraft'])->name('bookings.draft.get');
+        Route::delete('bookings/draft', [\App\Http\Controllers\BookingController::class, 'deleteDraft'])->name('bookings.draft.delete');
+
         Route::resource('bookings', \App\Http\Controllers\BookingController::class);
         Route::patch('bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'changeStatus'])->name('bookings.status');
+        Route::post('bookings/{booking}/notes', [\App\Http\Controllers\BookingController::class, 'addNote'])->name('bookings.notes.store');
+        Route::patch('bookings/{booking}/assign', [\App\Http\Controllers\BookingController::class, 'assignStaff'])->name('bookings.assign');
         Route::post('bookings/{id}/restore', [\App\Http\Controllers\BookingController::class, 'restore'])->name('bookings.restore');
     });
 

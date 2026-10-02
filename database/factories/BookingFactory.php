@@ -37,12 +37,7 @@ class BookingFactory extends Factory
             'paid_amount' => $paidAmount,
             'balance_amount' => $finalAmount - $paidAmount,
             'currency' => 'LKR',
-            'booking_status' => $this->faker->randomElement([
-                BookingStatus::Pending,
-                BookingStatus::Confirmed,
-                BookingStatus::Cancelled,
-                BookingStatus::Completed
-            ]),
+            'booking_status' => BookingStatus::Pending,
             'payment_status' => $paidAmount >= $finalAmount ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid'),
             'notes' => $this->faker->optional()->sentence(),
             'created_by' => User::factory(),

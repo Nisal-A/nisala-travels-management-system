@@ -65,7 +65,40 @@ class CustomerController extends Controller
         $customer->created_by = $request->user()->id;
         $customer->save();
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'customer' => $customer,
+                'message' => 'Customer created successfully.'
+            ], 201);
+        }
+
         return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
+    }
+
+    /**
+     * Search customers for async selection.
+     */
+    public function search(Request $request)
+    {
+        Gate::authorize('viewAny', Customer::class);
+        $query = $request->input('query', '');
+
+        $customers = Customer::query()
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('first_name', 'like', "%{$query}%")
+                        ->orWhere('last_name', 'like', "%{$query}%")
+                        ->orWhere('email', 'like', "%{$query}%")
+                        ->orWhere('phone', 'like', "%{$query}%")
+                        ->orWhere('passport_number', 'like', "%{$query}%")
+                        ->orWhere('customer_id', 'like', "%{$query}%");
+                });
+            })
+            ->limit(20)
+            ->get(['id', 'customer_id', 'first_name', 'last_name', 'email', 'phone', 'passport_number', 'nationality', 'nic', 'gender', 'dob']);
+
+        return response()->json($customers);
     }
 
     /**

@@ -24,9 +24,12 @@ class Booking extends Model
         'booking_status' => BookingStatus::class,
         'base_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'extras_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'final_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'balance_amount' => 'decimal:2',
+        'extras' => 'array',
     ];
 
     /**
@@ -46,6 +49,14 @@ class Booking extends Model
     }
 
     /**
+     * The staff member assigned to this booking.
+     */
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'assigned_to');
+    }
+
+    /**
      * The travelers associated with this booking.
      */
     public function travelers(): HasMany
@@ -59,6 +70,22 @@ class Booking extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * The payment schedule installments for this booking.
+     */
+    public function paymentSchedules(): HasMany
+    {
+        return $this->hasMany(PaymentSchedule::class)->orderBy('due_date', 'asc');
+    }
+
+    /**
+     * Threaded internal notes and timeline for this booking.
+     */
+    public function bookingNotes(): HasMany
+    {
+        return $this->hasMany(BookingNote::class)->whereNull('parent_id')->with(['user:id,name,email', 'replies'])->orderBy('created_at', 'desc');
     }
 
     /**

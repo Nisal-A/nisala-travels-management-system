@@ -110,6 +110,30 @@ class BookingPolicy
     }
 
     /**
+     * Determine whether the user can apply discounts to a booking.
+     */
+    public function applyDiscount(User $user): bool
+    {
+        return $user->hasAnyRole([
+            UserRole::SuperAdmin->value,
+            UserRole::Manager->value,
+        ]);
+    }
+
+    /**
+     * Determine whether the user can add internal notes to a booking.
+     */
+    public function addNote(User $user, Booking $booking): bool
+    {
+        return $user->hasAnyRole([
+            UserRole::SuperAdmin->value,
+            UserRole::Manager->value,
+            UserRole::Staff->value,
+            UserRole::Finance->value,
+        ]);
+    }
+
+    /**
      * Determine whether the user can restore a booking.
      */
     public function restore(User $user, Booking $booking): bool
