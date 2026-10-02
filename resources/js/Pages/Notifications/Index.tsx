@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
+import CustomerPortalLayout from '@/components/layouts/CustomerPortalLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,89 +14,115 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import axios from 'axios';
+import { useState } from 'react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
-// Define a placeholder type for the structure we expect Laravel Notifications to take eventually
 interface AppNotification {
     id: string;
-    type: 'booking' | 'inquiry' | 'document' | 'payment' | 'alert';
-    title: string;
-    message: string;
-    isRead: boolean;
-    createdAt: string;
-    actionUrl?: string;
+    type: string;
+    notifiable_type: string;
+    notifiable_id: number;
+    data: {
+        message: string;
+        payment_id?: number;
+        booking_id?: number;
+        document_id?: number;
+        inquiry_id?: number;
+        [key: string]: any;
+    };
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
-export default function NotificationsIndex() {
-    const { user } = useAuth();
+interface PaginatedData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    total: number;
+}
 
-    // Mock data to demonstrate the UI structure, as backend notification workflows are deferred.
-    // In production, this would be populated from $page.props.notifications or user.notifications
-    const placeholderNotifications: AppNotification[] = [
-        {
-            id: '1',
-            type: 'booking',
-            title: 'New Booking Created',
-            message: 'A new booking (BKG-2024-001) has been created by John Doe.',
-            isRead: false,
-            createdAt: '10 minutes ago',
-            actionUrl: route('dashboard')
-        },
-        {
-            id: '2',
-            type: 'document',
-            title: 'Document Uploaded',
-            message: 'Jane Smith uploaded a new passport copy for verification.',
-            isRead: false,
-            createdAt: '2 hours ago'
-        },
-        {
-            id: '3',
-            type: 'payment',
-            title: 'Payment Recorded',
-            message: 'A payment of Rs. 50,000 was recorded for Booking BKG-2024-002.',
-            isRead: true,
-            createdAt: '1 day ago'
-        },
-        {
-            id: '4',
-            type: 'alert',
-            title: 'Document Expiry Warning',
-            message: 'Passport for customer Michael Lee is expiring in 30 days.',
-            isRead: true,
-            createdAt: '2 days ago'
-        },
-        {
-            id: '5',
-            type: 'inquiry',
-            title: 'New Customer Inquiry',
-            message: 'A new inquiry was submitted regarding the Maldives Tour Package.',
-            isRead: true,
-            createdAt: '3 days ago'
-        }
-    ];
+interface Props {
+    notifications: PaginatedData<AppNotification>;
+    filter: string;
+}
 
-    const getIconForType = (type: AppNotification['type']) => {
-        switch (type) {
-            case 'booking':
-                return <CalendarCheck className="h-5 w-5 text-blue-500" />;
-            case 'document':
-                return <FileText className="h-5 w-5 text-indigo-500" />;
-            case 'payment':
-                return <CreditCard className="h-5 w-5 text-emerald-500" />;
-            case 'inquiry':
-                return <MessageSquare className="h-5 w-5 text-amber-500" />;
-            case 'alert':
-                return <AlertTriangle className="h-5 w-5 text-rose-500" />;
-            default:
-                return <Bell className="h-5 w-5 text-muted-foreground" />;
+export default function NotificationsIndex({ notifications, filter }: Props) {
+    const { user, hasRole } = useAuth();
+    const isCustomer = hasRole('customer') && !hasRole('super_admin', 'manager', 'staff', 'finance');
+    const Layout = isCustomer ? CustomerPortalLayout : AppLayout;
+
+    const [isMarkingAll, setIsMarkingAll] = useState(false);
+
+    const getIconForNotification = (notification: AppNotification) => {
+        const typeStr = notification.type.toLowerCase();
+        if (typeStr.includes('booking')) return <CalendarCheck className="h-5 w-5 text-blue-500" />;
+        if (typeStr.includes('document')) return <FileText className="h-5 w-5 text-indigo-500" />;
+        if (typeStr.includes('payment')) return <CreditCard className="h-5 w-5 text-emerald-500" />;
+        if (typeStr.includes('inquiry')) return <MessageSquare className="h-5 w-5 text-amber-500" />;
+        if (typeStr.includes('alert')) return <AlertTriangle className="h-5 w-5 text-rose-500" />;
+        return <Bell className="h-5 w-5 text-muted-foreground" />;
+    };
+
+    const getActionUrl = (notification: AppNotification) => {
+        const data = notification.data;
+        if (isCustomer) {
+            if (data.booking_id) return route('portal.bookings.show', { booking: data.booking_id });
+            if (data.payment_id) return route('portal.payments.index');
+            if (data.document_id) return route('portal.documents.index');
+            return route('portal.dashboard');
+        } else {
+            if (data.booking_id) return route('bookings.show', { booking: data.booking_id });
+            if (data.payment_id) return route('payments.index');
+            if (data.document_id) return route('documents.index');
+            // Assuming inquiries route might exist, otherwise dashboard
+            return route('dashboard');
         }
     };
 
+    const handleFilterChange = (value: string | null) => {
+        if (value) {
+            router.get(route('notifications.index'), { filter: value }, { preserveState: true });
+        }
+    };
+
+    const markAsRead = async (id: string) => {
+        try {
+            await axios.patch(route('notifications.markAsRead', { id }));
+            router.reload({ only: ['notifications'] });
+        } catch (error) {
+            console.error('Failed to mark as read', error);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        setIsMarkingAll(true);
+        try {
+            await axios.post(route('notifications.markAllAsRead'));
+            router.reload({ only: ['notifications'] });
+        } catch (error) {
+            console.error('Failed to mark all as read', error);
+        } finally {
+            setIsMarkingAll(false);
+        }
+    };
+
+    const unreadCount = notifications.data.filter(n => !n.read_at).length;
+
     return (
-        <AppLayout 
-            title="Notifications" 
+        <Layout
+            title="Notifications"
             breadcrumbs={[
-                { label: 'Dashboard', href: route('dashboard') },
+                { label: 'Dashboard', href: route(isCustomer ? 'portal.dashboard' : 'dashboard') },
                 { label: 'Notifications' },
             ]}
         >
@@ -107,19 +134,39 @@ export default function NotificationsIndex() {
                         <h2 className="text-2xl font-bold tracking-tight">Your Notifications</h2>
                         <p className="text-muted-foreground">Stay updated on system activities and alerts.</p>
                     </div>
-                    <Button variant="outline" className="shrink-0" onClick={() => alert('Mark all as read - To be implemented')}>
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        Mark all as read
-                    </Button>
+                    <div className="flex items-center gap-4">
+                        <Select value={filter} onValueChange={handleFilterChange}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Filter notifications" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Notifications</SelectItem>
+                                <SelectItem value="unread">Unread Only</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            variant="outline"
+                            className="shrink-0"
+                            onClick={markAllAsRead}
+                            disabled={isMarkingAll || (filter === 'unread' && notifications.data.length === 0)}
+                        >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Mark all as read
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
                     <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
                         <CardTitle className="text-lg">Recent Alerts</CardTitle>
-                        <CardDescription>You have 2 unread notifications.</CardDescription>
+                        <CardDescription>
+                            {filter === 'unread'
+                                ? `Showing ${notifications.total} unread notifications.`
+                                : `Total ${notifications.total} notifications.`}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                        {placeholderNotifications.length === 0 ? (
+                        {notifications.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
                                 <Bell className="mb-4 h-12 w-12 opacity-20" />
                                 <h3 className="text-lg font-medium">No notifications</h3>
@@ -127,45 +174,46 @@ export default function NotificationsIndex() {
                             </div>
                         ) : (
                             <div className="flex flex-col divide-y divide-border/50">
-                                {placeholderNotifications.map((notification) => (
-                                    <div 
-                                        key={notification.id} 
-                                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-muted/50 ${
-                                            !notification.isRead ? 'bg-primary/5' : ''
-                                        }`}
+                                {notifications.data.map((notification) => (
+                                    <div
+                                        key={notification.id}
+                                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-muted/50 ${!notification.read_at ? 'bg-primary/5' : ''
+                                            }`}
                                     >
-                                        <div className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-background p-2 shadow-sm ring-1 ring-border ${
-                                            !notification.isRead ? 'ring-primary/30' : ''
-                                        }`}>
-                                            {getIconForType(notification.type)}
+                                        <div className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-background p-2 shadow-sm ring-1 ring-border ${!notification.read_at ? 'ring-primary/30' : ''
+                                            }`}>
+                                            {getIconForNotification(notification)}
                                         </div>
                                         <div className="flex flex-1 flex-col gap-1">
                                             <div className="flex items-center justify-between gap-2">
-                                                <h4 className={`text-sm font-semibold ${!notification.isRead ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                                    {notification.title}
+                                                <h4 className={`text-sm font-semibold ${!notification.read_at ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                    {notification.data.message || notification.type.split('\\').pop()?.replace('Notification', '')}
                                                 </h4>
                                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                    {notification.createdAt}
+                                                    {new Date(notification.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                                {notification.message}
-                                            </p>
-                                            
+
                                             {/* Optional Call to Action */}
-                                            {notification.actionUrl && (
-                                                <div className="mt-2">
-                                                    <Link 
-                                                        href={notification.actionUrl} 
-                                                        className="inline-flex text-xs font-medium text-primary hover:underline"
+                                            <div className="mt-2 flex gap-4 items-center">
+                                                <Link
+                                                    href={getActionUrl(notification)}
+                                                    className="inline-flex text-xs font-medium text-primary hover:underline"
+                                                >
+                                                    View details &rarr;
+                                                </Link>
+                                                {!notification.read_at && (
+                                                    <button
+                                                        onClick={() => markAsRead(notification.id)}
+                                                        className="inline-flex text-xs font-medium text-muted-foreground hover:text-foreground underline"
                                                     >
-                                                        View details &rarr;
-                                                    </Link>
-                                                </div>
-                                            )}
+                                                        Mark as read
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                        
-                                        {!notification.isRead && (
+
+                                        {!notification.read_at && (
                                             <div className="mt-2 shrink-0">
                                                 <Badge variant="default" className="h-2 w-2 rounded-full p-0" />
                                             </div>
@@ -176,7 +224,30 @@ export default function NotificationsIndex() {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Pagination */}
+                {notifications.total > 0 && (
+                    <div className="flex justify-between items-center py-4">
+                        <Button
+                            variant="outline"
+                            disabled={!notifications.prev_page_url}
+                            onClick={() => router.get(notifications.prev_page_url || '', { filter }, { preserveState: true })}
+                        >
+                            Previous
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                            Page {notifications.current_page} of {notifications.last_page}
+                        </span>
+                        <Button
+                            variant="outline"
+                            disabled={!notifications.next_page_url}
+                            onClick={() => router.get(notifications.next_page_url || '', { filter }, { preserveState: true })}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                )}
             </div>
-        </AppLayout>
+        </Layout>
     );
 }

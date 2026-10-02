@@ -69,11 +69,17 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/saved-filters', [\App\Http\Controllers\SavedFilterController::class, 'store'])->name('saved-filters.store');
     Route::delete('/saved-filters/{savedFilter}', [\App\Http\Controllers\SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
 
-    // Notifications — accessible to all office roles
+    // Notifications — accessible to all authenticated users
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unreadCount');
+        Route::get('/recent', [\App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
+        Route::patch('/{id}/mark-as-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('/mark-all-as-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+    });
+
+    // Administrative routes — accessible to all office roles
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
-        Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Notifications/Index'))->name('index');
-        });
         
         // Global Search
         Route::get('/admin/search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('admin.search');

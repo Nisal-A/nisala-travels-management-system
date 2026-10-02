@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface CustomerPortalLayoutProps {
     children: ReactNode;
@@ -87,6 +88,7 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <NotificationBell />
                         <DropdownMenu>
                             <DropdownMenuTrigger
                                 render={

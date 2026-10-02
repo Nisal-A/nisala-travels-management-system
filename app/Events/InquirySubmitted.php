@@ -10,16 +10,20 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
+use App\Models\Inquiry;
+
 class InquirySubmitted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $inquiry;
+
     /**
      * Create a new event instance.
      */
-    public function __construct()
+    public function __construct(Inquiry $inquiry)
     {
-        //
+        $this->inquiry = $inquiry;
     }
 
     /**

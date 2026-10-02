@@ -40,6 +40,7 @@ import {
 import type { NavigationItem } from '@/types';
 import { Fragment, type FormEvent, type ReactNode, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -345,17 +346,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             {hasRole('super_admin', 'manager', 'staff', 'finance') && (
                                 <CommandPalette />
                             )}
-                            {hasRole('super_admin', 'manager', 'staff', 'finance') && (
-                                <Link
-                                    href={route('notifications.index')}
-                                    className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
-                                    aria-label="Notifications"
-                                >
-                                    <Bell className="h-5 w-5 text-muted-foreground" />
-                                    {/* Placeholder indicator for unread notifications */}
-                                    <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
-                                </Link>
-                            )}
+                            <NotificationBell />
                             <Badge variant="outline" className="hidden sm:inline-flex text-[0.65rem] capitalize">
                                 {roleBadge}
                             </Badge>

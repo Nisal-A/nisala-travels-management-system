@@ -79,8 +79,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                             <Phone className="w-4 h-4" />
                             <span className="hidden lg:inline">{company.phone}</span>
                         </a>
-                        <Button asChild className="rounded-full px-6 shadow-md hover:shadow-lg transition-all">
-                            <Link href="/contact">Enquire Now</Link>
+                        <Button render={<Link href="/contact" />} className="rounded-full px-6 shadow-md hover:shadow-lg transition-all">
+                            Enquire Now
                         </Button>
                     </div>
 
@@ -140,8 +140,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                     </div>
                                     {company.email}
                                 </a>
-                                <Button asChild size="lg" className="w-full mt-4 rounded-full text-lg h-14">
-                                    <Link href="/contact">Enquire Now</Link>
+                                <Button render={<Link href="/contact" />} size="lg" className="w-full mt-4 rounded-full text-lg h-14">
+                                    Enquire Now
                                 </Button>
                             </div>
                         </nav>
