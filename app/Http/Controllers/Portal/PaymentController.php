@@ -113,17 +113,16 @@ class PaymentController extends Controller
         
         $payment->load('booking.customer', 'booking.tourPackage');
         
+        // Derive receipt number: from payment_receipts relation, reference_number, or payment ID
+        $receiptNumber = $payment->reference_number ?? 'RCP-' . str_pad($payment->id, 6, '0', STR_PAD_LEFT);
+        
         $pdf = Pdf::loadView('portal.receipt', [
             'payment' => $payment,
             'customer' => $payment->booking->customer,
-            'company' => [
-                'name' => config('app.name', 'Nisala Travels'),
-                'address' => '123 Travel Street, Colombo, Sri Lanka',
-                'phone' => '+94 11 234 5678',
-                'email' => 'info@nisalatravels.com'
-            ]
+            'company' => config('travel.company'),
+            'receipt_number' => $receiptNumber,
         ]);
         
-        return $pdf->download('Receipt_'.$payment->receipt_number.'.pdf');
+        return $pdf->download('Receipt_'.$receiptNumber.'.pdf');
     }
 }

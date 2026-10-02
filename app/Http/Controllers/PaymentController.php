@@ -17,16 +17,24 @@ class PaymentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('viewAny', Payment::class);
 
+        $perPage = $request->input('per_page', 10);
         $payments = Payment::with(['customer', 'booking', 'recordedBy'])
-            ->orderBy('id', 'desc')
-            ->paginate(15);
+            ->filterAndSort($request->all())
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $savedFilters = \App\Models\SavedFilter::where('user_id', $request->user()->id)
+            ->where('table_key', 'payments')
+            ->get();
 
         return Inertia::render('Payments/Index', [
-            'payments' => $payments
+            'payments' => $payments,
+            'filters' => $request->all(),
+            'savedFilters' => $savedFilters,
         ]);
     }
 

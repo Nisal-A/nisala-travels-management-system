@@ -42,11 +42,22 @@ Route::middleware(['auth', 'active'])->group(function () {
     // The controller determines which dashboard variant and data to serve based on role.
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Saved Filters — accessible to all authenticated users
+    Route::post('/saved-filters', [\App\Http\Controllers\SavedFilterController::class, 'store'])->name('saved-filters.store');
+    Route::delete('/saved-filters/{savedFilter}', [\App\Http\Controllers\SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
+
     // Notifications — accessible to all office roles
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
         Route::prefix('notifications')->name('notifications.')->group(function () {
             Route::get('/', fn () => Inertia::render('Notifications/Index'))->name('index');
         });
+        
+        // Global Search
+        Route::get('/admin/search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('admin.search');
+
+        // Calendar
+        Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
+        Route::get('/admin/calendar/events', [\App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
     });
 
     // ------------------------------------------------------------------

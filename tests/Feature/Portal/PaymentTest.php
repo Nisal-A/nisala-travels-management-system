@@ -37,8 +37,12 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($user1)->get(route('portal.payments.index'));
 
         $response->assertStatus(200);
-        $response->assertSee(100);
-        $response->assertDontSee(200);
+        $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+            ->component('Portal/Payments')
+            ->has('payments.data', 1)
+            ->where('payments.data.0.id', $payment1->id)
+            ->where('payments.data.0.amount', 100)
+        );
     }
 
     public function test_receipt_authorization_prevents_other_customers()

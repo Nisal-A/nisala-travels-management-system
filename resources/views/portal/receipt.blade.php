@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Receipt - {{ $payment->receipt_number }}</title>
+    <title>Receipt - {{ $receipt_number }}</title>
     <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6; margin: 40px; }
         .header { border-bottom: 2px solid #0056b3; padding-bottom: 20px; margin-bottom: 30px; }
         .company-name { font-size: 24px; font-weight: bold; color: #0056b3; margin-bottom: 5px; }
         .title { font-size: 20px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
@@ -36,7 +36,7 @@
                 {{ $customer->phone }}
             </td>
             <td>
-                <strong>Receipt No:</strong> {{ $payment->receipt_number }}<br>
+                <strong>Receipt No:</strong> {{ $receipt_number }}<br>
                 <strong>Date:</strong> {{ $payment->payment_date->format('F d, Y') }}<br>
                 <strong>Booking Ref:</strong> {{ $payment->booking->booking_reference ?? 'BKG-'.$payment->booking->id }}<br>
                 <strong>Tour:</strong> {{ $payment->booking->tourPackage->name ?? 'Custom Tour' }}
@@ -50,14 +50,14 @@
                 <th>Description</th>
                 <th>Payment Method</th>
                 <th>Status</th>
-                <th style="text-align: right">Amount</th>
+                <th style="text-align: right">Amount (LKR)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>Payment for Booking {{ $payment->booking->booking_reference ?? 'BKG-'.$payment->booking->id }}</td>
-                <td>{{ ucfirst($payment->payment_method->value ?? 'Unknown') }}</td>
-                <td>{{ ucfirst($payment->status->value ?? 'Unknown') }}</td>
+                <td>{{ ucfirst(str_replace('_', ' ', $payment->payment_method instanceof \BackedEnum ? $payment->payment_method->value : $payment->payment_method)) }}</td>
+                <td>{{ ucfirst($payment->status instanceof \BackedEnum ? $payment->status->value : $payment->status) }}</td>
                 <td style="text-align: right">{{ number_format($payment->amount, 2) }}</td>
             </tr>
             <tr class="total-row">

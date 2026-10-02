@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import type { NavigationItem } from '@/types';
 import { Fragment, type FormEvent, type ReactNode, useState } from 'react';
+import { CommandPalette } from '@/components/CommandPalette';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -341,6 +342,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             ) : null}
                         </div>
                         <div className="flex items-center gap-3">
+                            {hasRole('super_admin', 'manager', 'staff', 'finance') && (
+                                <CommandPalette />
+                            )}
                             {hasRole('super_admin', 'manager', 'staff', 'finance') && (
                                 <Link
                                     href={route('notifications.index')}

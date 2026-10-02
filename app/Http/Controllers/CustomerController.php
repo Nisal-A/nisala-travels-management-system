@@ -20,39 +20,20 @@ class CustomerController extends Controller
     {
         Gate::authorize('viewAny', Customer::class);
         
-        $query = Customer::query();
+        $perPage = $request->input('per_page', 10);
+        $customers = Customer::query()
+            ->filterAndSort($request->all())
+            ->paginate($perPage)
+            ->withQueryString();
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('customer_id', 'like', "%{$search}%")
-                  ->orWhere('full_name', 'like', "%{$search}%")
-                  ->orWhere('nic', 'like', "%{$search}%")
-                  ->orWhere('passport_number', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        $sortField = $request->input('sort', 'created_at');
-        $sortDirection = $request->input('direction', 'desc');
-        $allowedSortFields = ['created_at', 'updated_at', 'full_name', 'customer_id'];
-        
-        if (in_array($sortField, $allowedSortFields)) {
-            $query->orderBy($sortField, $sortDirection === 'asc' ? 'asc' : 'desc');
-        } else {
-            $query->orderBy('created_at', 'desc');
-        }
-
-        $customers = $query->paginate(10)->withQueryString();
+        $savedFilters = \App\Models\SavedFilter::where('user_id', $request->user()->id)
+            ->where('table_key', 'customers')
+            ->get();
             
         return Inertia::render('Customers/Index', [
             'customers' => $customers,
-            'filters' => $request->only(['search', 'status', 'sort', 'direction'])
+            'filters' => $request->all(),
+            'savedFilters' => $savedFilters,
         ]);
     }
 

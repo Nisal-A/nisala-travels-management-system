@@ -42,7 +42,14 @@ function createUser(string $role): User
         'customer' => 'customer',
     };
 
-    return User::factory()->{$method}()->create();
+    $user = User::factory()->{$method}()->create();
+
+    // Customer role needs a linked Customer record for the EnsureCustomer middleware
+    if ($role === 'customer') {
+        \App\Models\Customer::factory()->create(['user_id' => $user->id]);
+    }
+
+    return $user;
 }
 
 // =========================================================================

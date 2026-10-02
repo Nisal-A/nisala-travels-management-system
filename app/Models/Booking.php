@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\BookingStatus;
+use App\Traits\Filterable;
 
 class Booking extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, Filterable;
 
     protected $guarded = [];
 
@@ -74,5 +75,21 @@ class Booking extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    // Filterable configuration
+    public function getSearchableColumns()
+    {
+        return ['booking_reference', 'customer.full_name', 'customer.first_name', 'customer.last_name', 'tourPackage.name'];
+    }
+
+    public function getFilterableColumns()
+    {
+        return ['booking_status'];
+    }
+
+    public function getSortableColumns()
+    {
+        return ['booking_reference', 'travel_date', 'booking_date', 'final_amount', 'booking_status', 'created_at'];
     }
 }

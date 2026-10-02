@@ -120,6 +120,12 @@ class HandleInertiaRequests extends Middleware
                 'route' => 'bookings.index',
                 'icon' => 'CalendarCheck',
             ];
+
+            $main[] = [
+                'label' => 'Calendar',
+                'route' => 'calendar',
+                'icon' => 'Calendar',
+            ];
         }
 
         // Payments — super_admin, manager, finance

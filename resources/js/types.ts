@@ -128,3 +128,36 @@ export interface PaginatedData<T> {
     to?: number;
     total?: number;
 }
+
+export interface Payment {
+    id: number;
+    receipt_number: string;
+    reference_number?: string | null;
+    booking_id: number;
+    amount: string | number;
+    currency: string;
+    payment_date: string;
+    payment_method: string;
+    status: string;
+    booking?: Booking;
+}
+
+export interface DocumentType {
+    id: number;
+    name: string;
+    description?: string;
+    is_required: boolean;
+}
+
+export interface CustomerDocument {
+    id: number;
+    customer_id: number;
+    document_type_id: number;
+    file_path: string;
+    file_name: string;
+    file_type: string;
+    file_size: number;
+    status: string;
+    expiry_date?: string;
+    document_type?: DocumentType;
+}

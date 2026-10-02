@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Filterable;
 
 class Customer extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Filterable;
 
     /**
      * The attributes that are mass assignable.
@@ -91,5 +92,21 @@ class Customer extends Model
     public function inquiries()
     {
         return $this->hasMany(Inquiry::class);
+    }
+
+    // Filterable configuration
+    public function getSearchableColumns()
+    {
+        return ['full_name', 'email', 'phone', 'passport_number', 'nic', 'customer_id'];
+    }
+
+    public function getFilterableColumns()
+    {
+        return ['status', 'gender'];
+    }
+
+    public function getSortableColumns()
+    {
+        return ['full_name', 'email', 'created_at', 'status', 'customer_id'];
     }
 }

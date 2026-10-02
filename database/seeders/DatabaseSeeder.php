@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         // Phase 2 — NT-005.1 Role & Permission Foundation
         $this->call(RoleSeeder::class);
         $this->call(AdminUserSeeder::class);
+        $this->call(TestUserSeeder::class);
 
         // Phase 4 — NT-006
         // $this->call(CustomerSeeder::class);

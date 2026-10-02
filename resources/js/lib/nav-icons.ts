@@ -9,6 +9,7 @@ import {
     BarChart3,
     Settings,
     Bell,
+    Calendar,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const iconMap: Record<string, LucideIcon> = {
     BarChart3,
     Settings,
     Bell,
+    Calendar,
 };
 
 export function getNavIcon(name: string): LucideIcon {

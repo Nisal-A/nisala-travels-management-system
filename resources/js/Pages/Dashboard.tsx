@@ -1,34 +1,25 @@
-import { Head } from '@inertiajs/react';
+import { Deferred, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Users,
     CalendarCheck,
     CreditCard,
     FileText,
-    Map,
-    BarChart3,
-    ArrowUpRight,
     TrendingUp,
+    TrendingDown,
+    Activity,
+    AlertCircle,
+    CheckCircle2,
+    Clock
 } from 'lucide-react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import type { ReactNode } from 'react';
 
 /**
- * Dashboard Page — NT-005.4
- *
- * Role-aware dashboard that shows relevant summary cards based on
- * the authenticated user's role. Uses the shared AppLayout with
- * sidebar navigation.
+ * Dashboard Page
  */
 
 interface StatCardProps {
@@ -36,12 +27,14 @@ interface StatCardProps {
     value: string;
     description: string;
     icon: ReactNode;
-    trend?: string;
+    trend?: 'up' | 'down';
+    trendValue?: string | number;
+    linkTo?: string;
 }
 
-function StatCard({ title, value, description, icon, trend }: StatCardProps) {
-    return (
-        <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5">
+function StatCard({ title, value, description, icon, trend, trendValue, linkTo }: StatCardProps) {
+    const content = (
+        <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 h-full">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -54,10 +47,10 @@ function StatCard({ title, value, description, icon, trend }: StatCardProps) {
             <CardContent>
                 <div className="text-2xl font-bold tracking-tight">{value}</div>
                 <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    {trend && (
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-emerald-500">
-                            <TrendingUp className="h-3 w-3" />
-                            {trend}
+                    {trend && trendValue !== undefined && trendValue !== 0 && (
+                        <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 ${trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                            {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                            {trendValue}
                         </span>
                     )}
                     <span>{description}</span>
@@ -65,19 +58,38 @@ function StatCard({ title, value, description, icon, trend }: StatCardProps) {
             </CardContent>
         </Card>
     );
+
+    if (linkTo) {
+        return <Link href={linkTo} className="block h-full">{content}</Link>;
+    }
+
+    return content;
+}
+
+function StatCardSkeleton() {
+    return (
+        <Card className="h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-8 w-1/3 mb-2" />
+                <Skeleton className="h-3 w-2/3" />
+            </CardContent>
+        </Card>
+    );
 }
 
 interface DashboardProps {
     officeStats?: {
-        totalCustomers?: number;
-        totalEmployees?: number;
-        activeBookings?: number | null;
-        pendingDocuments?: number | null;
-        paymentsThisMonth?: number | null;
+        todaysBookings?: { count: number; trend: 'up' | 'down'; diff: number };
+        pendingDocuments?: number;
+        newLeads?: number;
+        pendingPayments?: { count: number; total: number };
+        recentActivity?: any[];
+        tasks?: any[];
     };
-    recentBookings?: any[];
-    recentCustomers?: any[];
-    recentPayments?: any[];
     customerStats?: {
         myBookings?: number | null;
         myDocuments?: number | null;
@@ -85,11 +97,12 @@ interface DashboardProps {
     };
 }
 
-export default function Dashboard({ officeStats, recentBookings, recentCustomers, recentPayments, customerStats }: DashboardProps) {
+export default function Dashboard({ officeStats, customerStats }: DashboardProps) {
     const { user, hasRole } = useAuth();
-
     const isOffice = hasRole('super_admin', 'manager', 'staff', 'finance');
     const isCustomer = hasRole('customer');
+    const isFinance = hasRole('finance', 'super_admin');
+    const isSales = hasRole('staff', 'manager', 'super_admin');
 
     return (
         <AppLayout title="Dashboard">
@@ -111,48 +124,143 @@ export default function Dashboard({ officeStats, recentBookings, recentCustomers
 
                 {/* Office Dashboard */}
                 {isOffice && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {officeStats?.totalCustomers !== undefined && (
-                            <StatCard
-                                title="Total Customers"
-                                value={officeStats.totalCustomers.toString()}
-                                description="Active customer profiles"
-                                icon={<Users className="h-4 w-4" />}
-                            />
-                        )}
-                        {officeStats?.totalEmployees !== undefined && (
-                            <StatCard
-                                title="Total Employees"
-                                value={officeStats.totalEmployees.toString()}
-                                description="System users"
-                                icon={<Users className="h-4 w-4" />}
-                            />
-                        )}
-                        {officeStats?.activeBookings !== undefined && (
-                            <StatCard
-                                title="Active Bookings"
-                                value={officeStats.activeBookings === null ? '—' : officeStats.activeBookings.toString()}
-                                description="Currently in progress"
-                                icon={<CalendarCheck className="h-4 w-4" />}
-                            />
-                        )}
-                        {officeStats?.paymentsThisMonth !== undefined && (
-                            <StatCard
-                                title="Payments"
-                                value={officeStats.paymentsThisMonth === null ? '—' : `Rs. ${officeStats.paymentsThisMonth.toLocaleString()}`}
-                                description="This month's collections"
-                                icon={<CreditCard className="h-4 w-4" />}
-                            />
-                        )}
-                        {officeStats?.pendingDocuments !== undefined && (
-                            <StatCard
-                                title="Pending Documents"
-                                value={officeStats.pendingDocuments === null ? '—' : officeStats.pendingDocuments.toString()}
-                                description="Awaiting verification"
-                                icon={<FileText className="h-4 w-4" />}
-                            />
-                        )}
-                    </div>
+                    <Deferred data="officeStats" fallback={
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {[1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)}
+                        </div>
+                    }>
+                        <div className="space-y-8">
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                    {isFinance && officeStats?.pendingPayments && (
+                                        <StatCard
+                                            title="Pending Payments"
+                                            value={`Rs. ${Number(officeStats.pendingPayments.total).toLocaleString()}`}
+                                            description={`${officeStats.pendingPayments.count} bookings with balances`}
+                                            icon={<CreditCard className="h-4 w-4" />}
+                                            linkTo="/bookings?status=Pending"
+                                        />
+                                    )}
+
+                                    {isSales && officeStats?.todaysBookings && (
+                                        <StatCard
+                                            title="Today's Bookings"
+                                            value={officeStats.todaysBookings.count.toString()}
+                                            description="vs yesterday"
+                                            icon={<CalendarCheck className="h-4 w-4" />}
+                                            trend={officeStats.todaysBookings.trend}
+                                            trendValue={officeStats.todaysBookings.diff}
+                                            linkTo="/bookings"
+                                        />
+                                    )}
+
+                                    {isSales && officeStats?.newLeads !== undefined && (
+                                        <StatCard
+                                            title="New Leads"
+                                            value={officeStats.newLeads.toString()}
+                                            description="in the last 7 days"
+                                            icon={<Users className="h-4 w-4" />}
+                                            linkTo="/customers"
+                                        />
+                                    )}
+
+                                    {isSales && officeStats?.pendingDocuments !== undefined && (
+                                        <StatCard
+                                            title="Document Actions"
+                                            value={officeStats.pendingDocuments.toString()}
+                                            description="Expiring or awaiting verification"
+                                            icon={<FileText className="h-4 w-4" />}
+                                            linkTo="/documents"
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                                    <Card className="col-span-4 flex flex-col h-[400px]">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Activity className="h-5 w-5 text-primary" />
+                                                Recent Activity
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Latest actions across the platform.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1 overflow-y-auto pr-2">
+                                            {officeStats?.recentActivity?.length === 0 ? (
+                                                <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+                                                    <Activity className="mb-2 h-6 w-6 opacity-50" />
+                                                    <p className="text-sm">No recent activity.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {officeStats?.recentActivity?.map((activity: any) => (
+                                                        <div key={activity.id} className="flex gap-4">
+                                                            <div className="mt-0.5">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
+                                                                    {activity.type === 'new_booking' && <CalendarCheck className="h-4 w-4 text-blue-500" />}
+                                                                    {activity.type === 'payment_received' && <CreditCard className="h-4 w-4 text-emerald-500" />}
+                                                                    {activity.type === 'document_uploaded' && <FileText className="h-4 w-4 text-amber-500" />}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-col flex-1">
+                                                                <p className="text-sm font-medium leading-none mb-1">{activity.title}</p>
+                                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                                    <Clock className="h-3 w-3" /> {activity.time}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="col-span-3 flex flex-col h-[400px]">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <CheckCircle2 className="h-5 w-5 text-primary" />
+                                                Tasks Due
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Upcoming deadlines and follow-ups.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1 overflow-y-auto pr-2">
+                                            {officeStats?.tasks?.length === 0 ? (
+                                                <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+                                                    <CheckCircle2 className="mb-2 h-6 w-6 opacity-50" />
+                                                    <p className="text-sm">You're all caught up!</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {officeStats?.tasks?.map((task: any) => (
+                                                        <div key={task.id} className="flex items-start gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                                                            <input type="checkbox" id={task.id} className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                                                            <div className="grid gap-1.5 flex-1">
+                                                                <label
+                                                                    htmlFor={task.id}
+                                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                                                >
+                                                                    {task.title}
+                                                                </label>
+                                                                <div className="flex items-center gap-2">
+                                                                    {task.is_overdue ? (
+                                                                        <Badge variant="destructive" className="text-[0.65rem] px-1 py-0 h-4">Overdue</Badge>
+                                                                    ) : (
+                                                                        <Badge variant="secondary" className="text-[0.65rem] px-1 py-0 h-4">Upcoming</Badge>
+                                                                    )}
+                                                                    <span className="text-xs text-muted-foreground">{task.due}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+                    </Deferred>
                 )}
 
                 {/* Customer Portal Dashboard */}
@@ -176,122 +284,6 @@ export default function Dashboard({ officeStats, recentBookings, recentCustomers
                             description="Payment records (Not implemented)"
                             icon={<CreditCard className="h-4 w-4" />}
                         />
-                    </div>
-                )}
-
-                {/* Operational Widgets */}
-                {isOffice && (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-8">
-                        {/* Recent Bookings Widget */}
-                        {recentBookings && (
-                            <Card className="col-span-4 flex flex-col h-full">
-                                <CardHeader>
-                                    <CardTitle>Recent Bookings</CardTitle>
-                                    <CardDescription>
-                                        Latest bookings created in the system.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-1">
-                                    {recentBookings.length === 0 ? (
-                                        <div className="flex h-32 flex-col items-center justify-center text-center text-muted-foreground">
-                                            <CalendarCheck className="mb-2 h-6 w-6 opacity-50" />
-                                            <p className="text-sm">No recent bookings found.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="overflow-x-auto">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Ref</TableHead>
-                                                        <TableHead>Customer</TableHead>
-                                                        <TableHead>Status</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {recentBookings.map((booking: any) => (
-                                                        <TableRow key={booking.id}>
-                                                            <TableCell className="font-medium text-xs">{booking.booking_reference}</TableCell>
-                                                            <TableCell>{booking.customer?.full_name}</TableCell>
-                                                            <TableCell>
-                                                                <Badge variant="outline" className="text-[0.65rem]">
-                                                                    {booking.booking_status}
-                                                                </Badge>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Recent Customers or Payments Widget */}
-                        <div className="col-span-3 flex flex-col gap-4">
-                            {recentCustomers && (
-                                <Card className="flex-1">
-                                    <CardHeader>
-                                        <CardTitle>Recent Customers</CardTitle>
-                                        <CardDescription>
-                                            Newly registered customers.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {recentCustomers.length === 0 ? (
-                                            <div className="flex h-24 flex-col items-center justify-center text-center text-muted-foreground">
-                                                <Users className="mb-2 h-6 w-6 opacity-50" />
-                                                <p className="text-sm">No recent customers.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                {recentCustomers.slice(0, 4).map((customer: any) => (
-                                                    <div key={customer.id} className="flex items-center gap-3">
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                                                            {customer.full_name.charAt(0)}
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-medium">{customer.full_name}</span>
-                                                            <span className="text-xs text-muted-foreground">{customer.phone}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {recentPayments && (
-                                <Card className="flex-1">
-                                    <CardHeader>
-                                        <CardTitle>Recent Payments</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {recentPayments.length === 0 ? (
-                                            <div className="flex h-24 flex-col items-center justify-center text-center text-muted-foreground">
-                                                <CreditCard className="mb-2 h-6 w-6 opacity-50" />
-                                                <p className="text-sm">No recent payments.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                {recentPayments.slice(0, 4).map((payment: any) => (
-                                                    <div key={payment.id} className="flex items-center justify-between gap-3">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-medium">{payment.customer?.full_name}</span>
-                                                            <span className="text-xs text-muted-foreground">{payment.payment_method}</span>
-                                                        </div>
-                                                        <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                                            Rs. {Number(payment.amount).toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
                     </div>
                 )}
             </div>

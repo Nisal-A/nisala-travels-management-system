@@ -11,13 +11,22 @@ class PaymentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'booking_reference' => $this->booking?->booking_reference,
-            'amount' => $this->amount,
-            'currency' => $this->currency,
-            'payment_method' => $this->payment_method,
-            'payment_date' => $this->payment_date?->format('Y-m-d'),
-            'reference_number' => $this->reference_number,
-            'status' => $this->status,
+            'receipt_number' => $this->reference_number ?? 'RCP-' . str_pad($this->id, 6, '0', STR_PAD_LEFT),
+            'amount' => (float) $this->amount,
+            'payment_date' => $this->payment_date?->format('M d, Y'),
+            'payment_method' => $this->payment_method instanceof \BackedEnum
+                ? str_replace('_', ' ', $this->payment_method->value)
+                : ($this->payment_method ?? 'unknown'),
+            'status' => $this->status instanceof \BackedEnum
+                ? $this->status->value
+                : ($this->status ?? 'pending'),
+            'booking' => [
+                'id' => $this->booking?->id,
+                'booking_reference' => $this->booking?->booking_reference,
+                'tour_package' => $this->booking?->tourPackage ? [
+                    'name' => $this->booking->tourPackage->name,
+                ] : null,
+            ],
         ];
     }
 }

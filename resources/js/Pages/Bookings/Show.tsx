@@ -5,8 +5,14 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/use-auth';
-import { Edit, Trash, CheckCircle, XCircle } from 'lucide-react';
+import { Edit, Trash, CheckCircle, XCircle, DollarSign } from 'lucide-react';
+import { useState } from 'react';
 
 import { Booking, Traveler } from '@/types';
 
@@ -28,8 +34,19 @@ export default function Show({ booking }: BookingShowProps) {
     const { hasRole } = useAuth();
     const canUpdate = hasRole('super_admin', 'manager', 'staff');
     const canCancel = hasRole('super_admin', 'manager');
+    const canRecordPayment = hasRole('super_admin', 'manager', 'finance');
 
     const { patch: updateStatus, delete: deleteBooking, processing } = useForm();
+    const paymentForm = useForm({
+        booking_id: booking.id,
+        amount: '',
+        payment_method: 'cash',
+        payment_date: new Date().toISOString().split('T')[0],
+        reference_number: '',
+        notes: ''
+    });
+
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     const changeStatus = (status: string) => {
         if (confirm(`Are you sure you want to change the status to ${status}?`)) {
@@ -41,6 +58,17 @@ export default function Show({ booking }: BookingShowProps) {
         if (confirm('Are you sure you want to archive this booking? This cannot be undone.')) {
             deleteBooking(route('bookings.destroy', booking.id as any));
         }
+    };
+
+    const handleRecordPayment = (e: React.FormEvent) => {
+        e.preventDefault();
+        paymentForm.post(route('payments.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsPaymentModalOpen(false);
+                paymentForm.reset('amount', 'reference_number', 'notes');
+            }
+        });
     };
 
     return (
@@ -97,14 +125,22 @@ export default function Show({ booking }: BookingShowProps) {
                 </Card>
 
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle>Financial Summary</CardTitle>
+                        {canRecordPayment && Number(booking.balance_amount) > 0 && (
+                            <Button size="sm" onClick={() => setIsPaymentModalOpen(true)}>
+                                <DollarSign className="mr-2 h-4 w-4" /> Record Payment
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent className="space-y-2">
                         <p><strong>Base Amount:</strong> {Number(booking.base_amount).toLocaleString()} {booking.currency}</p>
                         <p><strong>Discount:</strong> {Number(booking.discount_amount).toLocaleString()} {booking.currency}</p>
                         <p className="text-lg font-bold"><strong>Final Total:</strong> {Number(booking.final_amount).toLocaleString()} {booking.currency}</p>
-                        <p className="text-lg text-red-600 font-bold"><strong>Balance Due:</strong> {Number(booking.balance_amount).toLocaleString()} {booking.currency}</p>
+                        <div className="flex justify-between items-center">
+                            <p className="text-emerald-600 font-semibold">Paid: {Number(booking.paid_amount || 0).toLocaleString()} {booking.currency}</p>
+                            <p className="text-lg text-red-600 font-bold">Balance: {Number(booking.balance_amount).toLocaleString()} {booking.currency}</p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -167,6 +203,94 @@ export default function Show({ booking }: BookingShowProps) {
                     </CardContent>
                 </Card>
             )}
+
+            <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Record Payment</DialogTitle>
+                        <DialogDescription>
+                            Record a new payment for booking {booking.booking_reference}.
+                            <br />
+                            Remaining balance: <strong>{Number(booking.balance_amount).toLocaleString()} {booking.currency}</strong>
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleRecordPayment} className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="amount">Amount ({booking.currency})</Label>
+                                <Input
+                                    id="amount"
+                                    type="number"
+                                    step="0.01"
+                                    max={booking.balance_amount}
+                                    value={paymentForm.data.amount}
+                                    onChange={(e) => paymentForm.setData('amount', e.target.value)}
+                                    required
+                                />
+                                {paymentForm.errors.amount && <p className="text-sm text-destructive">{paymentForm.errors.amount}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="payment_date">Payment Date</Label>
+                                <Input
+                                    id="payment_date"
+                                    type="date"
+                                    value={paymentForm.data.payment_date}
+                                    onChange={(e) => paymentForm.setData('payment_date', e.target.value)}
+                                    required
+                                />
+                                {paymentForm.errors.payment_date && <p className="text-sm text-destructive">{paymentForm.errors.payment_date}</p>}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="payment_method">Payment Method</Label>
+                            <Select 
+                                value={paymentForm.data.payment_method} 
+                                onValueChange={(value) => paymentForm.setData('payment_method', value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select method" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="cash">Cash</SelectItem>
+                                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                    <SelectItem value="credit_card">Credit Card</SelectItem>
+                                    <SelectItem value="cheque">Cheque</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {paymentForm.errors.payment_method && <p className="text-sm text-destructive">{paymentForm.errors.payment_method}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reference_number">Reference / Receipt Number (Optional)</Label>
+                            <Input
+                                id="reference_number"
+                                value={paymentForm.data.reference_number}
+                                onChange={(e) => paymentForm.setData('reference_number', e.target.value)}
+                            />
+                            {paymentForm.errors.reference_number && <p className="text-sm text-destructive">{paymentForm.errors.reference_number}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">Notes (Optional)</Label>
+                            <Textarea
+                                id="notes"
+                                value={paymentForm.data.notes}
+                                onChange={(e) => paymentForm.setData('notes', e.target.value)}
+                            />
+                            {paymentForm.errors.notes && <p className="text-sm text-destructive">{paymentForm.errors.notes}</p>}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
+                            <Button type="submit" disabled={paymentForm.processing}>
+                                {paymentForm.processing ? 'Saving...' : 'Record Payment'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

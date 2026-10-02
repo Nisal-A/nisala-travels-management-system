@@ -1,6 +1,6 @@
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { useAuth } from '@/hooks/use-auth';
-import { Globe, LogOut, LayoutDashboard, CalendarCheck, FileText, CreditCard } from 'lucide-react';
+import { Globe, LogOut, LayoutDashboard, CalendarCheck, FileText, CreditCard, UserRound } from 'lucide-react';
 import { FormEvent, ReactNode } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,6 +17,7 @@ const NAV_LINKS = [
     { name: 'Bookings', href: 'portal.bookings.index', icon: CalendarCheck },
     { name: 'Documents', href: 'portal.documents.index', icon: FileText },
     { name: 'Payments', href: 'portal.payments.index', icon: CreditCard },
+    { name: 'Profile', href: 'portal.profile.edit', icon: UserRound },
 ];
 
 export default function CustomerPortalLayout({ children, title }: CustomerPortalLayoutProps) {

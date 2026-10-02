@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Filterable;
 
 class Payment extends Model
 {
-    use SoftDeletes, \Illuminate\Database\Eloquent\Factories\HasFactory;
+    use SoftDeletes, \Illuminate\Database\Eloquent\Factories\HasFactory, Filterable;
 
     protected $guarded = [];
 
@@ -48,5 +49,21 @@ class Payment extends Model
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    // Filterable configuration
+    public function getSearchableColumns()
+    {
+        return ['receipt_number', 'reference_number', 'customer.full_name', 'customer.first_name', 'customer.last_name', 'booking.booking_reference'];
+    }
+
+    public function getFilterableColumns()
+    {
+        return ['status', 'payment_method'];
+    }
+
+    public function getSortableColumns()
+    {
+        return ['receipt_number', 'payment_date', 'amount', 'status', 'created_at'];
     }
 }
