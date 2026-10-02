@@ -17,7 +17,7 @@ import { ChevronDown } from 'lucide-react';
 export default function Home() {
     const [destination, setDestination] = useState('');
     const [month, setMonth] = useState('');
-    
+
     const [featuredTours, setFeaturedTours] = useState<any[]>([]);
     const [loadingTours, setLoadingTours] = useState(true);
     const [emblaRef] = useEmblaCarousel({ loop: false, align: 'start' });
@@ -39,23 +39,23 @@ export default function Home() {
     return (
         <PublicLayout>
             <Head title="Premium Travel & Tour Packages | Nisala Travels" />
-            
+
             {/* 1. HERO SECTION */}
             <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-neutral-900/40 z-10" />
-                    <img 
-                        src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop" 
-                        alt="Beautiful travel destination" 
+                    <img
+                        src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop"
+                        alt="Beautiful travel destination"
                         className="w-full h-full object-cover"
                         loading="eager"
                     />
                 </div>
-                
+
                 <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
                     <Reveal delay={0.2}>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
-                            Discover the World <br/> With Confidence
+                            Discover the World <br /> With Confidence
                         </h1>
                     </Reveal>
                     <Reveal delay={0.4}>
@@ -63,15 +63,15 @@ export default function Home() {
                             Tailored itineraries, premium experiences, and memories that last a lifetime.
                         </p>
                     </Reveal>
-                    
+
                     <Reveal delay={0.6}>
                         <div className="max-w-4xl mx-auto bg-white p-3 rounded-2xl md:rounded-full shadow-2xl">
                             <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-3">
                                 <div className="flex-1 relative">
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                                    <Input 
-                                        type="text" 
-                                        placeholder="Where do you want to go?" 
+                                    <Input
+                                        type="text"
+                                        placeholder="Where do you want to go?"
                                         className="w-full pl-12 h-14 border-0 bg-neutral-50 rounded-xl md:rounded-l-full md:rounded-r-none text-lg focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-white transition-colors"
                                         value={destination}
                                         onChange={(e) => setDestination(e.target.value)}
@@ -80,7 +80,7 @@ export default function Home() {
                                 <div className="w-px bg-neutral-200 hidden md:block my-2" />
                                 <div className="flex-1 relative">
                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                                    <select 
+                                    <select
                                         className="w-full pl-12 h-14 border-0 bg-neutral-50 rounded-xl md:rounded-none text-lg text-neutral-600 focus:ring-1 focus:ring-primary focus:bg-white transition-colors appearance-none outline-none"
                                         value={month}
                                         onChange={(e) => setMonth(e.target.value)}
@@ -150,8 +150,8 @@ export default function Home() {
                                                         </span>
                                                     </div>
                                                     <div className="h-56 overflow-hidden bg-neutral-200 relative">
-                                                        <img 
-                                                            src={tour.hero_image || `https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800&auto=format&fit=crop&random=${tour.id}`} 
+                                                        <img
+                                                            src={tour.hero_image || `https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800&auto=format&fit=crop&random=${tour.id}`}
                                                             alt={tour.package_name}
                                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                             loading="lazy"

@@ -4,6 +4,7 @@ import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { company } from '@/config/company';
 import { Menu, X, Phone, MessageCircle, MapPin, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 
 interface PublicLayoutProps {
     children: ReactNode;
@@ -252,19 +253,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                 </div>
             </footer>
 
-            {/* Floating WhatsApp Button */}
-            <a
-                href={`https://wa.me/${company.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all focus:outline-none focus:ring-4 focus:ring-[#25D366]/30 flex items-center justify-center group"
-                aria-label="Chat with us on WhatsApp"
-            >
-                <MessageCircle className="w-6 h-6" />
-                <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out group-hover:max-w-xs group-hover:ml-3 font-medium">
-                    Chat with us
-                </span>
-            </a>
+            <WhatsAppButton variant="floating" />
         </div>
     );
 }
