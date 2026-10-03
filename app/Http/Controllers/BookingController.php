@@ -297,7 +297,7 @@ class BookingController extends Controller
 
             // Record First Payment if requested
             if ($recordPayment && $initialPaymentAmount > 0) {
-                Payment::create([
+                $payment = Payment::create([
                     'booking_id' => $booking->id,
                     'customer_id' => $booking->customer_id,
                     'amount' => $initialPaymentAmount,
@@ -309,6 +309,8 @@ class BookingController extends Controller
                     'notes' => 'Initial payment recorded during booking creation',
                     'status' => \App\Enums\PaymentStatus::Completed,
                 ]);
+
+                DB::afterCommit(fn () => event(new \App\Events\PaymentReceived($payment)));
             }
 
             // Write initial entry to Notes Timeline
@@ -611,6 +613,10 @@ class BookingController extends Controller
                     'note' => $validated['note'] ?? null,
                 ]
             ]);
+
+            if ($newStatus === BookingStatus::Confirmed && $currentStatus !== BookingStatus::Confirmed) {
+                DB::afterCommit(fn () => event(new \App\Events\BookingConfirmed($booking)));
+            }
 
             DB::commit();
             return back()->with('success', 'Booking status updated to ' . $newStatus->label());

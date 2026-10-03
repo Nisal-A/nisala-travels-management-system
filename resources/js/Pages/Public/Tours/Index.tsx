@@ -291,7 +291,7 @@ export default function ToursIndex() {
                             <p className="text-neutral-500 mb-8 max-w-md mx-auto">We couldn't find any packages matching your exact criteria. Try broadening your search or adjusting the filters.</p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button variant="outline" size="lg" className="rounded-full" onClick={clearAllFilters}>Clear all filters</Button>
-                                <Button asChild size="lg" className="rounded-full"><Link href="/contact">Ask for a custom trip</Link></Button>
+                                <Button render={<Link href="/contact" />} size="lg" className="rounded-full">Ask for a custom trip</Button>
                             </div>
                         </div>
                     ) : (

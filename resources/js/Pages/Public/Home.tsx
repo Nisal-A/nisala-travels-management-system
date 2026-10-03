@@ -364,8 +364,8 @@ export default function Home() {
                     <Reveal>
                         <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to plan your trip?</h2>
                         <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">Let our experts craft the perfect holiday experience for you. Get in touch today for a free consultation.</p>
-                        <Button asChild size="lg" variant="secondary" className="h-14 px-10 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
-                            <Link href="/contact">Enquire Now</Link>
+                        <Button render={<Link href="/contact" />} size="lg" variant="secondary" className="h-14 px-10 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
+                            Enquire Now
                         </Button>
                     </Reveal>
                 </div>

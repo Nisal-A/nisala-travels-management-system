@@ -76,6 +76,8 @@ class PaymentController extends Controller
             $booking->balance_amount -= $payment->amount;
             $booking->save();
 
+            DB::afterCommit(fn () => event(new \App\Events\PaymentReceived($payment)));
+
             DB::commit();
             return back()->with('success', 'Payment recorded successfully.');
         } catch (\Exception $e) {

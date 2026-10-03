@@ -14,47 +14,37 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
 
     public $booking;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return \App\Services\NotificationGate::resolveChannels($notifiable, 'BookingConfirmedNotification');
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Booking Confirmed - ' . config('app.name'))
-            ->greeting('Hello ' . ($notifiable->full_name ?? 'Customer') . ',')
-            ->line('Your booking (ID: ' . $this->booking->id . ') has been confirmed.')
-            ->line('We look forward to serving you!')
-            ->line('Thank you for choosing ' . config('app.name') . '!');
+            ->subject(strip_tags("Booking Confirmed"))
+            ->greeting('Hello!')
+            ->line("Your booking (Ref: " . $this->booking->booking_reference . ") has been confirmed.")
+            ->action('View Details', config("app.url") . "/portal/bookings/" . $this->booking->id);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            'booking_id' => $this->booking->id,
-            'message' => 'Your booking (ID: ' . $this->booking->id . ') has been confirmed.',
+            'type' => 'BookingConfirmedNotification',
+            'title' => "Booking Confirmed",
+            'body' => "Your booking (Ref: " . $this->booking->booking_reference . ") has been confirmed.",
+            'url' => config("app.url") . "/portal/bookings/" . $this->booking->id,
+            'icon' => "check-circle",
+            'severity' => "success",
+            'data' => [
+                'id' => $this->booking->id,
+            ],
         ];
     }
 }

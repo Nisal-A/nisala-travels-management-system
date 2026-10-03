@@ -68,10 +68,8 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                     </div>
                                 </CardContent>
                                 <CardFooter className="relative z-10 mt-auto">
-                                    <Button asChild variant="secondary" className="w-full sm:w-auto font-semibold">
-                                        <Link href={route('portal.bookings.show', nextBooking.id)}>
-                                            View trip details
-                                        </Link>
+                                    <Button render={<Link href={route('portal.bookings.show', { booking: nextBooking.id })} />} variant="secondary" className="w-full sm:w-auto font-semibold">
+                                        View trip details
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -84,8 +82,8 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                 <p className="text-muted-foreground mb-6 max-w-sm">
                                     You don't have any upcoming trips planned. Discover our latest destinations and book your next getaway.
                                 </p>
-                                <Button asChild>
-                                    <a href="/tours">Browse Tours</a>
+                                <Button render={<a href="/tours" />}>
+                                    Browse Tours
                                 </Button>
                             </Card>
                         )}
@@ -111,10 +109,8 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                 )}
                             </CardContent>
                             <CardFooter>
-                                <Button asChild variant="outline" className="w-full text-sm h-9" size="sm">
-                                    <Link href={route('portal.payments.index')}>
-                                        View payments
-                                    </Link>
+                                <Button render={<Link href={route('portal.payments.index')} />} variant="outline" className="w-full text-sm h-9" size="sm">
+                                    View payments
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -147,10 +143,8 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                             </CardContent>
                             {actionItems.length > 0 && (
                                 <CardFooter>
-                                    <Button asChild variant="ghost" className="w-full text-sm h-9 text-primary" size="sm">
-                                        <Link href={route('portal.documents.index')}>
-                                            Review documents <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Link>
+                                    <Button render={<Link href={route('portal.documents.index')} />} variant="ghost" className="w-full text-sm h-9 text-primary" size="sm">
+                                        Review documents <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </CardFooter>
                             )}

@@ -136,10 +136,8 @@ export default function PortalBookings({ bookings, filters }: Props) {
                                         </div>
                                     </CardContent>
                                     <CardFooter className="pt-0 border-t bg-muted/10 p-0">
-                                        <Button asChild variant="ghost" className="w-full rounded-none rounded-b-lg h-12 justify-between px-6 hover:bg-primary/5 hover:text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                            <Link href={route('portal.bookings.show', booking.id)}>
-                                                View booking details <ArrowRight className="h-4 w-4 ml-2 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                                            </Link>
+                                        <Button render={<Link href={route('portal.bookings.show', { booking: booking.id })} />} variant="ghost" className="w-full rounded-none rounded-b-lg h-12 justify-between px-6 hover:bg-primary/5 hover:text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            View booking details <ArrowRight className="h-4 w-4 ml-2 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                                         </Button>
                                     </CardFooter>
                                 </Card>

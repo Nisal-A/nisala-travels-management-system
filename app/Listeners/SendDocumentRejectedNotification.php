@@ -2,35 +2,17 @@
 
 namespace App\Listeners;
 
-use App\Events\DocumentRejected;
+use \App\Events\DocumentRejected;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-
-use App\Contracts\NotificationServiceInterface;
-use App\Notifications\DocumentRejectedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class SendDocumentRejectedNotification implements ShouldQueue
 {
-    public $notificationService;
-    /**
-     * Create the event listener.
-     */
-    public function __construct(NotificationServiceInterface $notificationService)
-    {
-        $this->notificationService = $notificationService;
-    }
+    use InteractsWithQueue;
 
-    /**
-     * Handle the event.
-     */
-    public function handle(DocumentRejected $event): void
+    public function handle(\App\Events\DocumentRejected $event): void
     {
-        $document = $event->document;
-        if ($document && $document->customer) {
-            $this->notificationService->send(
-                $document->customer,
-                new DocumentRejectedNotification($document)
-            );
-        }
+        Notification::send(\App\Services\NotificationRecipients::getCustomer($event->document->customer), new \App\Notifications\DocumentRejectedNotification($event->document));
     }
 }

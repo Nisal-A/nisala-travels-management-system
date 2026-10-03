@@ -56,7 +56,7 @@ class InquiryController extends Controller
             ]);
         }
         
-        event(new InquirySubmitted($lead));
+        \Illuminate\Support\Facades\DB::afterCommit(fn () => event(new InquirySubmitted($lead)));
         
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Inquiry submitted successfully']);

@@ -2,35 +2,17 @@
 
 namespace App\Listeners;
 
-use App\Events\BookingConfirmed;
+use \App\Events\BookingConfirmed;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-
-use App\Contracts\NotificationServiceInterface;
-use App\Notifications\BookingConfirmedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class SendBookingConfirmedNotification implements ShouldQueue
 {
-    public $notificationService;
-    /**
-     * Create the event listener.
-     */
-    public function __construct(NotificationServiceInterface $notificationService)
-    {
-        $this->notificationService = $notificationService;
-    }
+    use InteractsWithQueue;
 
-    /**
-     * Handle the event.
-     */
-    public function handle(BookingConfirmed $event): void
+    public function handle(\App\Events\BookingConfirmed $event): void
     {
-        $booking = $event->booking;
-        if ($booking && $booking->customer) {
-            $this->notificationService->send(
-                $booking->customer,
-                new BookingConfirmedNotification($booking)
-            );
-        }
+        Notification::send(\App\Services\NotificationRecipients::getCustomer($event->booking->customer), new \App\Notifications\BookingConfirmedNotification($event->booking));
     }
 }

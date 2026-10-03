@@ -91,8 +91,8 @@ export default function TourDetail({ slug }: { slug: string }) {
                     <h1 className="text-4xl font-bold mb-4 text-neutral-900">Tour Not Found</h1>
                     <p className="text-lg text-neutral-500 mb-8 max-w-md">We couldn't find the tour you're looking for. It may have been removed, sold out, or deactivated.</p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Button asChild size="lg" className="rounded-full px-8"><Link href="/tours">Browse all tours</Link></Button>
-                        <Button variant="outline" size="lg" className="rounded-full px-8" asChild><Link href="/contact">Contact Support</Link></Button>
+                        <Button render={<Link href="/tours" />} size="lg" className="rounded-full px-8">Browse all tours</Button>
+                        <Button render={<Link href="/contact" />} variant="outline" size="lg" className="rounded-full px-8">Contact Support</Button>
                     </div>
                 </div>
             </PublicLayout>
@@ -291,8 +291,8 @@ export default function TourDetail({ slug }: { slug: string }) {
                                 </div>
                             </div>
                             
-                            <Button asChild size="lg" className="w-full h-14 rounded-full text-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all mb-4">
-                                <Link href={`/contact?tour=${tour.slug || tour.id}`}>Enquire About This Tour</Link>
+                            <Button render={<Link href={`/contact?tour=${tour.slug || tour.id}`} />} size="lg" className="w-full h-14 rounded-full text-lg font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all mb-4">
+                                Enquire About This Tour
                             </Button>
                             
                             <p className="text-sm text-center text-neutral-500 font-medium bg-neutral-50 p-4 rounded-xl">
@@ -346,8 +346,8 @@ export default function TourDetail({ slug }: { slug: string }) {
                     <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">Price from</span>
                     <span className="text-2xl font-black text-neutral-900 leading-none">{tour.currency} {tour.price_from?.toLocaleString()}</span>
                 </div>
-                <Button asChild size="lg" className="rounded-full shadow-lg font-bold px-8">
-                    <Link href={`/contact?tour=${tour.slug || tour.id}`}>Enquire</Link>
+                <Button render={<Link href={`/contact?tour=${tour.slug || tour.id}`} />} size="lg" className="rounded-full shadow-lg font-bold px-8">
+                    Enquire
                 </Button>
             </div>
 

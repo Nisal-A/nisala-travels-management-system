@@ -81,6 +81,8 @@ class CustomerDocumentController extends Controller
                 throw new \Exception('Failed to store file to disk.');
             }
 
+            DB::afterCommit(fn () => event(new \App\Events\DocumentUploaded($document)));
+
             DB::commit();
 
             return back()->with('success', 'Document uploaded successfully.');

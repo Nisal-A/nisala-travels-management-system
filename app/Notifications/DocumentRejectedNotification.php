@@ -14,47 +14,37 @@ class DocumentRejectedNotification extends Notification implements ShouldQueue
 
     public $document;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(CustomerDocument $document)
     {
         $this->document = $document;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return \App\Services\NotificationGate::resolveChannels($notifiable, 'DocumentRejectedNotification');
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Document Needs Attention - ' . config('app.name'))
-            ->greeting('Hello ' . ($notifiable->full_name ?? 'Customer') . ',')
-            ->line('There is an issue with your document: ' . $this->document->documentType?->name)
-            ->line('Please review and re-upload the document.')
-            ->line('Thank you for choosing ' . config('app.name') . '!');
+            ->subject(strip_tags("Document Rejected"))
+            ->greeting('Hello!')
+            ->line("Your document (" . ($this->document->documentType->name ?? "Document") . ") was rejected. Reason: " . $this->document->rejection_reason)
+            ->action('View Details', config("app.url") . "/portal/documents/" . $this->document->id);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            'document_id' => $this->document->id,
-            'message' => 'Your document ' . $this->document->documentType?->name . ' needs attention/re-upload.',
+            'type' => 'DocumentRejectedNotification',
+            'title' => "Document Rejected",
+            'body' => "Your document (" . ($this->document->documentType->name ?? "Document") . ") was rejected. Reason: " . $this->document->rejection_reason,
+            'url' => config("app.url") . "/portal/documents/" . $this->document->id,
+            'icon' => "x-circle",
+            'severity' => "error",
+            'data' => [
+                'id' => $this->document->id,
+            ],
         ];
     }
 }

@@ -14,47 +14,37 @@ class PaymentReceivedNotification extends Notification implements ShouldQueue
 
     public $payment;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(Payment $payment)
     {
         $this->payment = $payment;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return \App\Services\NotificationGate::resolveChannels($notifiable, 'PaymentReceivedNotification');
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Payment Received - ' . config('app.name'))
-            ->greeting('Hello ' . ($notifiable->full_name ?? 'Customer') . ',')
-            ->line('We have received your payment of ' . number_format($this->payment->amount, 2) . '.')
-            ->line('Thank you for choosing ' . config('app.name') . '!');
+            ->subject(strip_tags("Payment Received"))
+            ->greeting('Hello!')
+            ->line("We have received your payment of " . number_format($this->payment->amount, 2) . " " . $this->payment->currency . ".")
+            ->action('View Details', config("app.url") . "/portal/payments/" . $this->payment->id);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            'payment_id' => $this->payment->id,
-            'amount' => $this->payment->amount,
-            'message' => 'Payment of ' . $this->payment->amount . ' has been received.',
+            'type' => 'PaymentReceivedNotification',
+            'title' => "Payment Received",
+            'body' => "We have received your payment of " . number_format($this->payment->amount, 2) . " " . $this->payment->currency . ".",
+            'url' => config("app.url") . "/portal/payments/" . $this->payment->id,
+            'icon' => "credit-card",
+            'severity' => "info",
+            'data' => [
+                'id' => $this->payment->id,
+            ],
         ];
     }
 }

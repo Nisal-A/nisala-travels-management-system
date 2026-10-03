@@ -40,7 +40,8 @@ const formSchema = z.object({
     path: ['destination_interest']
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.output<typeof formSchema>;
+type FormInput = z.input<typeof formSchema>;
 
 const STEPS = ['Trip Interest', 'Dates & Travelers', 'Contact Details'];
 const TRIP_TYPES = ['Family', 'Honeymoon', 'Group', 'Solo', 'Business', 'Adventure'];
@@ -57,7 +58,7 @@ export default function Contact() {
 
     // Initialize form with sessionStorage or defaults
     const savedData = typeof window !== 'undefined' ? sessionStorage.getItem('contactFormData') : null;
-    const defaultValues: Partial<FormData> = savedData ? JSON.parse(savedData) : {
+    const defaultValues: Partial<FormInput> = savedData ? JSON.parse(savedData) : {
         tripInterestType: initialTourSlug ? 'tour' : 'destination',
         tripTypeChips: [],
         flexibleDates: false,
@@ -68,7 +69,7 @@ export default function Contact() {
         form_start_time: Date.now()
     };
 
-    const { register, handleSubmit, control, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormData>({
+    const { register, handleSubmit, control, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
         resolver: zodResolver(formSchema),
         defaultValues
     });
@@ -180,7 +181,7 @@ export default function Contact() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Button asChild size="lg" className="rounded-full px-8"><Link href="/tours">Browse more tours</Link></Button>
+                            <Button render={<Link href="/tours" />} size="lg" className="rounded-full px-8">Browse more tours</Button>
                             <WhatsAppButton variant="button" label="Chat on WhatsApp" text="Hi, I just submitted an inquiry on your website!" />
                         </div>
                     </div>
@@ -442,21 +443,21 @@ export default function Contact() {
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Head Office</h4>
-                                        <p className="text-neutral-600 text-sm leading-relaxed">{company.address.line1}<br />{company.address.city}, {company.address.country}</p>
+                                        <p className="text-neutral-600 text-sm leading-relaxed">{company.address}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Phone className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Call Us</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`tel:${company.phone.primary}`} className="hover:text-primary transition-colors">{company.phone.primary}</a></p>
+                                        <p className="text-neutral-600 text-sm"><a href={`tel:${company.phone}`} className="hover:text-primary transition-colors">{company.phone}</a></p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Mail className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Email</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`mailto:${company.email.inquiries}`} className="hover:text-primary transition-colors">{company.email.inquiries}</a></p>
+                                        <p className="text-neutral-600 text-sm"><a href={`mailto:${company.email}`} className="hover:text-primary transition-colors">{company.email}</a></p>
                                     </div>
                                 </div>
                             </div>

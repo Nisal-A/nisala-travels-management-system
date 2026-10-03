@@ -26,6 +26,8 @@ class CustomerDocumentVerificationController extends Controller
         $document->rejection_reason = null;
         $document->save();
 
+        \Illuminate\Support\Facades\DB::afterCommit(fn () => event(new \App\Events\DocumentVerified($document)));
+
         return back()->with('success', 'Document verified successfully.');
     }
 
@@ -47,6 +49,8 @@ class CustomerDocumentVerificationController extends Controller
         $document->verification_status = 'Rejected';
         $document->rejection_reason = $request->input('reason');
         $document->save();
+
+        \Illuminate\Support\Facades\DB::afterCommit(fn () => event(new \App\Events\DocumentRejected($document)));
 
         return back()->with('success', 'Document rejected successfully.');
     }
