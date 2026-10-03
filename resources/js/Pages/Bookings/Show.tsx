@@ -10,20 +10,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/common/status-badge';
 import { MoneyText } from '@/components/common/money-text';
 import { toast } from 'sonner';
-import {
-    Booking,
-    Customer,
-    Employee,
-    Payment,
-    PaymentSchedule,
-    BookingNote,
-    ActivityLog,
-} from '@/types';
+import { Booking, Customer, Employee, Payment, PaymentSchedule, BookingNote, ActivityLog } from '@/types';
 import {
     Edit,
     Trash2,
@@ -49,7 +54,7 @@ import {
     CornerDownRight,
     Printer,
     FileCheck2,
-    CalendarClock
+    CalendarClock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -85,15 +90,10 @@ interface BookingShowProps {
     };
 }
 
-export default function Show({
-    booking,
-    travelersWithDocs,
-    activityLogs,
-    employees,
-    permissions,
-}: BookingShowProps) {
+export default function Show({ booking, travelersWithDocs, activityLogs, employees, permissions }: BookingShowProps) {
     const currency = (booking.currency as 'LKR' | 'USD') || 'LKR';
-    const statusFormatted = (booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+    const statusFormatted = (booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as
+        'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
 
     // State for modals
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -152,7 +152,7 @@ export default function Show({
                     setStatusSubmitting(false);
                     toast.error(errors.error || 'Failed to update status');
                 },
-            }
+            },
         );
     };
 
@@ -169,7 +169,7 @@ export default function Show({
             onError: (errs) => {
                 const msg = errs.amount || errs.error || Object.values(errs)[0] || 'Failed to record payment.';
                 toast.error(msg);
-            }
+            },
         });
     };
 
@@ -197,7 +197,7 @@ export default function Show({
                     setNoteSubmitting(false);
                     toast.error('Failed to post note');
                 },
-            }
+            },
         );
     };
 
@@ -220,8 +220,8 @@ export default function Show({
                 onError: () => {
                     setAssignSubmitting(false);
                     toast.error('Failed to update staff assignment');
-                }
-            }
+                },
+            },
         );
     };
 
@@ -235,7 +235,7 @@ export default function Show({
 
     // Running Balance Ledger Calculation
     let runningBalance = Number(booking.final_amount);
-    const paymentsWithRunningBalance = (booking.payments || []).map(p => {
+    const paymentsWithRunningBalance = (booking.payments || []).map((p) => {
         runningBalance -= Number(p.amount);
         return {
             ...p,
@@ -244,8 +244,12 @@ export default function Show({
     });
 
     // Next due date calculation
-    const unpaidSchedule = (booking.payment_schedules || []).find(s => s.status !== 'paid');
-    const nextDueDate = unpaidSchedule?.due_date || (booking.travel_date ? new Date(new Date(booking.travel_date).getTime() - 30 * 86400000).toISOString().split('T')[0] : null);
+    const unpaidSchedule = (booking.payment_schedules || []).find((s) => s.status !== 'paid');
+    const nextDueDate =
+        unpaidSchedule?.due_date ||
+        (booking.travel_date
+            ? new Date(new Date(booking.travel_date).getTime() - 30 * 86400000).toISOString().split('T')[0]
+            : null);
 
     // Lifecycle steps definition
     const lifecycleSteps = [
@@ -264,8 +268,8 @@ export default function Show({
         {
             key: 'documents',
             label: 'Documents Ready',
-            active: travelersWithDocs.every(t => t.checklist.passport_info === 'valid'),
-            completed: travelersWithDocs.every(t => t.checklist.passport_info === 'valid'),
+            active: travelersWithDocs.every((t) => t.checklist.passport_info === 'valid'),
+            completed: travelersWithDocs.every((t) => t.checklist.passport_info === 'valid'),
         },
         {
             key: 'payment',
@@ -281,7 +285,9 @@ export default function Show({
         },
     ];
 
-    const customerFullName = booking.customer?.full_name || `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim();
+    const customerFullName =
+        booking.customer?.full_name ||
+        `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim();
 
     return (
         <AppLayout>
@@ -325,7 +331,8 @@ export default function Show({
                                 </Link>
                             )}
                             <span className="flex items-center gap-1">
-                                <Calendar className="w-3.5 h-3.5" /> Created on {new Date(booking.created_at || '').toLocaleDateString()}
+                                <Calendar className="w-3.5 h-3.5" /> Created on{' '}
+                                {new Date(booking.created_at || '').toLocaleDateString()}
                             </span>
                             {booking.tour_package && (
                                 <span className="flex items-center gap-1 font-medium text-foreground">
@@ -454,12 +461,12 @@ export default function Show({
                                 <div
                                     key={step.key}
                                     className={cn(
-                                        "p-3 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-1",
+                                        'p-3 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-1',
                                         step.completed
-                                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                                             : step.active
-                                                ? "bg-primary/10 border-primary/40 text-primary font-semibold ring-1 ring-primary/20"
-                                                : "bg-muted/40 border-border text-muted-foreground opacity-60"
+                                              ? 'bg-primary/10 border-primary/40 text-primary font-semibold ring-1 ring-primary/20'
+                                              : 'bg-muted/40 border-border text-muted-foreground opacity-60',
                                     )}
                                 >
                                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mb-0.5">
@@ -492,10 +499,12 @@ export default function Show({
                                     <FileCheck2 className="w-3.5 h-3.5" /> Documents Checklist
                                 </TabsTrigger>
                                 <TabsTrigger value="payments" className="gap-1.5 text-xs">
-                                    <CreditCard className="w-3.5 h-3.5" /> Payments & Ledger ({booking.payments?.length || 0})
+                                    <CreditCard className="w-3.5 h-3.5" /> Payments & Ledger (
+                                    {booking.payments?.length || 0})
                                 </TabsTrigger>
                                 <TabsTrigger value="notes" className="gap-1.5 text-xs">
-                                    <MessageSquare className="w-3.5 h-3.5" /> Notes Timeline ({booking.booking_notes?.length || 0})
+                                    <MessageSquare className="w-3.5 h-3.5" /> Notes Timeline (
+                                    {booking.booking_notes?.length || 0})
                                 </TabsTrigger>
                                 <TabsTrigger value="activity" className="gap-1.5 text-xs">
                                     <Activity className="w-3.5 h-3.5" /> Activity
@@ -530,10 +539,16 @@ export default function Show({
                                                 </div>
                                                 <div>
                                                     <span className="text-muted-foreground block">Duration:</span>
-                                                    <span>{booking.tour_package?.duration_days ? `${booking.tour_package.duration_days} Days` : 'N/A'}</span>
+                                                    <span>
+                                                        {booking.tour_package?.duration_days
+                                                            ? `${booking.tour_package.duration_days} Days`
+                                                            : 'N/A'}
+                                                    </span>
                                                 </div>
                                                 <div>
-                                                    <span className="text-muted-foreground block">Travelers Count:</span>
+                                                    <span className="text-muted-foreground block">
+                                                        Travelers Count:
+                                                    </span>
                                                     <span className="font-semibold">{booking.number_of_travelers}</span>
                                                 </div>
                                             </div>
@@ -592,7 +607,9 @@ export default function Show({
                                                 {booking.notes}
                                             </p>
                                         ) : (
-                                            <p className="text-muted-foreground italic">No special notes recorded for this booking.</p>
+                                            <p className="text-muted-foreground italic">
+                                                No special notes recorded for this booking.
+                                            </p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -614,7 +631,11 @@ export default function Show({
                                             {permissions.canUpdate && (
                                                 <Link
                                                     href={route('bookings.edit', { booking: booking.id })}
-                                                    className={buttonVariants({ variant: 'outline', size: 'sm', className: 'text-xs h-8 gap-1' })}
+                                                    className={buttonVariants({
+                                                        variant: 'outline',
+                                                        size: 'sm',
+                                                        className: 'text-xs h-8 gap-1',
+                                                    })}
                                                 >
                                                     <Edit className="w-3.5 h-3.5" /> Edit Travelers
                                                 </Link>
@@ -638,29 +659,40 @@ export default function Show({
                                                 {travelersWithDocs.map((t, idx) => (
                                                     <TableRow key={t.id}>
                                                         <TableCell className="text-xs font-mono">{idx + 1}</TableCell>
-                                                        <TableCell className="text-xs font-semibold">{t.full_name}</TableCell>
+                                                        <TableCell className="text-xs font-semibold">
+                                                            {t.full_name}
+                                                        </TableCell>
                                                         <TableCell className="text-xs">
                                                             <Badge variant="outline" className="capitalize text-[10px]">
                                                                 {t.traveler_type}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-xs font-mono">
-                                                            {t.passport_number || <span className="text-muted-foreground italic">Missing</span>}
+                                                            {t.passport_number || (
+                                                                <span className="text-muted-foreground italic">
+                                                                    Missing
+                                                                </span>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="text-xs">
                                                             {t.passport_expiry ? (
                                                                 t.checklist.passport_info === 'expired' ? (
                                                                     <span className="text-destructive font-semibold flex items-center gap-1">
-                                                                        <AlertCircle className="w-3 h-3" /> Expired ({t.passport_expiry})
+                                                                        <AlertCircle className="w-3 h-3" /> Expired (
+                                                                        {t.passport_expiry})
                                                                     </span>
                                                                 ) : (
                                                                     <span>{t.passport_expiry}</span>
                                                                 )
                                                             ) : (
-                                                                <span className="text-muted-foreground italic">N/A</span>
+                                                                <span className="text-muted-foreground italic">
+                                                                    N/A
+                                                                </span>
                                                             )}
                                                         </TableCell>
-                                                        <TableCell className="text-xs">{t.nationality || 'Sri Lankan'}</TableCell>
+                                                        <TableCell className="text-xs">
+                                                            {t.nationality || 'Sri Lankan'}
+                                                        </TableCell>
                                                         <TableCell className="text-xs text-muted-foreground">
                                                             {t.special_requirements || '-'}
                                                         </TableCell>
@@ -681,21 +713,30 @@ export default function Show({
                                                 Traveler Document Checklist
                                             </CardTitle>
                                             <CardDescription className="text-xs">
-                                                Verification status of passports, visas, and identification per passenger.
+                                                Verification status of passports, visas, and identification per
+                                                passenger.
                                             </CardDescription>
                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             <Link
                                                 href={route('documents.index')}
-                                                className={buttonVariants({ variant: 'outline', size: 'sm', className: 'text-xs h-8 gap-1.5' })}
+                                                className={buttonVariants({
+                                                    variant: 'outline',
+                                                    size: 'sm',
+                                                    className: 'text-xs h-8 gap-1.5',
+                                                })}
                                             >
                                                 <ExternalLink className="w-3.5 h-3.5" /> Verification Queue
                                             </Link>
                                             {booking.customer && (
                                                 <Link
                                                     href={route('customers.show', { customer: booking.customer.id })}
-                                                    className={buttonVariants({ variant: 'secondary', size: 'sm', className: 'text-xs h-8 gap-1.5' })}
+                                                    className={buttonVariants({
+                                                        variant: 'secondary',
+                                                        size: 'sm',
+                                                        className: 'text-xs h-8 gap-1.5',
+                                                    })}
                                                 >
                                                     Upload Document
                                                 </Link>
@@ -713,7 +754,7 @@ export default function Show({
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {travelersWithDocs.map(t => (
+                                                {travelersWithDocs.map((t) => (
                                                     <TableRow key={t.id}>
                                                         <TableCell className="text-xs font-semibold">
                                                             {t.full_name}
@@ -723,45 +764,72 @@ export default function Show({
                                                         </TableCell>
                                                         <TableCell className="text-xs">
                                                             {t.checklist.passport_info === 'valid' ? (
-                                                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                >
                                                                     Valid ({t.passport_number})
                                                                 </Badge>
                                                             ) : t.checklist.passport_info === 'expired' ? (
-                                                                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-destructive/10 text-destructive border-destructive/30 text-[10px]"
+                                                                >
                                                                     Expired
                                                                 </Badge>
                                                             ) : (
-                                                                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                >
                                                                     Missing Passport No
                                                                 </Badge>
                                                             )}
                                                         </TableCell>
                                                         <TableCell className="text-xs">
                                                             {t.checklist.passport_doc === 'verified' ? (
-                                                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                >
                                                                     Verified
                                                                 </Badge>
                                                             ) : t.checklist.passport_doc === 'pending' ? (
-                                                                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                >
                                                                     Pending Review
                                                                 </Badge>
                                                             ) : (
-                                                                <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-muted text-muted-foreground text-[10px]"
+                                                                >
                                                                     Not Uploaded
                                                                 </Badge>
                                                             )}
                                                         </TableCell>
                                                         <TableCell className="text-xs">
                                                             {t.checklist.visa_doc === 'verified' ? (
-                                                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                >
                                                                     Verified
                                                                 </Badge>
                                                             ) : t.checklist.visa_doc === 'pending' ? (
-                                                                <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                >
                                                                     Pending
                                                                 </Badge>
                                                             ) : (
-                                                                <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-muted text-muted-foreground text-[10px]"
+                                                                >
                                                                     Not Required / Missing
                                                                 </Badge>
                                                             )}
@@ -805,33 +873,53 @@ export default function Show({
                                                     <TableHead className="text-xs">Receipt / Ref</TableHead>
                                                     <TableHead className="text-xs">Method</TableHead>
                                                     <TableHead className="text-xs text-right">Amount</TableHead>
-                                                    <TableHead className="text-xs text-right">Running Balance</TableHead>
+                                                    <TableHead className="text-xs text-right">
+                                                        Running Balance
+                                                    </TableHead>
                                                     <TableHead className="text-xs">Recorded By</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {paymentsWithRunningBalance.length === 0 ? (
                                                     <TableRow>
-                                                        <TableCell colSpan={6} className="text-center py-6 text-xs text-muted-foreground">
+                                                        <TableCell
+                                                            colSpan={6}
+                                                            className="text-center py-6 text-xs text-muted-foreground"
+                                                        >
                                                             No payments recorded yet. Remaining balance:{' '}
-                                                            <MoneyText amount={Number(booking.balance_amount)} currency={currency} weight="bold" />
+                                                            <MoneyText
+                                                                amount={Number(booking.balance_amount)}
+                                                                currency={currency}
+                                                                weight="bold"
+                                                            />
                                                         </TableCell>
                                                     </TableRow>
                                                 ) : (
-                                                    paymentsWithRunningBalance.map(p => (
+                                                    paymentsWithRunningBalance.map((p) => (
                                                         <TableRow key={p.id}>
                                                             <TableCell className="text-xs">{p.payment_date}</TableCell>
                                                             <TableCell className="text-xs font-mono font-medium">
-                                                                {p.receipt_number || p.reference_number || `PMT-${p.id}`}
+                                                                {p.receipt_number ||
+                                                                    p.reference_number ||
+                                                                    `PMT-${p.id}`}
                                                             </TableCell>
                                                             <TableCell className="text-xs uppercase font-medium">
                                                                 {p.payment_method}
                                                             </TableCell>
                                                             <TableCell className="text-xs text-right font-semibold text-emerald-600">
-                                                                +<MoneyText amount={Number(p.amount)} currency={currency} size="sm" />
+                                                                +
+                                                                <MoneyText
+                                                                    amount={Number(p.amount)}
+                                                                    currency={currency}
+                                                                    size="sm"
+                                                                />
                                                             </TableCell>
                                                             <TableCell className="text-xs text-right font-mono font-bold text-foreground">
-                                                                <MoneyText amount={p.runningBalance} currency={currency} size="sm" />
+                                                                <MoneyText
+                                                                    amount={p.runningBalance}
+                                                                    currency={currency}
+                                                                    size="sm"
+                                                                />
                                                             </TableCell>
                                                             <TableCell className="text-xs text-muted-foreground">
                                                                 {p.recordedBy?.name || p.recorded_by?.name || 'Staff'}
@@ -857,33 +945,47 @@ export default function Show({
                                                 <TableRow>
                                                     <TableHead className="text-xs">Milestone</TableHead>
                                                     <TableHead className="text-xs">Due Date</TableHead>
-                                                    <TableHead className="text-xs text-right">Scheduled Amount</TableHead>
+                                                    <TableHead className="text-xs text-right">
+                                                        Scheduled Amount
+                                                    </TableHead>
                                                     <TableHead className="text-xs text-right">Status</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {(booking.payment_schedules || []).length === 0 ? (
                                                     <TableRow>
-                                                        <TableCell colSpan={4} className="text-center py-4 text-xs text-muted-foreground">
+                                                        <TableCell
+                                                            colSpan={4}
+                                                            className="text-center py-4 text-xs text-muted-foreground"
+                                                        >
                                                             No custom installment schedule registered.
                                                         </TableCell>
                                                     </TableRow>
                                                 ) : (
-                                                    (booking.payment_schedules || []).map(s => (
+                                                    (booking.payment_schedules || []).map((s) => (
                                                         <TableRow key={s.id}>
-                                                            <TableCell className="text-xs font-medium">{s.description}</TableCell>
+                                                            <TableCell className="text-xs font-medium">
+                                                                {s.description}
+                                                            </TableCell>
                                                             <TableCell className="text-xs">{s.due_date}</TableCell>
                                                             <TableCell className="text-xs text-right font-semibold">
-                                                                <MoneyText amount={Number(s.amount)} currency={currency} size="sm" />
+                                                                <MoneyText
+                                                                    amount={Number(s.amount)}
+                                                                    currency={currency}
+                                                                    size="sm"
+                                                                />
                                                             </TableCell>
                                                             <TableCell className="text-xs text-right">
                                                                 <Badge
                                                                     variant="outline"
                                                                     className={cn(
-                                                                        "capitalize text-[10px]",
-                                                                        s.status === 'paid' && "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-                                                                        s.status === 'overdue' && "bg-destructive/10 text-destructive border-destructive/30",
-                                                                        s.status === 'unpaid' && "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                                                                        'capitalize text-[10px]',
+                                                                        s.status === 'paid' &&
+                                                                            'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+                                                                        s.status === 'overdue' &&
+                                                                            'bg-destructive/10 text-destructive border-destructive/30',
+                                                                        s.status === 'unpaid' &&
+                                                                            'bg-amber-500/10 text-amber-600 border-amber-500/30',
                                                                     )}
                                                                 >
                                                                     {s.status}
@@ -907,7 +1009,8 @@ export default function Show({
                                             {replyingToId && (
                                                 <div className="flex items-center justify-between p-2 bg-muted/40 rounded text-xs">
                                                     <span className="flex items-center gap-1.5 text-primary font-medium">
-                                                        <CornerDownRight className="w-3.5 h-3.5" /> Replying to note #{replyingToId}
+                                                        <CornerDownRight className="w-3.5 h-3.5" /> Replying to note #
+                                                        {replyingToId}
                                                     </span>
                                                     <Button
                                                         type="button"
@@ -923,7 +1026,7 @@ export default function Show({
 
                                             <Textarea
                                                 value={newNoteContent}
-                                                onChange={e => setNewNoteContent(e.target.value)}
+                                                onChange={(e) => setNewNoteContent(e.target.value)}
                                                 placeholder="Add an internal operational note, log customer communication, or mention a teammate with @..."
                                                 rows={3}
                                                 className="text-xs"
@@ -954,7 +1057,7 @@ export default function Show({
                                             No notes recorded on this booking yet.
                                         </p>
                                     ) : (
-                                        (booking.booking_notes || []).map(note => (
+                                        (booking.booking_notes || []).map((note) => (
                                             <div
                                                 key={note.id}
                                                 className="p-4 border rounded-xl bg-card shadow-xs space-y-2.5"
@@ -962,7 +1065,7 @@ export default function Show({
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
-                                                            {(note.user?.name?.[0] || 'U')}
+                                                            {note.user?.name?.[0] || 'U'}
                                                         </div>
                                                         <div>
                                                             <span className="font-semibold text-xs text-foreground">
@@ -977,10 +1080,12 @@ export default function Show({
                                                     <Badge
                                                         variant="outline"
                                                         className={cn(
-                                                            "text-[10px] capitalize",
-                                                            note.type === 'status_change' && "bg-blue-500/10 text-blue-600 border-blue-500/30",
-                                                            note.type === 'system' && "bg-muted text-muted-foreground",
-                                                            note.type === 'note' && "bg-primary/10 text-primary border-primary/30"
+                                                            'text-[10px] capitalize',
+                                                            note.type === 'status_change' &&
+                                                                'bg-blue-500/10 text-blue-600 border-blue-500/30',
+                                                            note.type === 'system' && 'bg-muted text-muted-foreground',
+                                                            note.type === 'note' &&
+                                                                'bg-primary/10 text-primary border-primary/30',
                                                         )}
                                                     >
                                                         {note.type.replace('_', ' ')}
@@ -1006,14 +1111,20 @@ export default function Show({
                                                 {/* Threaded Replies */}
                                                 {note.replies && note.replies.length > 0 && (
                                                     <div className="pl-9 pt-2 space-y-2 border-l-2 border-primary/20 ml-3.5 mt-2">
-                                                        {note.replies.map(reply => (
-                                                            <div key={reply.id} className="p-2.5 bg-muted/40 rounded-lg text-xs space-y-1">
+                                                        {note.replies.map((reply) => (
+                                                            <div
+                                                                key={reply.id}
+                                                                className="p-2.5 bg-muted/40 rounded-lg text-xs space-y-1"
+                                                            >
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="font-semibold text-foreground text-[11px]">
                                                                         {reply.user?.name || 'Staff'}
                                                                     </span>
                                                                     <span className="text-[10px] text-muted-foreground">
-                                                                        {new Date(reply.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                        {new Date(reply.created_at).toLocaleTimeString(
+                                                                            [],
+                                                                            { hour: '2-digit', minute: '2-digit' },
+                                                                        )}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-foreground">{reply.content}</p>
@@ -1042,7 +1153,7 @@ export default function Show({
                                                     No activity logs registered yet.
                                                 </p>
                                             ) : (
-                                                activityLogs.map(log => (
+                                                activityLogs.map((log) => (
                                                     <div key={log.id} className="relative text-xs space-y-1">
                                                         <div className="absolute -left-[22px] top-1 w-2.5 h-2.5 rounded-full bg-primary" />
                                                         <div className="flex items-center justify-between">
@@ -1078,28 +1189,37 @@ export default function Show({
                                     <Badge
                                         variant="outline"
                                         className={cn(
-                                            "text-xs capitalize font-medium",
+                                            'text-xs capitalize font-medium',
                                             Number(booking.balance_amount) <= 0
-                                                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                                                 : Number(booking.paid_amount) > 0
-                                                    ? "bg-blue-500/10 text-blue-600 border-blue-500/30"
-                                                    : "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                                                  ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                                                  : 'bg-amber-500/10 text-amber-600 border-amber-500/30',
                                         )}
                                     >
-                                        {booking.payment_status || (Number(booking.balance_amount) <= 0 ? 'Paid' : 'Unpaid')}
+                                        {booking.payment_status ||
+                                            (Number(booking.balance_amount) <= 0 ? 'Paid' : 'Unpaid')}
                                     </Badge>
                                 </div>
                             </CardHeader>
                             <CardContent className="p-4 space-y-3 text-xs">
                                 <div className="flex justify-between items-center text-muted-foreground">
                                     <span>Base Package Rate:</span>
-                                    <MoneyText amount={Number(booking.base_amount || 0)} currency={currency} size="sm" />
+                                    <MoneyText
+                                        amount={Number(booking.base_amount || 0)}
+                                        currency={currency}
+                                        size="sm"
+                                    />
                                 </div>
 
                                 {Number(booking.extras_amount) > 0 && (
                                     <div className="flex justify-between items-center text-muted-foreground">
                                         <span>Extras & Add-ons:</span>
-                                        <MoneyText amount={Number(booking.extras_amount)} currency={currency} size="sm" />
+                                        <MoneyText
+                                            amount={Number(booking.extras_amount)}
+                                            currency={currency}
+                                            size="sm"
+                                        />
                                     </div>
                                 )}
 
@@ -1113,7 +1233,15 @@ export default function Show({
                                 {Number(booking.discount_amount) > 0 && (
                                     <div className="flex justify-between items-center text-emerald-600 font-medium">
                                         <span>Authorized Discount:</span>
-                                        <span>-<MoneyText amount={Number(booking.discount_amount)} currency={currency} size="sm" className="text-emerald-600" /></span>
+                                        <span>
+                                            -
+                                            <MoneyText
+                                                amount={Number(booking.discount_amount)}
+                                                currency={currency}
+                                                size="sm"
+                                                className="text-emerald-600"
+                                            />
+                                        </span>
                                     </div>
                                 )}
 
@@ -1131,7 +1259,11 @@ export default function Show({
                                 <div className="pt-2 border-t space-y-2">
                                     <div className="flex justify-between items-center text-emerald-600 font-semibold">
                                         <span>Total Paid:</span>
-                                        <MoneyText amount={Number(booking.paid_amount || 0)} currency={currency} size="sm" />
+                                        <MoneyText
+                                            amount={Number(booking.paid_amount || 0)}
+                                            currency={currency}
+                                            size="sm"
+                                        />
                                     </div>
 
                                     <div className="flex justify-between items-baseline">
@@ -1143,8 +1275,8 @@ export default function Show({
                                             weight="bold"
                                             className={cn(
                                                 Number(booking.balance_amount) <= 0
-                                                    ? "text-emerald-600"
-                                                    : "text-destructive font-mono"
+                                                    ? 'text-emerald-600'
+                                                    : 'text-destructive font-mono',
                                             )}
                                         />
                                     </div>
@@ -1156,8 +1288,12 @@ export default function Show({
                                             style={{
                                                 width: `${Math.min(
                                                     100,
-                                                    Math.round((Number(booking.paid_amount || 0) / (Number(booking.final_amount) || 1)) * 100)
-                                                )}%`
+                                                    Math.round(
+                                                        (Number(booking.paid_amount || 0) /
+                                                            (Number(booking.final_amount) || 1)) *
+                                                            100,
+                                                    ),
+                                                )}%`,
                                             }}
                                         />
                                     </div>
@@ -1275,7 +1411,7 @@ export default function Show({
                         <Textarea
                             id="status_note"
                             value={statusNote}
-                            onChange={e => setStatusNote(e.target.value)}
+                            onChange={(e) => setStatusNote(e.target.value)}
                             placeholder="e.g. Deposit received, flight tickets issued, client requested cancellation..."
                             rows={3}
                             className="text-xs"
@@ -1298,9 +1434,7 @@ export default function Show({
                             type="button"
                             onClick={confirmStatusChange}
                             disabled={statusSubmitting}
-                            className={cn(
-                                statusToChange === 'cancelled' && "bg-destructive hover:bg-destructive/90"
-                            )}
+                            className={cn(statusToChange === 'cancelled' && 'bg-destructive hover:bg-destructive/90')}
                         >
                             {statusSubmitting ? 'Updating...' : `Confirm ${statusToChange.toUpperCase()}`}
                         </Button>
@@ -1316,7 +1450,10 @@ export default function Show({
                         <DialogDescription>
                             Record transaction for booking {booking.booking_reference}.
                             <br />
-                            Remaining balance: <strong><MoneyText amount={Number(booking.balance_amount)} currency={currency} weight="bold" /></strong>
+                            Remaining balance:{' '}
+                            <strong>
+                                <MoneyText amount={Number(booking.balance_amount)} currency={currency} weight="bold" />
+                            </strong>
                         </DialogDescription>
                     </DialogHeader>
 
@@ -1437,16 +1574,17 @@ export default function Show({
                             <Label htmlFor="staff_select">Staff Member</Label>
                             <Select
                                 value={selectedStaffId || 'unassigned'}
-                                onValueChange={val => setSelectedStaffId(!val || val === 'unassigned' ? '' : val)}
+                                onValueChange={(val) => setSelectedStaffId(!val || val === 'unassigned' ? '' : val)}
                             >
                                 <SelectTrigger id="staff_select" className="h-10">
                                     <SelectValue placeholder="Choose staff..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="unassigned">-- Unassigned --</SelectItem>
-                                    {employees.map(emp => (
+                                    {employees.map((emp) => (
                                         <SelectItem key={emp.id} value={emp.id.toString()}>
-                                            {emp.first_name} {emp.last_name} {emp.designation ? `(${emp.designation})` : ''}
+                                            {emp.first_name} {emp.last_name}{' '}
+                                            {emp.designation ? `(${emp.designation})` : ''}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

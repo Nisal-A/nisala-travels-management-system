@@ -25,7 +25,10 @@ export default function CustomersEdit({ customer }: EditProps) {
 
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center gap-4">
-                    <Link href={route('customers.index')} className={buttonVariants({ variant: 'outline', size: 'icon' }) + " h-8 w-8"}>
+                    <Link
+                        href={route('customers.index')}
+                        className={buttonVariants({ variant: 'outline', size: 'icon' }) + ' h-8 w-8'}
+                    >
                         <ArrowLeft className="h-4 w-4" />
                         <span className="sr-only">Back</span>
                     </Link>
@@ -38,9 +41,7 @@ export default function CustomersEdit({ customer }: EditProps) {
                 <Card>
                     <CardHeader className="bg-muted/30 border-b pb-4">
                         <CardTitle>Customer Profile Details</CardTitle>
-                        <CardDescription>
-                            Make changes to the customer's information below.
-                        </CardDescription>
+                        <CardDescription>Make changes to the customer's information below.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6">
                         <CustomerForm customer={customer} isEdit={true} />

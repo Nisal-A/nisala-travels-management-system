@@ -61,7 +61,7 @@ export default function Step5Payment({
     // Generate schedule based on plan
     const generateScheduleForPlan = (
         plan: 'full' | 'deposit_balance' | 'three_part' | 'four_part',
-        depositPct: number = 0.20
+        depositPct: number = 0.2,
     ) => {
         const today = bookingDate || new Date().toISOString().split('T')[0];
         const departure = travelDate ? new Date(travelDate) : new Date(Date.now() + 60 * 86400000);
@@ -105,8 +105,8 @@ export default function Step5Payment({
         }
 
         if (plan === 'three_part') {
-            const dep = Math.round(finalTotal * 0.30);
-            const second = Math.round(finalTotal * 0.40);
+            const dep = Math.round(finalTotal * 0.3);
+            const second = Math.round(finalTotal * 0.4);
             const finalPart = Math.max(0, finalTotal - dep - second);
 
             const midDate = new Date(departure);
@@ -118,8 +118,16 @@ export default function Step5Payment({
             onChangePaymentAmount(dep);
             onChangeSchedules([
                 { description: 'Initial Deposit (30%)', amount: dep, due_date: today },
-                { description: 'Second Installment (40%)', amount: second, due_date: midDate.toISOString().split('T')[0] },
-                { description: 'Final Balance (30%)', amount: finalPart, due_date: finalDate.toISOString().split('T')[0] },
+                {
+                    description: 'Second Installment (40%)',
+                    amount: second,
+                    due_date: midDate.toISOString().split('T')[0],
+                },
+                {
+                    description: 'Final Balance (30%)',
+                    amount: finalPart,
+                    due_date: finalDate.toISOString().split('T')[0],
+                },
             ]);
             return;
         }
@@ -150,14 +158,14 @@ export default function Step5Payment({
     // Auto-generate if empty on initial mount
     useEffect(() => {
         if (schedules.length === 0 && finalTotal > 0) {
-            generateScheduleForPlan('deposit_balance', 0.20);
+            generateScheduleForPlan('deposit_balance', 0.2);
         }
     }, [finalTotal]);
 
     const handleSelectPlan = (plan: 'full' | 'deposit_balance' | 'three_part' | 'four_part' | 'custom') => {
         onChangePaymentPlan(plan);
         if (plan !== 'custom') {
-            generateScheduleForPlan(plan, depositAmount ? depositAmount / finalTotal : 0.20);
+            generateScheduleForPlan(plan, depositAmount ? depositAmount / finalTotal : 0.2);
         }
     };
 
@@ -218,10 +226,10 @@ export default function Step5Payment({
                                 type="button"
                                 onClick={() => handleSelectPlan('full')}
                                 className={cn(
-                                    "p-3.5 border rounded-xl text-left transition-all",
+                                    'p-3.5 border rounded-xl text-left transition-all',
                                     paymentPlan === 'full'
-                                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                                        : "hover:border-border/80 bg-card"
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                                        : 'hover:border-border/80 bg-card',
                                 )}
                             >
                                 <span className="font-semibold text-sm block">Full Payment Upfront</span>
@@ -232,24 +240,26 @@ export default function Step5Payment({
                                 type="button"
                                 onClick={() => handleSelectPlan('deposit_balance')}
                                 className={cn(
-                                    "p-3.5 border rounded-xl text-left transition-all",
+                                    'p-3.5 border rounded-xl text-left transition-all',
                                     paymentPlan === 'deposit_balance'
-                                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                                        : "hover:border-border/80 bg-card"
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                                        : 'hover:border-border/80 bg-card',
                                 )}
                             >
                                 <span className="font-semibold text-sm block">Deposit + Balance (2 Parts)</span>
-                                <span className="text-xs text-muted-foreground">Deposit now, balance prior to trip</span>
+                                <span className="text-xs text-muted-foreground">
+                                    Deposit now, balance prior to trip
+                                </span>
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => handleSelectPlan('three_part')}
                                 className={cn(
-                                    "p-3.5 border rounded-xl text-left transition-all",
+                                    'p-3.5 border rounded-xl text-left transition-all',
                                     paymentPlan === 'three_part'
-                                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                                        : "hover:border-border/80 bg-card"
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                                        : 'hover:border-border/80 bg-card',
                                 )}
                             >
                                 <span className="font-semibold text-sm block">3 Installments</span>
@@ -260,10 +270,10 @@ export default function Step5Payment({
                                 type="button"
                                 onClick={() => handleSelectPlan('four_part')}
                                 className={cn(
-                                    "p-3.5 border rounded-xl text-left transition-all",
+                                    'p-3.5 border rounded-xl text-left transition-all',
                                     paymentPlan === 'four_part'
-                                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                                        : "hover:border-border/80 bg-card"
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                                        : 'hover:border-border/80 bg-card',
                                 )}
                             >
                                 <span className="font-semibold text-sm block">4 Monthly Installments</span>
@@ -277,7 +287,7 @@ export default function Step5Payment({
                         <div className="p-3 bg-muted/40 rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs">
                             <span className="font-medium text-muted-foreground">Deposit Presets:</span>
                             <div className="flex gap-2">
-                                {[0.10, 0.20, 0.30, 0.50].map(pct => (
+                                {[0.1, 0.2, 0.3, 0.5].map((pct) => (
                                     <Button
                                         key={pct}
                                         type="button"
@@ -321,7 +331,7 @@ export default function Step5Payment({
                                     <div className="col-span-5">
                                         <Input
                                             value={item.description}
-                                            onChange={e => updateScheduleItem(index, 'description', e.target.value)}
+                                            onChange={(e) => updateScheduleItem(index, 'description', e.target.value)}
                                             className="h-8 text-xs"
                                         />
                                     </div>
@@ -329,7 +339,7 @@ export default function Step5Payment({
                                         <Input
                                             type="date"
                                             value={item.due_date}
-                                            onChange={e => updateScheduleItem(index, 'due_date', e.target.value)}
+                                            onChange={(e) => updateScheduleItem(index, 'due_date', e.target.value)}
                                             className="h-8 text-xs"
                                         />
                                     </div>
@@ -338,7 +348,9 @@ export default function Step5Payment({
                                             type="number"
                                             step="0.01"
                                             value={item.amount || ''}
-                                            onChange={e => updateScheduleItem(index, 'amount', parseFloat(e.target.value) || 0)}
+                                            onChange={(e) =>
+                                                updateScheduleItem(index, 'amount', parseFloat(e.target.value) || 0)
+                                            }
                                             className="h-8 text-xs text-right"
                                         />
                                     </div>
@@ -404,7 +416,7 @@ export default function Step5Payment({
                                         step="0.01"
                                         max={finalTotal}
                                         value={paymentAmount || ''}
-                                        onChange={e => onChangePaymentAmount(parseFloat(e.target.value) || 0)}
+                                        onChange={(e) => onChangePaymentAmount(parseFloat(e.target.value) || 0)}
                                         className="h-10"
                                         required
                                     />
@@ -416,7 +428,7 @@ export default function Step5Payment({
                                     </Label>
                                     <Select
                                         value={paymentMethod}
-                                        onValueChange={val => onChangePaymentMethod(val || 'cash')}
+                                        onValueChange={(val) => onChangePaymentMethod(val || 'cash')}
                                     >
                                         <SelectTrigger id="payment_method" className="h-10">
                                             <SelectValue />
@@ -438,7 +450,7 @@ export default function Step5Payment({
                                     <Input
                                         id="payment_ref"
                                         value={paymentReference}
-                                        onChange={e => onChangePaymentReference(e.target.value)}
+                                        onChange={(e) => onChangePaymentReference(e.target.value)}
                                         placeholder="e.g. TXN-98472 or Bank Slip #"
                                         className="h-10"
                                     />
@@ -450,7 +462,9 @@ export default function Step5Payment({
                                         amount={remainingBalanceAfterPayment}
                                         currency={currency}
                                         weight="bold"
-                                        className={remainingBalanceAfterPayment === 0 ? "text-emerald-600" : "text-primary"}
+                                        className={
+                                            remainingBalanceAfterPayment === 0 ? 'text-emerald-600' : 'text-primary'
+                                        }
                                     />
                                 </div>
                             </div>

@@ -4,7 +4,14 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MoreHorizontal, Plus, Search, Edit, Trash2, MapPin, Eye } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -49,9 +56,13 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
 
     const [searchQuery, setSearchQuery] = useState(typeof filters?.search === 'string' ? filters.search : '');
     const [statusFilter, setStatusFilter] = useState(typeof filters?.status === 'string' ? filters.status : 'all');
-    const [destinationFilter, setDestinationFilter] = useState(typeof filters?.destination === 'string' ? filters.destination : 'all');
+    const [destinationFilter, setDestinationFilter] = useState(
+        typeof filters?.destination === 'string' ? filters.destination : 'all',
+    );
     const [sortField, setSortField] = useState(typeof filters?.sort === 'string' ? filters.sort : 'created_at');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(
+        filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc',
+    );
 
     const canCreate = hasRole('super_admin', 'manager');
     const canDelete = hasRole('super_admin', 'manager');
@@ -63,10 +74,10 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
             destination: destinationFilter === 'all' ? undefined : destinationFilter,
             sort: sortField,
             direction: sortDirection,
-            ...overrides
+            ...overrides,
         };
 
-        Object.keys(query).forEach(key => {
+        Object.keys(query).forEach((key) => {
             if (query[key as keyof typeof query] === undefined || query[key as keyof typeof query] === '') {
                 delete query[key as keyof typeof query];
             }
@@ -95,10 +106,7 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
     return (
         <AppLayout
             title="Tour Packages"
-            breadcrumbs={[
-                { label: 'Dashboard', href: route('dashboard') },
-                { label: 'Tour Packages' },
-            ]}
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Tour Packages' }]}
         >
             <Head title="Tour Packages" />
 
@@ -133,13 +141,19 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
-                    <Select value={destinationFilter} onValueChange={(v) => { setDestinationFilter(v); applyFilters({ destination: v }); }}>
+                    <Select
+                        value={destinationFilter}
+                        onValueChange={(v) => {
+                            setDestinationFilter(v);
+                            applyFilters({ destination: v });
+                        }}
+                    >
                         <SelectTrigger className="w-full sm:w-[200px] bg-background">
                             <SelectValue placeholder="All Destinations" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Destinations</SelectItem>
-                            {destinations.map(dest => (
+                            {destinations.map((dest) => (
                                 <SelectItem key={dest.id} value={dest.id.toString()}>
                                     {dest.city_region}, {dest.country}
                                 </SelectItem>
@@ -147,7 +161,13 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                         </SelectContent>
                     </Select>
 
-                    <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); applyFilters({ status: v }); }}>
+                    <Select
+                        value={statusFilter}
+                        onValueChange={(v) => {
+                            setStatusFilter(v);
+                            applyFilters({ status: v });
+                        }}
+                    >
                         <SelectTrigger className="w-full sm:w-[150px] bg-background">
                             <SelectValue placeholder="All Status" />
                         </SelectTrigger>
@@ -189,48 +209,72 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                                     <TableRow key={tour.id} className="group transition-colors hover:bg-muted/50">
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
-                                                <span className="font-semibold text-foreground">{tour.package_name}</span>
+                                                <span className="font-semibold text-foreground">
+                                                    {tour.package_name}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <MapPin className="h-4 w-4" />
-                                                <span>{tour.destination?.city_region}, {tour.destination?.country}</span>
+                                                <span>
+                                                    {tour.destination?.city_region}, {tour.destination?.country}
+                                                </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-sm">{tour.duration_days ? `${tour.duration_days} days` : 'N/A'}</span>
+                                            <span className="text-sm">
+                                                {tour.duration_days ? `${tour.duration_days} days` : 'N/A'}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-medium text-sm">{tour.currency} {Number(tour.price).toLocaleString()}</span>
+                                            <span className="font-medium text-sm">
+                                                {tour.currency} {Number(tour.price).toLocaleString()}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant={tour.status === 'active' ? 'default' : 'secondary'}
-                                                className={tour.status === 'active' ? 'bg-success/15 text-success hover:bg-success/25 border-success/20' : ''}
+                                                className={
+                                                    tour.status === 'active'
+                                                        ? 'bg-success/15 text-success hover:bg-success/25 border-success/20'
+                                                        : ''
+                                                }
                                             >
                                                 {tour.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger render={
-                                                    <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </button>
-                                                } />
+                                                <DropdownMenuTrigger
+                                                    render={
+                                                        <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-8 w-8 p-0">
+                                                            <span className="sr-only">Open menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                        </button>
+                                                    }
+                                                />
                                                 <DropdownMenuContent align="end" className="w-[160px]">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
 
-                                                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('tours.show', { tour: tour.id }))}>
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                        onClick={() =>
+                                                            router.visit(route('tours.show', { tour: tour.id }))
+                                                        }
+                                                    >
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         View Details
                                                     </DropdownMenuItem>
 
                                                     {canCreate && (
-                                                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('tours.edit', { tour: tour.id }))}>
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() =>
+                                                                router.visit(route('tours.edit', { tour: tour.id }))
+                                                            }
+                                                        >
                                                             <Edit className="mr-2 h-4 w-4" />
                                                             Edit Package
                                                         </DropdownMenuItem>
@@ -267,12 +311,16 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    Showing <span className="font-medium">{tours.from}</span> to <span className="font-medium">{tours.to}</span> of{' '}
+                                    Showing <span className="font-medium">{tours.from}</span> to{' '}
+                                    <span className="font-medium">{tours.to}</span> of{' '}
                                     <span className="font-medium">{tours.total}</span> results
                                 </p>
                             </div>
                             <div>
-                                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <nav
+                                    className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                                    aria-label="Pagination"
+                                >
                                     {tours.links?.map((link, index) => {
                                         const isPrevious = index === 0;
                                         const isNext = index === (tours.links?.length || 0) - 1;
@@ -281,8 +329,9 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                                             return (
                                                 <span
                                                     key={index}
-                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-input opacity-50 ${isPrevious ? 'rounded-l-md' : ''
-                                                        } ${isNext ? 'rounded-r-md' : ''}`}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-input opacity-50 ${
+                                                        isPrevious ? 'rounded-l-md' : ''
+                                                    } ${isNext ? 'rounded-r-md' : ''}`}
                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                 />
                                             );
@@ -292,10 +341,11 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                                             <Link
                                                 key={index}
                                                 href={link.url}
-                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border border-input transition-colors ${link.active
-                                                    ? 'z-10 bg-primary text-primary-foreground border-primary focus:z-20'
-                                                    : 'bg-background text-foreground hover:bg-muted focus:z-20'
-                                                    } ${isPrevious ? 'rounded-l-md' : ''} ${isNext ? 'rounded-r-md' : ''}`}
+                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border border-input transition-colors ${
+                                                    link.active
+                                                        ? 'z-10 bg-primary text-primary-foreground border-primary focus:z-20'
+                                                        : 'bg-background text-foreground hover:bg-muted focus:z-20'
+                                                } ${isPrevious ? 'rounded-l-md' : ''} ${isNext ? 'rounded-r-md' : ''}`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
                                         );

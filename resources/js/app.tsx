@@ -11,11 +11,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Nisala Travels';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.tsx`,
-            import.meta.glob('./Pages/**/*.tsx'),
-        ),
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(
@@ -23,7 +19,7 @@ createInertiaApp({
                 <ThemeProvider defaultTheme="system" storageKey="theme">
                     <App {...props} />
                 </ThemeProvider>
-            </GlobalErrorBoundary>
+            </GlobalErrorBoundary>,
         );
     },
     progress: {

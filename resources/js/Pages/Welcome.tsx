@@ -1,22 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-    CardFooter,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Globe,
-    Plane,
-    Users,
-    ShieldCheck,
-    ArrowRight,
-} from 'lucide-react';
+import { Globe, Plane, Users, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function Welcome() {
     return (
@@ -32,31 +19,23 @@ export default function Welcome() {
                         </div>
                     </div>
 
-                    <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
-                        Nisala Travels
-                    </h1>
+                    <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Nisala Travels</h1>
                     <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                        Centralized travel agency management system — customers,
-                        bookings, tours, and more.
+                        Centralized travel agency management system — customers, bookings, tours, and more.
                     </p>
 
                     {/* Stack badges */}
                     <div className="flex flex-wrap justify-center gap-2 mb-10">
-                        {[
-                            'Laravel 12',
-                            'React 19',
-                            'Inertia.js',
-                            'Tailwind v4',
-                            'shadcn/ui',
-                            'TypeScript',
-                        ].map((label) => (
-                            <span
-                                key={label}
-                                className="px-3 py-1 text-xs font-medium rounded-full border border-border bg-card/50 text-muted-foreground backdrop-blur-sm"
-                            >
-                                {label}
-                            </span>
-                        ))}
+                        {['Laravel 12', 'React 19', 'Inertia.js', 'Tailwind v4', 'shadcn/ui', 'TypeScript'].map(
+                            (label) => (
+                                <span
+                                    key={label}
+                                    className="px-3 py-1 text-xs font-medium rounded-full border border-border bg-card/50 text-muted-foreground backdrop-blur-sm"
+                                >
+                                    {label}
+                                </span>
+                            ),
+                        )}
                     </div>
                 </div>
 
@@ -69,10 +48,7 @@ export default function Welcome() {
                                 <Plane className="h-4 w-4" />
                                 Button Variants
                             </CardTitle>
-                            <CardDescription>
-                                All shadcn/ui button variants working with
-                                Tailwind v4.
-                            </CardDescription>
+                            <CardDescription>All shadcn/ui button variants working with Tailwind v4.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3">
                             <div className="flex flex-wrap gap-2">
@@ -82,9 +58,7 @@ export default function Welcome() {
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 <Button variant="ghost">Ghost</Button>
-                                <Button variant="destructive">
-                                    Destructive
-                                </Button>
+                                <Button variant="destructive">Destructive</Button>
                                 <Button variant="link">Link</Button>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -93,9 +67,7 @@ export default function Welcome() {
                                 <Button size="lg">Large</Button>
                             </div>
                         </CardContent>
-                        <CardFooter className="text-xs text-muted-foreground">
-                            6 variants · 4 sizes
-                        </CardFooter>
+                        <CardFooter className="text-xs text-muted-foreground">6 variants · 4 sizes</CardFooter>
                     </Card>
 
                     {/* Card 2: Form Elements */}
@@ -105,35 +77,23 @@ export default function Welcome() {
                                 <Users className="h-4 w-4" />
                                 Form Inputs
                             </CardTitle>
-                            <CardDescription>
-                                Input and Label components for forms.
-                            </CardDescription>
+                            <CardDescription>Input and Label components for forms.</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="demo-email">Email</Label>
-                                <Input
-                                    id="demo-email"
-                                    type="email"
-                                    placeholder="admin@nisalatravels.lk"
-                                />
+                                <Input id="demo-email" type="email" placeholder="admin@nisalatravels.lk" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="demo-password">Password</Label>
-                                <Input
-                                    id="demo-password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                />
+                                <Input id="demo-password" type="password" placeholder="••••••••" />
                             </div>
                             <Button className="w-full">
                                 Sign In
                                 <ArrowRight className="ml-1 h-4 w-4" />
                             </Button>
                         </CardContent>
-                        <CardFooter className="text-xs text-muted-foreground">
-                            Ready for Phase 2 Auth
-                        </CardFooter>
+                        <CardFooter className="text-xs text-muted-foreground">Ready for Phase 2 Auth</CardFooter>
                     </Card>
 
                     {/* Card 3: System Status */}
@@ -143,9 +103,7 @@ export default function Welcome() {
                                 <ShieldCheck className="h-4 w-4" />
                                 System Status
                             </CardTitle>
-                            <CardDescription>
-                                Foundation verification checklist.
-                            </CardDescription>
+                            <CardDescription>Foundation verification checklist.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ul className="space-y-2.5 text-sm">
@@ -171,10 +129,7 @@ export default function Welcome() {
                                         done: true,
                                     },
                                 ].map((item) => (
-                                    <li
-                                        key={item.label}
-                                        className="flex items-center gap-2"
-                                    >
+                                    <li key={item.label} className="flex items-center gap-2">
                                         <span
                                             className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
                                                 item.done
@@ -184,29 +139,19 @@ export default function Welcome() {
                                         >
                                             {item.done ? '✓' : '○'}
                                         </span>
-                                        <span
-                                            className={
-                                                item.done
-                                                    ? 'text-foreground'
-                                                    : 'text-muted-foreground'
-                                            }
-                                        >
+                                        <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
                                             {item.label}
                                         </span>
                                     </li>
                                 ))}
                             </ul>
                         </CardContent>
-                        <CardFooter className="text-xs text-muted-foreground">
-                            All systems operational
-                        </CardFooter>
+                        <CardFooter className="text-xs text-muted-foreground">All systems operational</CardFooter>
                     </Card>
                 </div>
 
                 {/* Footer */}
-                <p className="text-xs text-neutral-600 uppercase tracking-widest">
-                    NT-002 UI System · Ready
-                </p>
+                <p className="text-xs text-neutral-600 uppercase tracking-widest">NT-002 UI System · Ready</p>
             </main>
         </>
     );

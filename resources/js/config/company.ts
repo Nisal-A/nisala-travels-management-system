@@ -8,5 +8,5 @@ export const company = {
         facebook: 'https://facebook.com/nisalatravels',
         instagram: 'https://instagram.com/nisalatravels',
         twitter: 'https://twitter.com/nisalatravels',
-    }
+    },
 };

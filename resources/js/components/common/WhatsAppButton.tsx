@@ -8,22 +8,37 @@ interface WhatsAppButtonProps {
     variant?: 'floating' | 'inline' | 'button';
 }
 
-export function WhatsAppButton({ text = '', label = 'Chat with us', className = '', variant = 'floating' }: WhatsAppButtonProps) {
+export function WhatsAppButton({
+    text = '',
+    label = 'Chat with us',
+    className = '',
+    variant = 'floating',
+}: WhatsAppButtonProps) {
     const encodedText = encodeURIComponent(text);
     const href = `https://wa.me/${company.whatsapp}${text ? `?text=${encodedText}` : ''}`;
-    
+
     if (variant === 'button') {
         return (
-            <a href={href} target="_blank" rel="noreferrer" className={`inline-flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all ${className}`}>
+            <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex items-center justify-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all ${className}`}
+            >
                 <MessageCircle className="w-5 h-5" />
                 {label}
             </a>
         );
     }
-    
+
     if (variant === 'inline') {
         return (
-            <a href={href} target="_blank" rel="noreferrer" className={`inline-flex items-center gap-2 text-[#25D366] hover:text-[#128C7E] font-medium transition-colors ${className}`}>
+            <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex items-center gap-2 text-[#25D366] hover:text-[#128C7E] font-medium transition-colors ${className}`}
+            >
                 <MessageCircle className="w-5 h-5" />
                 {label}
             </a>

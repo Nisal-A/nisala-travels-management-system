@@ -3,13 +3,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Save, Loader2, ArrowLeft } from 'lucide-react';
 import { Customer } from '@/types';
 
@@ -54,7 +48,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                     <h3 className="text-lg font-medium border-b pb-2">Personal Information</h3>
 
                     <div className="space-y-2">
-                        <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="full_name">
+                            Full Name <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                             id="full_name"
                             value={data.full_name}
@@ -78,7 +74,10 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="gender">Gender</Label>
-                            <Select value={data.gender || undefined} onValueChange={(value) => setData('gender', value as string)}>
+                            <Select
+                                value={data.gender || undefined}
+                                onValueChange={(value) => setData('gender', value as string)}
+                            >
                                 <SelectTrigger className={errors.gender ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
@@ -131,8 +130,13 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="status">Account Status <span className="text-destructive">*</span></Label>
-                        <Select value={data.status || undefined} onValueChange={(value) => setData('status', value as 'active' | 'inactive')}>
+                        <Label htmlFor="status">
+                            Account Status <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                            value={data.status || undefined}
+                            onValueChange={(value) => setData('status', value as 'active' | 'inactive')}
+                        >
                             <SelectTrigger className={errors.status ? 'border-destructive' : ''}>
                                 <SelectValue placeholder="Select status" />
                             </SelectTrigger>
@@ -150,7 +154,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                     <h3 className="text-lg font-medium border-b pb-2">Contact Information</h3>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="email">
+                            Email Address <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -163,7 +169,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
+                            <Label htmlFor="phone">
+                                Phone <span className="text-destructive">*</span>
+                            </Label>
                             <Input
                                 id="phone"
                                 value={data.phone}
@@ -210,7 +218,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                                 onChange={(e) => setData('emergency_contact_name', e.target.value)}
                                 className={errors.emergency_contact_name ? 'border-destructive' : ''}
                             />
-                            {errors.emergency_contact_name && <p className="text-sm text-destructive">{errors.emergency_contact_name}</p>}
+                            {errors.emergency_contact_name && (
+                                <p className="text-sm text-destructive">{errors.emergency_contact_name}</p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
@@ -220,7 +230,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                                 onChange={(e) => setData('emergency_contact_phone', e.target.value)}
                                 className={errors.emergency_contact_phone ? 'border-destructive' : ''}
                             />
-                            {errors.emergency_contact_phone && <p className="text-sm text-destructive">{errors.emergency_contact_phone}</p>}
+                            {errors.emergency_contact_phone && (
+                                <p className="text-sm text-destructive">{errors.emergency_contact_phone}</p>
+                            )}
                         </div>
                     </div>
 
@@ -241,7 +253,9 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
             <div className="flex items-center justify-end gap-4 border-t pt-6">
                 <Link
                     href={customer?.id ? route('customers.show', { customer: customer.id }) : route('customers.index')}
-                    className={buttonVariants({ variant: 'outline' }) + (processing ? ' pointer-events-none opacity-50' : '')}
+                    className={
+                        buttonVariants({ variant: 'outline' }) + (processing ? ' pointer-events-none opacity-50' : '')
+                    }
                 >
                     Cancel
                 </Link>

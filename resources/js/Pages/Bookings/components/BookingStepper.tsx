@@ -42,16 +42,19 @@ export default function BookingStepper({ currentStep, onStepClick, completedStep
                                 onClick={() => isClickable && onStepClick(step.id)}
                                 disabled={!isClickable}
                                 className={cn(
-                                    "flex flex-col items-center group relative z-10 transition-all duration-200 outline-none",
-                                    isClickable ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+                                    'flex flex-col items-center group relative z-10 transition-all duration-200 outline-none',
+                                    isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60',
                                 )}
                             >
                                 <div
                                     className={cn(
-                                        "w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200 shadow-xs",
-                                        isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-105",
-                                        isCompleted && !isCurrent && "bg-emerald-600 text-white hover:bg-emerald-700",
-                                        !isCurrent && !isCompleted && "bg-muted text-muted-foreground border border-border"
+                                        'w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200 shadow-xs',
+                                        isCurrent &&
+                                            'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-105',
+                                        isCompleted && !isCurrent && 'bg-emerald-600 text-white hover:bg-emerald-700',
+                                        !isCurrent &&
+                                            !isCompleted &&
+                                            'bg-muted text-muted-foreground border border-border',
                                     )}
                                 >
                                     {isCompleted && !isCurrent ? (
@@ -63,8 +66,12 @@ export default function BookingStepper({ currentStep, onStepClick, completedStep
                                 <div className="mt-2 text-center">
                                     <span
                                         className={cn(
-                                            "text-xs font-semibold block transition-colors",
-                                            isCurrent ? "text-primary font-bold" : isCompleted ? "text-foreground" : "text-muted-foreground"
+                                            'text-xs font-semibold block transition-colors',
+                                            isCurrent
+                                                ? 'text-primary font-bold'
+                                                : isCompleted
+                                                  ? 'text-foreground'
+                                                  : 'text-muted-foreground',
                                         )}
                                     >
                                         {step.id}. {step.title}
@@ -81,7 +88,7 @@ export default function BookingStepper({ currentStep, onStepClick, completedStep
                                     <div
                                         className="h-full bg-emerald-600 transition-all duration-300"
                                         style={{
-                                            width: completedSteps.includes(step.id) ? '100%' : '0%'
+                                            width: completedSteps.includes(step.id) ? '100%' : '0%',
                                         }}
                                     />
                                 </div>

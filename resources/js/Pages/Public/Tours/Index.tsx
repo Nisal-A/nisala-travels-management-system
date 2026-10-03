@@ -7,9 +7,9 @@ import { Reveal } from '@/components/common/Reveal';
 import { Search, Filter, X, Clock, ArrowRight, Frown } from 'lucide-react';
 import axios from 'axios';
 
-function debounce(func: Function, wait: number) {
+function debounce<TArgs extends unknown[]>(func: (...args: TArgs) => void, wait: number) {
     let timeout: ReturnType<typeof setTimeout>;
-    return function executedFunction(...args: any[]) {
+    return function executedFunction(...args: TArgs) {
         const later = () => {
             clearTimeout(timeout);
             func(...args);

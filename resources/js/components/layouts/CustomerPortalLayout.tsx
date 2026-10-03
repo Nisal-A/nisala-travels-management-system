@@ -2,7 +2,14 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { useAuth } from '@/hooks/use-auth';
 import { Globe, LogOut, LayoutDashboard, CalendarCheck, FileText, CreditCard, UserRound } from 'lucide-react';
 import { FormEvent, ReactNode } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -41,12 +48,13 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
         }
     }
 
-    const initials = user?.name
-        ?.split(' ')
-        .map((n) => n[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase() ?? '?';
+    const initials =
+        user?.name
+            ?.split(' ')
+            .map((n) => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() ?? '?';
 
     return (
         <div className="min-h-screen bg-muted/30 pb-20 md:pb-0">
@@ -54,7 +62,10 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-8">
-                        <Link href={route('portal.dashboard')} className="flex items-center gap-2 transition-opacity hover:opacity-80">
+                        <Link
+                            href={route('portal.dashboard')}
+                            className="flex items-center gap-2 transition-opacity hover:opacity-80"
+                        >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
                                 <Globe className="h-5 w-5 text-primary-foreground" />
                             </div>
@@ -73,10 +84,10 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                                         key={link.href}
                                         href={route(link.href)}
                                         className={cn(
-                                            "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                                            'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                                             active
-                                                ? "bg-primary/10 text-primary"
-                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                                         )}
                                     >
                                         <Icon className="h-4 w-4" />
@@ -151,17 +162,19 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                                 key={link.href}
                                 href={route(link.href)}
                                 className={cn(
-                                    "flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-colors",
+                                    'flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-colors',
                                     active
-                                        ? "text-primary"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                        ? 'text-primary'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                                 )}
                             >
-                                <div className={cn(
-                                    "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200",
-                                    active ? "bg-primary/10" : "bg-transparent"
-                                )}>
-                                    <Icon className={cn("h-5 w-5", active && "fill-primary/20")} />
+                                <div
+                                    className={cn(
+                                        'flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200',
+                                        active ? 'bg-primary/10' : 'bg-transparent',
+                                    )}
+                                >
+                                    <Icon className={cn('h-5 w-5', active && 'fill-primary/20')} />
                                 </div>
                                 <span className="text-[10px] font-medium">{link.name}</span>
                             </Link>

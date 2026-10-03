@@ -37,9 +37,9 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
     });
 
     const handleChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
-            setErrors(prev => {
+            setErrors((prev) => {
                 const next = { ...prev };
                 delete next[field];
                 return next;
@@ -55,9 +55,9 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
         try {
             const response = await axios.post('/customers', formData, {
                 headers: {
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'Content-Type': 'application/json',
-                }
+                },
             });
 
             if (response.data?.customer) {
@@ -85,7 +85,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
         } catch (error: any) {
             if (error.response?.status === 422 && error.response?.data?.errors) {
                 const validationErrors: Record<string, string> = {};
-                Object.keys(error.response.data.errors).forEach(key => {
+                Object.keys(error.response.data.errors).forEach((key) => {
                     validationErrors[key] = error.response.data.errors[key][0];
                 });
                 setErrors(validationErrors);
@@ -122,7 +122,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="first_name"
                                 value={formData.first_name}
-                                onChange={e => handleChange('first_name', e.target.value)}
+                                onChange={(e) => handleChange('first_name', e.target.value)}
                                 placeholder="Kasun"
                                 required
                             />
@@ -134,7 +134,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="last_name"
                                 value={formData.last_name}
-                                onChange={e => handleChange('last_name', e.target.value)}
+                                onChange={(e) => handleChange('last_name', e.target.value)}
                                 placeholder="Perera"
                                 required
                             />
@@ -149,7 +149,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                                 id="email"
                                 type="email"
                                 value={formData.email}
-                                onChange={e => handleChange('email', e.target.value)}
+                                onChange={(e) => handleChange('email', e.target.value)}
                                 placeholder="kasun.perera@example.com"
                                 required
                             />
@@ -161,7 +161,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="phone"
                                 value={formData.phone}
-                                onChange={e => handleChange('phone', e.target.value)}
+                                onChange={(e) => handleChange('phone', e.target.value)}
                                 placeholder="+94 77 123 4567"
                                 required
                             />
@@ -175,10 +175,12 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="passport_number"
                                 value={formData.passport_number}
-                                onChange={e => handleChange('passport_number', e.target.value)}
+                                onChange={(e) => handleChange('passport_number', e.target.value)}
                                 placeholder="N1234567"
                             />
-                            {errors.passport_number && <p className="text-xs text-destructive">{errors.passport_number}</p>}
+                            {errors.passport_number && (
+                                <p className="text-xs text-destructive">{errors.passport_number}</p>
+                            )}
                         </div>
 
                         <div className="space-y-1.5">
@@ -186,7 +188,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="nationality"
                                 value={formData.nationality}
-                                onChange={e => handleChange('nationality', e.target.value)}
+                                onChange={(e) => handleChange('nationality', e.target.value)}
                                 placeholder="Sri Lankan"
                             />
                         </div>
@@ -199,7 +201,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                                 id="dob"
                                 type="date"
                                 value={formData.dob}
-                                onChange={e => handleChange('dob', e.target.value)}
+                                onChange={(e) => handleChange('dob', e.target.value)}
                             />
                         </div>
 
@@ -207,7 +209,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Label htmlFor="gender">Gender</Label>
                             <Select
                                 value={formData.gender}
-                                onValueChange={val => handleChange('gender', val || 'Male')}
+                                onValueChange={(val) => handleChange('gender', val || 'Male')}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
@@ -226,7 +228,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                         <Input
                             id="address"
                             value={formData.address}
-                            onChange={e => handleChange('address', e.target.value)}
+                            onChange={(e) => handleChange('address', e.target.value)}
                             placeholder="Colombo, Sri Lanka"
                         />
                     </div>
@@ -237,7 +239,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="emergency_contact_name"
                                 value={formData.emergency_contact_name}
-                                onChange={e => handleChange('emergency_contact_name', e.target.value)}
+                                onChange={(e) => handleChange('emergency_contact_name', e.target.value)}
                                 placeholder="Contact Name"
                             />
                         </div>
@@ -247,7 +249,7 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                             <Input
                                 id="emergency_contact_phone"
                                 value={formData.emergency_contact_phone}
-                                onChange={e => handleChange('emergency_contact_phone', e.target.value)}
+                                onChange={(e) => handleChange('emergency_contact_phone', e.target.value)}
                                 placeholder="+94 71 987 6543"
                             />
                         </div>
@@ -258,19 +260,14 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                         <Textarea
                             id="notes"
                             value={formData.notes}
-                            onChange={e => handleChange('notes', e.target.value)}
+                            onChange={(e) => handleChange('notes', e.target.value)}
                             placeholder="VIP client, prefers vegetarian meals, etc."
                             rows={2}
                         />
                     </div>
 
                     <SheetFooter className="pt-4 border-t flex flex-row justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                            disabled={loading}
-                        >
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>
                         <Button type="submit" disabled={loading} className="gap-2">

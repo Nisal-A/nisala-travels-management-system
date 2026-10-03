@@ -20,7 +20,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { PaginatedData, Payment } from '@/types';
 
 interface PaymentsIndexProps {
-    payments: PaginatedData<Payment & { customer?: any, booking?: any }>;
+    payments: PaginatedData<Payment & { customer?: any; booking?: any }>;
     filters: Record<string, any>;
     savedFilters: any[];
 }
@@ -35,7 +35,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
         }
     };
 
-    const columns: ColumnDef<Payment & { customer?: any, booking?: any }>[] = [
+    const columns: ColumnDef<Payment & { customer?: any; booking?: any }>[] = [
         {
             accessorKey: 'payment_date',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
@@ -46,7 +46,11 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
             header: ({ column }) => <DataTableColumnHeader column={column} title="Reference" />,
             cell: ({ row }) => {
                 const p = row.original;
-                return <span className="font-medium text-muted-foreground">{p.receipt_number || p.reference_number || `RCP-${p.id}`}</span>;
+                return (
+                    <span className="font-medium text-muted-foreground">
+                        {p.receipt_number || p.reference_number || `RCP-${p.id}`}
+                    </span>
+                );
             },
         },
         {
@@ -55,36 +59,49 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
             cell: ({ row }) => {
                 const p = row.original;
                 return (
-                    <Link href={route('bookings.show', { booking: p.booking_id })} className="text-primary hover:underline font-medium">
+                    <Link
+                        href={route('bookings.show', { booking: p.booking_id })}
+                        className="text-primary hover:underline font-medium"
+                    >
                         {p.booking?.booking_reference || `BKG-${p.booking_id}`}
                     </Link>
                 );
-            }
+            },
         },
         {
             id: 'customer',
             header: 'Customer',
             cell: ({ row }) => {
                 const customer = row.original.customer;
-                return <span className="font-medium">{customer?.full_name || `${customer?.first_name} ${customer?.last_name}`}</span>;
-            }
+                return (
+                    <span className="font-medium">
+                        {customer?.full_name || `${customer?.first_name} ${customer?.last_name}`}
+                    </span>
+                );
+            },
         },
         {
             accessorKey: 'payment_method',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Method" />,
-            cell: ({ row }) => <span className="capitalize">{String(row.getValue('payment_method')).replace('_', ' ')}</span>,
+            cell: ({ row }) => (
+                <span className="capitalize">{String(row.getValue('payment_method')).replace('_', ' ')}</span>
+            ),
         },
         {
             accessorKey: 'amount',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
-            cell: ({ row }) => <MoneyText amount={Number(row.getValue('amount'))} currency={row.original.currency as "LKR" | "USD"} />,
+            cell: ({ row }) => (
+                <MoneyText amount={Number(row.getValue('amount'))} currency={row.original.currency as 'LKR' | 'USD'} />
+            ),
         },
         {
             accessorKey: 'status',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
             cell: ({ row }) => {
                 const status = row.getValue('status') as string;
-                return <StatusBadge type="payment" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />;
+                return (
+                    <StatusBadge type="payment" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />
+                );
             },
         },
         {
@@ -119,27 +136,39 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
                     </div>
                 );
             },
-        }
+        },
     ];
 
-    const mobileCard = (payment: Payment & { customer?: any, booking?: any }) => (
+    const mobileCard = (payment: Payment & { customer?: any; booking?: any }) => (
         <div className="rounded-lg border bg-card p-4 shadow-sm flex flex-col gap-3">
             <div className="flex justify-between items-start">
                 <div className="flex flex-col">
-                    <span className="font-semibold">{payment.receipt_number || payment.reference_number || `RCP-${payment.id}`}</span>
+                    <span className="font-semibold">
+                        {payment.receipt_number || payment.reference_number || `RCP-${payment.id}`}
+                    </span>
                     <span className="text-xs text-muted-foreground">{payment.payment_date}</span>
                 </div>
-                <StatusBadge type="payment" status={(payment.status.charAt(0).toUpperCase() + payment.status.slice(1)) as any} />
+                <StatusBadge
+                    type="payment"
+                    status={(payment.status.charAt(0).toUpperCase() + payment.status.slice(1)) as any}
+                />
             </div>
             <div className="text-sm">
                 <div className="font-medium">{payment.customer?.full_name}</div>
                 <div className="text-muted-foreground capitalize">
-                    Booking: <Link href={route('bookings.show', { booking: payment.booking_id })} className="text-primary hover:underline">{payment.booking?.booking_reference || `BKG-${payment.booking_id}`}</Link> • {payment.payment_method?.replace('_', ' ')}
+                    Booking:{' '}
+                    <Link
+                        href={route('bookings.show', { booking: payment.booking_id })}
+                        className="text-primary hover:underline"
+                    >
+                        {payment.booking?.booking_reference || `BKG-${payment.booking_id}`}
+                    </Link>{' '}
+                    • {payment.payment_method?.replace('_', ' ')}
                 </div>
             </div>
             <div className="flex justify-between items-center mt-2 border-t pt-2">
                 <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    <MoneyText amount={Number(payment.amount)} currency={payment.currency as "LKR" | "USD"} />
+                    <MoneyText amount={Number(payment.amount)} currency={payment.currency as 'LKR' | 'USD'} />
                 </div>
                 {canDelete && payment.status !== 'failed' && (
                     <Button
@@ -158,10 +187,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
     return (
         <AppLayout
             title="Payments"
-            breadcrumbs={[
-                { label: 'Dashboard', href: route('dashboard') },
-                { label: 'Payments' },
-            ]}
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Payments' }]}
         >
             <Head title="Payments" />
             <div className="space-y-6">

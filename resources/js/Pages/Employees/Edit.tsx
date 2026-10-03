@@ -5,7 +5,7 @@ import { User } from '@/types';
 
 interface EditProps {
     employee: User;
-    roles: { id: number, name: string }[];
+    roles: { id: number; name: string }[];
 }
 
 export default function Edit({ employee, roles }: EditProps) {

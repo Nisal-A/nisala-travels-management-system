@@ -9,14 +9,7 @@ import {
     VisibilityState as ColumnVisibilityState,
     RowData,
 } from '@tanstack/react-table';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -69,13 +62,12 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     isLoading = false,
     bulkActions = [],
 }: DataTableProps<TData, TValue>) {
-    
     // Sort & Filters from URL props
     const [sorting, setSorting] = useState<SortingState>(
-        filters.sort ? [{ id: filters.sort, desc: filters.direction === 'desc' }] : []
+        filters.sort ? [{ id: filters.sort, desc: filters.direction === 'desc' }] : [],
     );
     const [rowSelection, setRowSelection] = useState({});
-    
+
     // Column Visibility from LocalStorage
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(() => {
         const saved = localStorage.getItem(`dt_vis_${tableKey}`);
@@ -89,24 +81,27 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     // Search
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
 
-    const applyFilters = useCallback((newParams: any = {}) => {
-        const query = {
-            ...filters,
-            ...newParams,
-        };
-        // Clean up empty params
-        Object.keys(query).forEach(key => {
-            if (query[key] === null || query[key] === '' || query[key] === undefined) {
-                delete query[key];
-            }
-        });
-        
-        router.get(window.location.pathname, query, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    }, [filters]);
+    const applyFilters = useCallback(
+        (newParams: any = {}) => {
+            const query = {
+                ...filters,
+                ...newParams,
+            };
+            // Clean up empty params
+            Object.keys(query).forEach((key) => {
+                if (query[key] === null || query[key] === '' || query[key] === undefined) {
+                    delete query[key];
+                }
+            });
+
+            router.get(window.location.pathname, query, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        },
+        [filters],
+    );
 
     // Debounced search
     useEffect(() => {
@@ -146,34 +141,34 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     });
 
     const handleSaveFilter = async () => {
-        const name = prompt("Enter a name for this view:");
+        const name = prompt('Enter a name for this view:');
         if (!name) return;
-        
+
         try {
             await axios.post(route('saved-filters.store'), {
                 table_key: tableKey,
                 name: name,
                 filters: filters,
             });
-            toast.success("Filter view saved successfully");
+            toast.success('Filter view saved successfully');
             router.reload({ preserveState: true, preserveScroll: true } as any);
         } catch (e) {
-            toast.error("Failed to save filter view");
+            toast.error('Failed to save filter view');
         }
     };
 
     const handleDeleteFilter = async (id: number) => {
         try {
             await axios.delete(route('saved-filters.destroy', id as any));
-            toast.success("Filter view deleted");
+            toast.success('Filter view deleted');
             router.reload({ preserveState: true, preserveScroll: true } as any);
         } catch (e) {
-            toast.error("Failed to delete filter view");
+            toast.error('Failed to delete filter view');
         }
     };
 
     const selectedRows = table.getSelectedRowModel().rows;
-    const selectedIds = selectedRows.map(row => (row.original as TData).id);
+    const selectedIds = selectedRows.map((row) => (row.original as TData).id);
 
     return (
         <div className="space-y-4">
@@ -191,7 +186,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                             />
                         </div>
                     )}
-                    
+
                     {/* Saved Filters Dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger
@@ -208,16 +203,16 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                             {savedFilters.length === 0 ? (
                                 <DropdownMenuItem disabled>No saved views</DropdownMenuItem>
                             ) : (
-                                savedFilters.map(sf => (
+                                savedFilters.map((sf) => (
                                     <div key={sf.id} className="flex items-center justify-between group">
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             className="flex-1 cursor-pointer"
                                             onClick={() => applyFilters(sf.filters)}
                                         >
                                             {sf.name}
                                         </DropdownMenuItem>
-                                        <Trash 
-                                            className="h-4 w-4 mr-2 text-muted-foreground hover:text-destructive cursor-pointer opacity-0 group-hover:opacity-100" 
+                                        <Trash
+                                            className="h-4 w-4 mr-2 text-muted-foreground hover:text-destructive cursor-pointer opacity-0 group-hover:opacity-100"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDeleteFilter(sf.id);
@@ -246,7 +241,8 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {table.getAllColumns()
+                            {table
+                                .getAllColumns()
                                 .filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
                                 .map((column) => {
                                     return (
@@ -273,9 +269,9 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                         {bulkActions.map((action, i) => {
                             const Icon = action.icon;
                             return (
-                                <Button 
-                                    key={i} 
-                                    variant={action.variant || 'secondary'} 
+                                <Button
+                                    key={i}
+                                    variant={action.variant || 'secondary'}
                                     size="sm"
                                     onClick={() => {
                                         action.onClick(selectedIds);
@@ -295,9 +291,16 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
             {mobileCard && (
                 <div className="grid grid-cols-1 gap-4 md:hidden">
                     {isLoading ? (
-                        <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                        <div className="flex justify-center p-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
                     ) : data.length === 0 ? (
-                        <EmptyState title="No records found" description="Adjust your filters or create a new record." onAction={() => applyFilters({ search: '', status: '' })} actionLabel="Clear Filters" />
+                        <EmptyState
+                            title="No records found"
+                            description="Adjust your filters or create a new record."
+                            onAction={() => applyFilters({ search: '', status: '' })}
+                            actionLabel="Clear Filters"
+                        />
                     ) : (
                         data.map((row, i) => <div key={row.id || i}>{mobileCard(row)}</div>)
                     )}
@@ -315,10 +318,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                                         <TableHead key={header.id}>
                                             {header.isPlaceholder
                                                 ? null
-                                                : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext()
-                                                  )}
+                                                : flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
                                     ))}
                                 </TableRow>
@@ -333,16 +333,10 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                                 </TableRow>
                             ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                    >
+                                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
                                         ))}
                                     </TableRow>
@@ -358,18 +352,20 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                     </Table>
                 </div>
             </div>
-            
+
             {/* Pagination Controls */}
             {total > 0 && links && links.length > 3 && (
                 <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                        Showing <span className="font-medium">{from || 0}</span> to <span className="font-medium">{to || 0}</span> of <span className="font-medium">{total}</span> results
+                        Showing <span className="font-medium">{from || 0}</span> to{' '}
+                        <span className="font-medium">{to || 0}</span> of <span className="font-medium">{total}</span>{' '}
+                        results
                     </div>
                     <div className="flex space-x-2">
                         {links.map((link, index) => {
                             const isPrevious = index === 0;
                             const isNext = index === links.length - 1;
-                            
+
                             if (link.url === null) {
                                 return (
                                     <Button
@@ -385,7 +381,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                             return (
                                 <Button
                                     key={index}
-                                    variant={link.active ? "default" : "outline"}
+                                    variant={link.active ? 'default' : 'outline'}
                                     size="sm"
                                     onClick={() => {
                                         // Extract page number from URL if possible, or just visit it

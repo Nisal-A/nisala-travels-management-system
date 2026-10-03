@@ -39,8 +39,9 @@ export default function Step1Customer({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Selected customer object
-    const selectedCustomer = searchResults.find(c => c.id.toString() === customerId) ||
-        initialCustomers.find(c => c.id.toString() === customerId);
+    const selectedCustomer =
+        searchResults.find((c) => c.id.toString() === customerId) ||
+        initialCustomers.find((c) => c.id.toString() === customerId);
 
     // Debounced async customer search
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function Step1Customer({
             setSearching(true);
             try {
                 const response = await axios.get('/admin/customers/search', {
-                    params: { query: searchQuery }
+                    params: { query: searchQuery },
                 });
                 setSearchResults(response.data || []);
                 setIsDropdownOpen(true);
@@ -85,7 +86,7 @@ export default function Step1Customer({
     };
 
     const handleCreatedCustomer = (customer: Customer) => {
-        setSearchResults(prev => [customer, ...prev]);
+        setSearchResults((prev) => [customer, ...prev]);
         onSelectCustomer(customer);
     };
 
@@ -128,7 +129,7 @@ export default function Step1Customer({
                                     type="text"
                                     placeholder="Type customer name, email, phone, passport, or ID..."
                                     value={searchQuery}
-                                    onChange={e => {
+                                    onChange={(e) => {
                                         setSearchQuery(e.target.value);
                                         setIsDropdownOpen(true);
                                     }}
@@ -159,7 +160,7 @@ export default function Step1Customer({
                                             </div>
                                         </div>
                                     ) : (
-                                        searchResults.map(c => (
+                                        searchResults.map((c) => (
                                             <button
                                                 key={c.id}
                                                 type="button"
@@ -198,9 +199,7 @@ export default function Step1Customer({
                                 </div>
                             )}
 
-                            {error && (
-                                <p className="text-xs text-destructive font-medium mt-1">{error}</p>
-                            )}
+                            {error && <p className="text-xs text-destructive font-medium mt-1">{error}</p>}
                         </div>
                     ) : (
                         /* Selected Customer Card */
@@ -209,8 +208,8 @@ export default function Step1Customer({
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="flex items-start gap-3.5">
                                     <div className="w-12 h-12 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-lg shrink-0">
-                                        {(selectedCustomer.first_name?.[0] || 'C')}
-                                        {(selectedCustomer.last_name?.[0] || '')}
+                                        {selectedCustomer.first_name?.[0] || 'C'}
+                                        {selectedCustomer.last_name?.[0] || ''}
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap">
@@ -236,12 +235,14 @@ export default function Step1Customer({
                                             </span>
                                             {selectedCustomer.passport_number && (
                                                 <span className="flex items-center gap-1.5">
-                                                    <FileText className="w-3.5 h-3.5 text-primary" /> Passport: {selectedCustomer.passport_number}
+                                                    <FileText className="w-3.5 h-3.5 text-primary" /> Passport:{' '}
+                                                    {selectedCustomer.passport_number}
                                                 </span>
                                             )}
                                             {selectedCustomer.nationality && (
                                                 <span className="flex items-center gap-1.5">
-                                                    <Globe className="w-3.5 h-3.5 text-primary" /> {selectedCustomer.nationality}
+                                                    <Globe className="w-3.5 h-3.5 text-primary" />{' '}
+                                                    {selectedCustomer.nationality}
                                                 </span>
                                             )}
                                         </div>
@@ -253,7 +254,25 @@ export default function Step1Customer({
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => onSelectCustomer({ id: 0, full_name: '', phone: '', email: '', status: 'active', notes: null, nic: null, passport_number: null, dob: null, gender: null, nationality: null, whatsapp: null, address: null, emergency_contact_name: null, emergency_contact_phone: null })}
+                                        onClick={() =>
+                                            onSelectCustomer({
+                                                id: 0,
+                                                full_name: '',
+                                                phone: '',
+                                                email: '',
+                                                status: 'active',
+                                                notes: null,
+                                                nic: null,
+                                                passport_number: null,
+                                                dob: null,
+                                                gender: null,
+                                                nationality: null,
+                                                whatsapp: null,
+                                                address: null,
+                                                emergency_contact_name: null,
+                                                emergency_contact_phone: null,
+                                            })
+                                        }
                                         className="shrink-0 gap-1 text-muted-foreground hover:text-foreground"
                                     >
                                         <X className="w-3.5 h-3.5" /> Change
@@ -271,16 +290,17 @@ export default function Step1Customer({
                             </Label>
                             <Select
                                 value={assignedToId || 'unassigned'}
-                                onValueChange={val => onSelectAssignedTo(!val || val === 'unassigned' ? '' : val)}
+                                onValueChange={(val) => onSelectAssignedTo(!val || val === 'unassigned' ? '' : val)}
                             >
                                 <SelectTrigger id="assigned_to" className="h-10">
                                     <SelectValue placeholder="Assign staff member..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="unassigned">-- Unassigned --</SelectItem>
-                                    {employees.map(emp => (
+                                    {employees.map((emp) => (
                                         <SelectItem key={emp.id} value={emp.id.toString()}>
-                                            {emp.first_name} {emp.last_name} {emp.designation ? `(${emp.designation})` : ''}
+                                            {emp.first_name} {emp.last_name}{' '}
+                                            {emp.designation ? `(${emp.designation})` : ''}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

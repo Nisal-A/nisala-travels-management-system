@@ -1,12 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Globe, LogIn, AlertCircle } from 'lucide-react';
@@ -42,12 +36,8 @@ export default function Login() {
                     <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center backdrop-blur-sm">
                         <Globe className="h-8 w-8 text-primary" />
                     </div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">
-                        Nisala Travels
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Management System
-                    </p>
+                    <h1 className="text-2xl font-bold text-white tracking-tight">Nisala Travels</h1>
+                    <p className="text-sm text-muted-foreground">Management System</p>
                 </div>
 
                 {/* Login Card */}
@@ -57,9 +47,7 @@ export default function Login() {
                             <LogIn className="h-4 w-4" />
                             Sign In
                         </CardTitle>
-                        <CardDescription>
-                            Enter your credentials to access the system.
-                        </CardDescription>
+                        <CardDescription>Enter your credentials to access the system.</CardDescription>
                     </CardHeader>
 
                     <CardContent>
@@ -105,11 +93,7 @@ export default function Login() {
                             </div>
 
                             {/* Submit */}
-                            <Button
-                                type="submit"
-                                className="w-full mt-2"
-                                disabled={processing}
-                            >
+                            <Button type="submit" className="w-full mt-2" disabled={processing}>
                                 {processing ? 'Signing in…' : 'Sign In'}
                             </Button>
                         </form>
@@ -117,9 +101,7 @@ export default function Login() {
                 </Card>
 
                 {/* Footer */}
-                <p className="mt-8 text-xs text-neutral-600 uppercase tracking-widest">
-                    NT-004.1 Auth Foundation
-                </p>
+                <p className="mt-8 text-xs text-neutral-600 uppercase tracking-widest">NT-004.1 Auth Foundation</p>
             </main>
         </>
     );

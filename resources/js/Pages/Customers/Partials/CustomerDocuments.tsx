@@ -6,10 +6,34 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { FileText, Download, MoreHorizontal, UploadCloud, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    FileText,
+    Download,
+    MoreHorizontal,
+    UploadCloud,
+    CheckCircle,
+    XCircle,
+    AlertCircle,
+    Loader2,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 interface DocumentType {
@@ -74,7 +98,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
             },
             onError: (err) => {
                 console.error(err);
-            }
+            },
         });
     };
 
@@ -86,11 +110,15 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const handleVerify = (doc: CustomerDocument) => {
         if (confirm('Are you sure you want to verify this document?')) {
             setActionDocId(doc.id);
-            router.patch(route('customers.documents.verify', { customer: customerId, document: doc.id }), {}, {
-                preserveScroll: true,
-                onSuccess: () => alert('Document verified successfully.'),
-                onFinish: () => setActionDocId(null),
-            });
+            router.patch(
+                route('customers.documents.verify', { customer: customerId, document: doc.id }),
+                {},
+                {
+                    preserveScroll: true,
+                    onSuccess: () => alert('Document verified successfully.'),
+                    onFinish: () => setActionDocId(null),
+                },
+            );
         }
     };
 
@@ -98,15 +126,19 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
         if (!rejectDocId || !rejectReason.trim()) return;
 
         setActionDocId(rejectDocId);
-        router.patch(route('customers.documents.reject', { customer: customerId, document: rejectDocId }), { reason: rejectReason }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setRejectDocId(null);
-                setRejectReason('');
-                alert('Document rejected.');
+        router.patch(
+            route('customers.documents.reject', { customer: customerId, document: rejectDocId }),
+            { reason: rejectReason },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setRejectDocId(null);
+                    setRejectReason('');
+                    alert('Document rejected.');
+                },
+                onFinish: () => setActionDocId(null),
             },
-            onFinish: () => setActionDocId(null),
-        });
+        );
     };
 
     const isExpired = (dateString: string | null) => {
@@ -133,11 +165,29 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
     const getVerificationBadge = (status: string) => {
         switch (status) {
             case 'Verified':
-                return <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20"><CheckCircle className="h-3 w-3 mr-1" /> Verified</Badge>;
+                return (
+                    <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20">
+                        <CheckCircle className="h-3 w-3 mr-1" /> Verified
+                    </Badge>
+                );
             case 'Rejected':
-                return <Badge variant="destructive" className="bg-red-500/15 text-red-600 hover:bg-red-500/25 border-red-500/20"><XCircle className="h-3 w-3 mr-1" /> Rejected</Badge>;
+                return (
+                    <Badge
+                        variant="destructive"
+                        className="bg-red-500/15 text-red-600 hover:bg-red-500/25 border-red-500/20"
+                    >
+                        <XCircle className="h-3 w-3 mr-1" /> Rejected
+                    </Badge>
+                );
             default:
-                return <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 border-amber-500/20"><AlertCircle className="h-3 w-3 mr-1" /> Pending</Badge>;
+                return (
+                    <Badge
+                        variant="secondary"
+                        className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 border-amber-500/20"
+                    >
+                        <AlertCircle className="h-3 w-3 mr-1" /> Pending
+                    </Badge>
+                );
         }
     };
 
@@ -152,10 +202,16 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                     <CardDescription>Securely manage passports, visas, and other required documents.</CardDescription>
                 </div>
                 {canUpload && (
-                    <Dialog open={isUploadOpen} onOpenChange={(open: boolean) => {
-                        setIsUploadOpen(open);
-                        if (!open) { reset(); clearErrors(); }
-                    }}>
+                    <Dialog
+                        open={isUploadOpen}
+                        onOpenChange={(open: boolean) => {
+                            setIsUploadOpen(open);
+                            if (!open) {
+                                reset();
+                                clearErrors();
+                            }
+                        }}
+                    >
                         <DialogTrigger render={<Button className="gap-2" />}>
                             <UploadCloud className="h-4 w-4" />
                             Upload Document
@@ -171,25 +227,39 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
 
                                 <div className="grid gap-4 py-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="document_type_id" className={errors.document_type_id ? 'text-destructive' : ''}>Document Type *</Label>
+                                        <Label
+                                            htmlFor="document_type_id"
+                                            className={errors.document_type_id ? 'text-destructive' : ''}
+                                        >
+                                            Document Type *
+                                        </Label>
                                         <Select
                                             value={data.document_type_id}
                                             onValueChange={(val) => setData('document_type_id', val || '')}
                                         >
-                                            <SelectTrigger id="document_type_id" className={errors.document_type_id ? 'border-destructive' : ''}>
+                                            <SelectTrigger
+                                                id="document_type_id"
+                                                className={errors.document_type_id ? 'border-destructive' : ''}
+                                            >
                                                 <SelectValue placeholder="Select document type" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {documentTypes.map((type) => (
-                                                    <SelectItem key={type.id} value={type.id.toString()}>{type.name}</SelectItem>
+                                                    <SelectItem key={type.id} value={type.id.toString()}>
+                                                        {type.name}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        {errors.document_type_id && <p className="text-sm text-destructive">{errors.document_type_id}</p>}
+                                        {errors.document_type_id && (
+                                            <p className="text-sm text-destructive">{errors.document_type_id}</p>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="file" className={errors.file ? 'text-destructive' : ''}>File *</Label>
+                                        <Label htmlFor="file" className={errors.file ? 'text-destructive' : ''}>
+                                            File *
+                                        </Label>
                                         <Input
                                             id="file"
                                             type="file"
@@ -205,9 +275,15 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         )}
                                     </div>
 
-                                    {documentTypes.find(t => t.id.toString() === data.document_type_id)?.tracks_expiry && (
+                                    {documentTypes.find((t) => t.id.toString() === data.document_type_id)
+                                        ?.tracks_expiry && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="expiry_date" className={errors.expiry_date ? 'text-destructive' : ''}>Expiry Date</Label>
+                                            <Label
+                                                htmlFor="expiry_date"
+                                                className={errors.expiry_date ? 'text-destructive' : ''}
+                                            >
+                                                Expiry Date
+                                            </Label>
                                             <Input
                                                 id="expiry_date"
                                                 type="date"
@@ -215,7 +291,9 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                 onChange={(e) => setData('expiry_date', e.target.value)}
                                                 className={errors.expiry_date ? 'border-destructive' : ''}
                                             />
-                                            {errors.expiry_date && <p className="text-sm text-destructive">{errors.expiry_date}</p>}
+                                            {errors.expiry_date && (
+                                                <p className="text-sm text-destructive">{errors.expiry_date}</p>
+                                            )}
                                         </div>
                                     )}
 
@@ -233,7 +311,12 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                 </div>
 
                                 <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => setIsUploadOpen(false)} disabled={processing}>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setIsUploadOpen(false)}
+                                        disabled={processing}
+                                    >
                                         Cancel
                                     </Button>
                                     <Button type="submit" disabled={processing || !data.file || !data.document_type_id}>
@@ -257,7 +340,9 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                     <div className="flex flex-col items-center justify-center p-12 text-center">
                         <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
                         <h3 className="text-lg font-medium">No documents</h3>
-                        <p className="text-muted-foreground mb-4 max-w-sm">This customer doesn't have any uploaded documents yet.</p>
+                        <p className="text-muted-foreground mb-4 max-w-sm">
+                            This customer doesn't have any uploaded documents yet.
+                        </p>
                         {canUpload && (
                             <Button variant="outline" onClick={() => setIsUploadOpen(true)}>
                                 Upload First Document
@@ -284,18 +369,29 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                             <div className="font-medium flex items-center gap-2">
                                                 {doc.document_type.name}
                                                 {doc.document_status === 'superseded' && (
-                                                    <Badge variant="outline" className="text-xs font-normal">Superseded</Badge>
+                                                    <Badge variant="outline" className="text-xs font-normal">
+                                                        Superseded
+                                                    </Badge>
                                                 )}
                                             </div>
-                                            {doc.document_id && <div className="text-xs text-muted-foreground font-mono">{doc.document_id}</div>}
+                                            {doc.document_id && (
+                                                <div className="text-xs text-muted-foreground font-mono">
+                                                    {doc.document_id}
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2 max-w-[200px] truncate" title={doc.original_filename}>
+                                            <div
+                                                className="flex items-center gap-2 max-w-[200px] truncate"
+                                                title={doc.original_filename}
+                                            >
                                                 <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                                                 <span className="truncate">{doc.original_filename}</span>
                                             </div>
                                             {doc.expiry_date && (
-                                                <div className={`text-xs mt-1 ${isExpired(doc.expiry_date) ? 'text-destructive font-medium' : isExpiringSoon(doc.expiry_date) ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                                                <div
+                                                    className={`text-xs mt-1 ${isExpired(doc.expiry_date) ? 'text-destructive font-medium' : isExpiringSoon(doc.expiry_date) ? 'text-amber-600' : 'text-muted-foreground'}`}
+                                                >
                                                     {isExpired(doc.expiry_date) ? 'Expired: ' : 'Exp: '}
                                                     {new Date(doc.expiry_date).toLocaleDateString()}
                                                 </div>
@@ -305,7 +401,10 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                             <div className="space-y-1">
                                                 {getVerificationBadge(doc.verification_status)}
                                                 {doc.verification_status === 'Rejected' && doc.rejection_reason && (
-                                                    <div className="text-xs text-destructive max-w-[200px] truncate" title={doc.rejection_reason}>
+                                                    <div
+                                                        className="text-xs text-destructive max-w-[200px] truncate"
+                                                        title={doc.rejection_reason}
+                                                    >
                                                         Reason: {doc.rejection_reason}
                                                     </div>
                                                 )}
@@ -326,27 +425,44 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                                                <DropdownMenuTrigger
+                                                    render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+                                                >
                                                     <MoreHorizontal className="h-4 w-4" />
                                                     <span className="sr-only">Open menu</span>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => handleDownload(doc)} className="gap-2 cursor-pointer">
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleDownload(doc)}
+                                                        className="gap-2 cursor-pointer"
+                                                    >
                                                         <Download className="h-4 w-4" />
                                                         Download
                                                     </DropdownMenuItem>
 
                                                     {canVerify && doc.verification_status !== 'Verified' && (
-                                                        <DropdownMenuItem onClick={() => handleVerify(doc)} disabled={actionDocId === doc.id} className="gap-2 cursor-pointer">
-                                                            {actionDocId === doc.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleVerify(doc)}
+                                                            disabled={actionDocId === doc.id}
+                                                            className="gap-2 cursor-pointer"
+                                                        >
+                                                            {actionDocId === doc.id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <CheckCircle className="h-4 w-4" />
+                                                            )}
                                                             Verify
                                                         </DropdownMenuItem>
                                                     )}
 
                                                     {canReject && doc.verification_status !== 'Rejected' && (
-                                                        <DropdownMenuItem onClick={() => setRejectDocId(doc.id)} disabled={actionDocId === doc.id} className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600">
+                                                        <DropdownMenuItem
+                                                            onClick={() => setRejectDocId(doc.id)}
+                                                            disabled={actionDocId === doc.id}
+                                                            className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600"
+                                                        >
                                                             <AlertCircle className="h-4 w-4" />
                                                             Reject
                                                         </DropdownMenuItem>
@@ -355,7 +471,10 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                     {canDelete && (
                                                         <>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem disabled className="text-destructive gap-2">
+                                                            <DropdownMenuItem
+                                                                disabled
+                                                                className="text-destructive gap-2"
+                                                            >
                                                                 <XCircle className="h-4 w-4" />
                                                                 Delete
                                                             </DropdownMenuItem>
@@ -378,11 +497,14 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                     <DialogHeader>
                         <DialogTitle>Reject Document</DialogTitle>
                         <DialogDescription>
-                            Please provide a reason for rejecting this document. This reason will be visible to other staff and the customer.
+                            Please provide a reason for rejecting this document. This reason will be visible to other
+                            staff and the customer.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                        <Label htmlFor="reject_reason" className="mb-2 block">Rejection Reason</Label>
+                        <Label htmlFor="reject_reason" className="mb-2 block">
+                            Rejection Reason
+                        </Label>
                         <Input
                             id="reject_reason"
                             value={rejectReason}
@@ -392,8 +514,14 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setRejectDocId(null)} disabled={actionDocId !== null}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim() || actionDocId !== null}>
+                        <Button variant="outline" onClick={() => setRejectDocId(null)} disabled={actionDocId !== null}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleReject}
+                            disabled={!rejectReason.trim() || actionDocId !== null}
+                        >
                             {actionDocId !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Reject Document
                         </Button>

@@ -2,20 +2,24 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, startOfMonth, endOfMonth, startOfWeek as startOfWeekFns, endOfWeek, addDays } from 'date-fns';
+import {
+    format,
+    parse,
+    startOfWeek,
+    getDay,
+    startOfMonth,
+    endOfMonth,
+    startOfWeek as startOfWeekFns,
+    endOfWeek,
+    addDays,
+} from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     Calendar as CalendarIcon,
@@ -65,7 +69,7 @@ const EVENT_TYPES = [
     { id: 'visa', label: 'Visa Deadlines', color: 'bg-amber-500', textClass: 'text-amber-500', hex: '#f59e0b' },
 ] as const;
 
-type EventType = typeof EVENT_TYPES[number]['id'];
+type EventType = (typeof EVENT_TYPES)[number]['id'];
 
 interface CalendarEvent {
     id: string;
@@ -152,7 +156,11 @@ function StatusBadge({ status }: { status: string }) {
         cancelled: { variant: 'destructive', label: 'Cancelled' },
     };
     const config = variants[status?.toLowerCase()] ?? { variant: 'secondary' as const, label: status };
-    return <Badge variant={config.variant} className="text-[0.65rem] capitalize">{config.label}</Badge>;
+    return (
+        <Badge variant={config.variant} className="text-[0.65rem] capitalize">
+            {config.label}
+        </Badge>
+    );
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -160,16 +168,16 @@ function StatusBadge({ status }: { status: string }) {
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function CalendarPage() {
-    const isMobile = useMediaQuery("(max-width: 768px)");
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState(isMobile ? Views.AGENDA : Views.MONTH);
-    const [selectedTypes, setSelectedTypes] = useState<string[]>(EVENT_TYPES.map(t => t.id));
-    const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>({
+    const [selectedTypes, setSelectedTypes] = useState<string[]>(EVENT_TYPES.map((t) => t.id));
+    const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
         start: startOfWeek(startOfMonth(new Date())),
-        end: endOfWeek(endOfMonth(new Date()))
+        end: endOfWeek(endOfMonth(new Date())),
     });
 
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -188,7 +196,7 @@ export default function CalendarPage() {
             const params = new URLSearchParams();
             params.append('start', format(start, 'yyyy-MM-dd'));
             params.append('end', format(end, 'yyyy-MM-dd'));
-            types.forEach(t => params.append('types[]', t));
+            types.forEach((t) => params.append('types[]', t));
 
             const response = await axios.get(`/admin/calendar/events?${params.toString()}`);
 
@@ -200,7 +208,7 @@ export default function CalendarPage() {
 
             setEvents(formattedEvents);
         } catch (error) {
-            console.error("Failed to fetch events", error);
+            console.error('Failed to fetch events', error);
         } finally {
             setLoading(false);
         }
@@ -212,43 +220,45 @@ export default function CalendarPage() {
     }, [dateRange.start, dateRange.end, selectedTypes, fetchEvents]);
 
     // Update range when navigating
-    const handleNavigate = useCallback((newDate: Date, view?: string) => {
-        const activeView = view ?? currentView;
-        setCurrentDate(newDate);
-        let start: Date, end: Date;
+    const handleNavigate = useCallback(
+        (newDate: Date, view?: string) => {
+            const activeView = view ?? currentView;
+            setCurrentDate(newDate);
+            let start: Date, end: Date;
 
-        if (activeView === Views.MONTH) {
-            start = startOfWeek(startOfMonth(newDate));
-            end = endOfWeek(endOfMonth(newDate));
-        } else if (activeView === Views.WEEK) {
-            start = startOfWeekFns(newDate);
-            end = endOfWeek(newDate);
-        } else if (activeView === Views.AGENDA) {
-            start = newDate;
-            end = addDays(newDate, 30);
-        } else {
-            start = newDate;
-            end = newDate;
-        }
+            if (activeView === Views.MONTH) {
+                start = startOfWeek(startOfMonth(newDate));
+                end = endOfWeek(endOfMonth(newDate));
+            } else if (activeView === Views.WEEK) {
+                start = startOfWeekFns(newDate);
+                end = endOfWeek(newDate);
+            } else if (activeView === Views.AGENDA) {
+                start = newDate;
+                end = addDays(newDate, 30);
+            } else {
+                start = newDate;
+                end = newDate;
+            }
 
-        setDateRange({ start, end });
-    }, [currentView]);
+            setDateRange({ start, end });
+        },
+        [currentView],
+    );
 
-    const handleViewChange = useCallback((newView: any) => {
-        setCurrentView(newView);
-        handleNavigate(currentDate, newView);
-    }, [currentDate, handleNavigate]);
+    const handleViewChange = useCallback(
+        (newView: any) => {
+            setCurrentView(newView);
+            handleNavigate(currentDate, newView);
+        },
+        [currentDate, handleNavigate],
+    );
 
     const toggleType = (typeId: string) => {
-        setSelectedTypes(prev =>
-            prev.includes(typeId)
-                ? prev.filter(t => t !== typeId)
-                : [...prev, typeId]
-        );
+        setSelectedTypes((prev) => (prev.includes(typeId) ? prev.filter((t) => t !== typeId) : [...prev, typeId]));
     };
 
     const eventStyleGetter = useCallback((event: CalendarEvent) => {
-        const typeConf = EVENT_TYPES.find(t => t.id === event.type);
+        const typeConf = EVENT_TYPES.find((t) => t.id === event.type);
 
         return {
             style: {
@@ -258,7 +268,7 @@ export default function CalendarPage() {
                 color: 'white',
                 border: '0px',
                 display: 'block',
-            }
+            },
         };
     }, []);
 
@@ -271,17 +281,15 @@ export default function CalendarPage() {
     const CustomEvent = useMemo(() => {
         return function EventComponent({ event }: { event: CalendarEvent }) {
             if (isMobile) {
-                return (
-                    <div className="text-xs truncate px-1 w-full text-left cursor-pointer">
-                        {event.title}
-                    </div>
-                );
+                return <div className="text-xs truncate px-1 w-full text-left cursor-pointer">{event.title}</div>;
             }
 
             return (
                 <TooltipProvider delay={300}>
                     <Tooltip>
-                        <TooltipTrigger render={<div className="text-xs truncate px-1 w-full text-left cursor-pointer" />}>
+                        <TooltipTrigger
+                            render={<div className="text-xs truncate px-1 w-full text-left cursor-pointer" />}
+                        >
                             {event.title}
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs max-w-xs z-[100] p-3">
@@ -289,7 +297,8 @@ export default function CalendarPage() {
                             {event.booking && (
                                 <div className="space-y-1 text-muted-foreground">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="font-medium text-foreground">Ref:</span> {event.booking.reference}
+                                        <span className="font-medium text-foreground">Ref:</span>{' '}
+                                        {event.booking.reference}
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <MapPin className="h-3 w-3" /> {event.booking.destination}
@@ -299,7 +308,8 @@ export default function CalendarPage() {
                                     </div>
                                     {event.booking.balance > 0 && (
                                         <div className="flex items-center gap-1.5 text-rose-500 font-medium">
-                                            <CreditCard className="h-3 w-3" /> Rs. {Number(event.booking.balance).toLocaleString()} due
+                                            <CreditCard className="h-3 w-3" /> Rs.{' '}
+                                            {Number(event.booking.balance).toLocaleString()} due
                                         </div>
                                     )}
                                 </div>
@@ -315,15 +325,18 @@ export default function CalendarPage() {
     const departuresThisWeek = useMemo(() => {
         const start = startOfWeekFns(new Date());
         const end = endOfWeek(new Date());
-        return events.filter(e => e.type === 'departures' && e.start >= start && e.start <= end).length;
+        return events.filter((e) => e.type === 'departures' && e.start >= start && e.start <= end).length;
     }, [events]);
 
     // Event counts by type
     const eventCounts = useMemo(() => {
-        return EVENT_TYPES.reduce((acc, type) => {
-            acc[type.id] = events.filter(e => e.type === type.id).length;
-            return acc;
-        }, {} as Record<string, number>);
+        return EVENT_TYPES.reduce(
+            (acc, type) => {
+                acc[type.id] = events.filter((e) => e.type === type.id).length;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
     }, [events]);
 
     // Custom Toolbar
@@ -335,9 +348,11 @@ export default function CalendarPage() {
         const label = () => {
             const date = toolbar.date;
             if (toolbar.view === 'month') return format(date, 'MMMM yyyy');
-            if (toolbar.view === 'week') return `${format(startOfWeekFns(date), 'MMM d')} – ${format(endOfWeek(date), 'MMM d, yyyy')}`;
+            if (toolbar.view === 'week')
+                return `${format(startOfWeekFns(date), 'MMM d')} – ${format(endOfWeek(date), 'MMM d, yyyy')}`;
             if (toolbar.view === 'day') return format(date, 'EEEE, MMMM d');
-            if (toolbar.view === 'agenda') return `${format(date, 'MMM d')} – ${format(addDays(date, 30), 'MMM d, yyyy')}`;
+            if (toolbar.view === 'agenda')
+                return `${format(date, 'MMM d')} – ${format(addDays(date, 30), 'MMM d, yyyy')}`;
             return format(date, 'MMMM yyyy');
         };
 
@@ -354,16 +369,16 @@ export default function CalendarPage() {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
 
-                    <h2 className="text-base font-semibold ml-2 min-w-[10rem] text-center sm:text-left">
-                        {label()}
-                    </h2>
+                    <h2 className="text-base font-semibold ml-2 min-w-[10rem] text-center sm:text-left">{label()}</h2>
 
                     <Popover>
-                        <PopoverTrigger render={
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <CalendarIcon className="h-4 w-4" />
-                            </Button>
-                        } />
+                        <PopoverTrigger
+                            render={
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <CalendarIcon className="h-4 w-4" />
+                                </Button>
+                            }
+                        />
                         <PopoverContent className="w-auto p-0" align="start">
                             <UICalendar
                                 mode="single"
@@ -428,7 +443,7 @@ export default function CalendarPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-3">
-                                {EVENT_TYPES.map(type => (
+                                {EVENT_TYPES.map((type) => (
                                     <div key={type.id} className="flex items-center justify-between">
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
@@ -444,7 +459,10 @@ export default function CalendarPage() {
                                                 {type.label}
                                             </Label>
                                         </div>
-                                        <Badge variant="secondary" className="text-[0.6rem] h-5 min-w-[1.5rem] justify-center">
+                                        <Badge
+                                            variant="secondary"
+                                            className="text-[0.6rem] h-5 min-w-[1.5rem] justify-center"
+                                        >
                                             {eventCounts[type.id] ?? 0}
                                         </Badge>
                                     </div>
@@ -455,7 +473,7 @@ export default function CalendarPage() {
                             <div className="pt-3 border-t border-border/60">
                                 <p className="text-xs text-muted-foreground mb-2 font-medium">Legend</p>
                                 <div className="grid grid-cols-1 gap-1.5">
-                                    {EVENT_TYPES.map(type => (
+                                    {EVENT_TYPES.map((type) => (
                                         <div key={type.id} className="flex items-center gap-2">
                                             <div className={`w-3 h-1.5 rounded-full ${type.color}`} />
                                             <span className="text-xs text-muted-foreground">{type.label}</span>
@@ -473,7 +491,9 @@ export default function CalendarPage() {
                                 <div className="absolute inset-0 z-10 bg-background/60 flex items-center justify-center backdrop-blur-[2px] rounded-lg">
                                     <div className="flex flex-col items-center gap-2">
                                         <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
-                                        <span className="text-xs text-muted-foreground font-medium">Loading events…</span>
+                                        <span className="text-xs text-muted-foreground font-medium">
+                                            Loading events…
+                                        </span>
                                     </div>
                                 </div>
                             )}
@@ -512,15 +532,15 @@ export default function CalendarPage() {
                         <>
                             <SheetHeader className="mb-6">
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <div className={cn(
-                                        "px-2.5 py-1 text-xs font-semibold rounded-md text-white",
-                                        EVENT_TYPES.find(t => t.id === selectedEvent.type)?.color
-                                    )}>
-                                        {EVENT_TYPES.find(t => t.id === selectedEvent.type)?.label}
+                                    <div
+                                        className={cn(
+                                            'px-2.5 py-1 text-xs font-semibold rounded-md text-white',
+                                            EVENT_TYPES.find((t) => t.id === selectedEvent.type)?.color,
+                                        )}
+                                    >
+                                        {EVENT_TYPES.find((t) => t.id === selectedEvent.type)?.label}
                                     </div>
-                                    {selectedEvent.status && (
-                                        <StatusBadge status={selectedEvent.status} />
-                                    )}
+                                    {selectedEvent.status && <StatusBadge status={selectedEvent.status} />}
                                     <span className="text-sm text-muted-foreground">
                                         {format(selectedEvent.start, 'EEEE, MMMM d, yyyy')}
                                     </span>
@@ -536,22 +556,34 @@ export default function CalendarPage() {
                                     <div className="grid gap-4 bg-muted/30 p-4 rounded-lg border border-border/60">
                                         <div className="grid grid-cols-2 gap-y-4">
                                             <div>
-                                                <div className="text-xs text-muted-foreground mb-1 font-medium">Booking Ref</div>
-                                                <div className="font-semibold text-sm">{selectedEvent.booking.reference}</div>
+                                                <div className="text-xs text-muted-foreground mb-1 font-medium">
+                                                    Booking Ref
+                                                </div>
+                                                <div className="font-semibold text-sm">
+                                                    {selectedEvent.booking.reference}
+                                                </div>
                                             </div>
                                             <div>
-                                                <div className="text-xs text-muted-foreground mb-1 font-medium">Customer</div>
-                                                <div className="font-semibold text-sm">{selectedEvent.booking.customer}</div>
+                                                <div className="text-xs text-muted-foreground mb-1 font-medium">
+                                                    Customer
+                                                </div>
+                                                <div className="font-semibold text-sm">
+                                                    {selectedEvent.booking.customer}
+                                                </div>
                                             </div>
                                             <div>
-                                                <div className="text-xs text-muted-foreground mb-1 font-medium">Destination</div>
+                                                <div className="text-xs text-muted-foreground mb-1 font-medium">
+                                                    Destination
+                                                </div>
                                                 <div className="font-semibold text-sm flex items-center gap-1.5">
                                                     <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
                                                     {selectedEvent.booking.destination}
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="text-xs text-muted-foreground mb-1 font-medium">Travelers</div>
+                                                <div className="text-xs text-muted-foreground mb-1 font-medium">
+                                                    Travelers
+                                                </div>
                                                 <div className="font-semibold text-sm flex items-center gap-1.5">
                                                     <Users className="h-3.5 w-3.5 text-muted-foreground" />
                                                     {selectedEvent.booking.travelers} Pax
@@ -594,7 +626,6 @@ export default function CalendarPage() {
                     )}
                 </SheetContent>
             </Sheet>
-
         </AppLayout>
     );
 }

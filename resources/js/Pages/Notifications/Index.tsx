@@ -4,25 +4,11 @@ import CustomerPortalLayout from '@/components/layouts/CustomerPortalLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Bell,
-    CalendarCheck,
-    CreditCard,
-    FileText,
-    MessageSquare,
-    AlertTriangle,
-    CheckCircle2
-} from 'lucide-react';
+import { Bell, CalendarCheck, CreditCard, FileText, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import axios from 'axios';
 import { useState } from 'react';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface AppNotification {
     id: string;
@@ -116,7 +102,7 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
         }
     };
 
-    const unreadCount = notifications.data.filter(n => !n.read_at).length;
+    const unreadCount = notifications.data.filter((n) => !n.read_at).length;
 
     return (
         <Layout
@@ -177,17 +163,27 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
                                 {notifications.data.map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-muted/50 ${!notification.read_at ? 'bg-primary/5' : ''
-                                            }`}
+                                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-muted/50 ${
+                                            !notification.read_at ? 'bg-primary/5' : ''
+                                        }`}
                                     >
-                                        <div className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-background p-2 shadow-sm ring-1 ring-border ${!notification.read_at ? 'ring-primary/30' : ''
-                                            }`}>
+                                        <div
+                                            className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-background p-2 shadow-sm ring-1 ring-border ${
+                                                !notification.read_at ? 'ring-primary/30' : ''
+                                            }`}
+                                        >
                                             {getIconForNotification(notification)}
                                         </div>
                                         <div className="flex flex-1 flex-col gap-1">
                                             <div className="flex items-center justify-between gap-2">
-                                                <h4 className={`text-sm font-semibold ${!notification.read_at ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                                    {notification.data.message || notification.type.split('\\').pop()?.replace('Notification', '')}
+                                                <h4
+                                                    className={`text-sm font-semibold ${!notification.read_at ? 'text-foreground' : 'text-muted-foreground'}`}
+                                                >
+                                                    {notification.data.message ||
+                                                        notification.type
+                                                            .split('\\')
+                                                            .pop()
+                                                            ?.replace('Notification', '')}
                                                 </h4>
                                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
                                                     {new Date(notification.created_at).toLocaleDateString()}
@@ -231,7 +227,9 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
                         <Button
                             variant="outline"
                             disabled={!notifications.prev_page_url}
-                            onClick={() => router.get(notifications.prev_page_url || '', { filter }, { preserveState: true })}
+                            onClick={() =>
+                                router.get(notifications.prev_page_url || '', { filter }, { preserveState: true })
+                            }
                         >
                             Previous
                         </Button>
@@ -241,7 +239,9 @@ export default function NotificationsIndex({ notifications, filter }: Props) {
                         <Button
                             variant="outline"
                             disabled={!notifications.next_page_url}
-                            onClick={() => router.get(notifications.next_page_url || '', { filter }, { preserveState: true })}
+                            onClick={() =>
+                                router.get(notifications.next_page_url || '', { filter }, { preserveState: true })
+                            }
                         >
                             Next
                         </Button>

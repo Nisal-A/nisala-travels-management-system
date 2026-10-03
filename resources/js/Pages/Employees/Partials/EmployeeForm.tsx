@@ -10,7 +10,7 @@ import { Link } from '@inertiajs/react';
 
 interface EmployeeFormProps {
     employee?: User;
-    roles: { id: number, name: string }[];
+    roles: { id: number; name: string }[];
     isEditing?: boolean;
 }
 
@@ -40,7 +40,9 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
                 <CardHeader>
                     <CardTitle>Employee Details</CardTitle>
                     <CardDescription>
-                        {isEditing ? 'Update employee profile and system access.' : 'Create a new employee profile to grant system access.'}
+                        {isEditing
+                            ? 'Update employee profile and system access.'
+                            : 'Create a new employee profile to grant system access.'}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -72,16 +74,12 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="role">Role *</Label>
-                            <Select 
-                                value={data.role} 
-                                onValueChange={(value) => setData('role', value)}
-                                required
-                            >
+                            <Select value={data.role} onValueChange={(value) => setData('role', value)} required>
                                 <SelectTrigger className={errors.role ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {roles.map(role => (
+                                    {roles.map((role) => (
                                         <SelectItem key={role.id} value={role.name} className="capitalize">
                                             {role.name.replace('_', ' ')}
                                         </SelectItem>
@@ -93,11 +91,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="status">Account Status *</Label>
-                            <Select 
-                                value={data.status} 
-                                onValueChange={(value) => setData('status', value)}
-                                required
-                            >
+                            <Select value={data.status} onValueChange={(value) => setData('status', value)} required>
                                 <SelectTrigger className={errors.status ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
@@ -117,10 +111,12 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
                                 {isEditing ? 'Change Password' : 'Set Password *'}
                             </h3>
                             <p className="text-xs text-muted-foreground mb-4">
-                                {isEditing ? 'Leave blank to keep current password.' : 'Set an initial password for the employee.'}
+                                {isEditing
+                                    ? 'Leave blank to keep current password.'
+                                    : 'Set an initial password for the employee.'}
                             </p>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="password">Password {!isEditing && '*'}</Label>
@@ -129,7 +125,9 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
                                     type="password"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    className={errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
+                                    className={
+                                        errors.password ? 'border-destructive focus-visible:ring-destructive' : ''
+                                    }
                                     required={!isEditing}
                                 />
                                 {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}

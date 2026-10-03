@@ -12,7 +12,11 @@ export function Reveal({ children, width = '100%', delay = 0, className = '' }: 
     const shouldReduceMotion = useReducedMotion();
 
     if (shouldReduceMotion) {
-        return <div style={{ width }} className={className}>{children}</div>;
+        return (
+            <div style={{ width }} className={className}>
+                {children}
+            </div>
+        );
     }
 
     return (
@@ -24,7 +28,7 @@ export function Reveal({ children, width = '100%', delay = 0, className = '' }: 
                 }}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
+                viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5, delay: delay }}
             >
                 {children}

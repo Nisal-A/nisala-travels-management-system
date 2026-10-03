@@ -36,7 +36,7 @@ export default function Step2PackageDates({
     errors = {},
     isEditing = false,
 }: Step2PackageDatesProps) {
-    const selectedPackage = packages.find(p => p.id.toString() === packageId);
+    const selectedPackage = packages.find((p) => p.id.toString() === packageId);
 
     // Auto-calculate return date when travel date changes based on package duration
     const handleTravelDateChange = (newDate: string) => {
@@ -68,18 +68,20 @@ export default function Step2PackageDates({
                         </Label>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                            {packages.map(pkg => {
+                            {packages.map((pkg) => {
                                 const isSelected = pkg.id.toString() === packageId;
                                 return (
                                     <div
                                         key={pkg.id}
                                         onClick={() => !isEditing && onSelectPackage(pkg)}
                                         className={cn(
-                                            "relative p-4 rounded-xl border transition-all duration-200 flex flex-col justify-between gap-3 text-left",
-                                            isEditing ? "opacity-90" : "cursor-pointer hover:border-primary/50 hover:shadow-xs",
+                                            'relative p-4 rounded-xl border transition-all duration-200 flex flex-col justify-between gap-3 text-left',
+                                            isEditing
+                                                ? 'opacity-90'
+                                                : 'cursor-pointer hover:border-primary/50 hover:shadow-xs',
                                             isSelected
-                                                ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs"
-                                                : "border-border bg-card"
+                                                ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-xs'
+                                                : 'border-border bg-card',
                                         )}
                                     >
                                         <div className="flex items-start justify-between gap-2">
@@ -88,7 +90,8 @@ export default function Step2PackageDates({
                                                     {pkg.name}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                                    {pkg.description || 'Comprehensive tour with transfers, hotel, and sightseeing.'}
+                                                    {pkg.description ||
+                                                        'Comprehensive tour with transfers, hotel, and sightseeing.'}
                                                 </p>
                                             </div>
                                             {isSelected && (
@@ -118,7 +121,9 @@ export default function Step2PackageDates({
                                                     currency={(pkg.currency as 'LKR' | 'USD') || 'LKR'}
                                                     weight="bold"
                                                 />
-                                                <span className="text-[10px] font-normal text-muted-foreground ml-1">/person</span>
+                                                <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                                                    /person
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -138,14 +143,20 @@ export default function Step2PackageDates({
                                     <span className="font-semibold text-sm text-foreground">
                                         Selected: {selectedPackage.name}
                                     </span>
-                                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                                    <Badge
+                                        variant="outline"
+                                        className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs"
+                                    >
                                         <ShieldCheck className="w-3 h-3 mr-1" /> Active
                                     </Badge>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                     <span>Duration: {selectedPackage.duration_days || 'N/A'} Days</span>
                                     <span>Base Capacity: {selectedPackage.capacity || 20} Travelers</span>
-                                    <span>Base Rate: {Number(selectedPackage.price).toLocaleString()} {selectedPackage.currency}</span>
+                                    <span>
+                                        Base Rate: {Number(selectedPackage.price).toLocaleString()}{' '}
+                                        {selectedPackage.currency}
+                                    </span>
                                 </div>
                             </div>
 
@@ -167,13 +178,11 @@ export default function Step2PackageDates({
                                 id="booking_date"
                                 type="date"
                                 value={bookingDate}
-                                onChange={e => onChangeBookingDate(e.target.value)}
+                                onChange={(e) => onChangeBookingDate(e.target.value)}
                                 className="h-10"
                                 required
                             />
-                            {errors.booking_date && (
-                                <p className="text-xs text-destructive">{errors.booking_date}</p>
-                            )}
+                            {errors.booking_date && <p className="text-xs text-destructive">{errors.booking_date}</p>}
                         </div>
 
                         <div className="space-y-1.5">
@@ -184,13 +193,11 @@ export default function Step2PackageDates({
                                 id="travel_date"
                                 type="date"
                                 value={travelDate}
-                                onChange={e => handleTravelDateChange(e.target.value)}
+                                onChange={(e) => handleTravelDateChange(e.target.value)}
                                 className="h-10"
                                 required
                             />
-                            {errors.travel_date && (
-                                <p className="text-xs text-destructive">{errors.travel_date}</p>
-                            )}
+                            {errors.travel_date && <p className="text-xs text-destructive">{errors.travel_date}</p>}
                         </div>
 
                         <div className="space-y-1.5">
@@ -201,12 +208,10 @@ export default function Step2PackageDates({
                                 id="return_date"
                                 type="date"
                                 value={returnDate || ''}
-                                onChange={e => onChangeReturnDate(e.target.value)}
+                                onChange={(e) => onChangeReturnDate(e.target.value)}
                                 className="h-10"
                             />
-                            {errors.return_date && (
-                                <p className="text-xs text-destructive">{errors.return_date}</p>
-                            )}
+                            {errors.return_date && <p className="text-xs text-destructive">{errors.return_date}</p>}
                         </div>
                     </div>
                 </CardContent>

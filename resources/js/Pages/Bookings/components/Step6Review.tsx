@@ -8,7 +8,21 @@ import { Customer, TourPackage, Employee } from '@/types';
 import { TravelerRow } from './Step3Travelers';
 import { ExtraItem } from './Step4Pricing';
 import { ScheduleItem } from './Step5Payment';
-import { User, MapPin, Users, Calculator, CreditCard, Edit2, CheckCircle2, ShieldCheck, Mail, Phone, Calendar, ArrowRight, Loader2 } from 'lucide-react';
+import {
+    User,
+    MapPin,
+    Users,
+    Calculator,
+    CreditCard,
+    Edit2,
+    CheckCircle2,
+    ShieldCheck,
+    Mail,
+    Phone,
+    Calendar,
+    ArrowRight,
+    Loader2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Step6ReviewProps {
@@ -77,7 +91,8 @@ export default function Step6Review({
                         <CheckCircle2 className="w-6 h-6 text-primary" /> Review & Confirm Booking
                     </h2>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                        Please verify all details before submitting. Click &quot;Edit&quot; next to any section to make changes.
+                        Please verify all details before submitting. Click &quot;Edit&quot; next to any section to make
+                        changes.
                     </p>
                 </div>
 
@@ -152,7 +167,10 @@ export default function Step6Review({
                                     {assignedStaff && (
                                         <div>
                                             <span className="text-muted-foreground block">Assigned Staff:</span>
-                                            <span>{assignedStaff.first_name} {assignedStaff.last_name} ({assignedStaff.designation || 'Staff'})</span>
+                                            <span>
+                                                {assignedStaff.first_name} {assignedStaff.last_name} (
+                                                {assignedStaff.designation || 'Staff'})
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -202,7 +220,9 @@ export default function Step6Review({
                                     </div>
                                     <div>
                                         <span className="text-muted-foreground block">Duration:</span>
-                                        <span>{packageItem.duration_days ? `${packageItem.duration_days} Days` : 'N/A'}</span>
+                                        <span>
+                                            {packageItem.duration_days ? `${packageItem.duration_days} Days` : 'N/A'}
+                                        </span>
                                     </div>
                                 </div>
                             ) : (
@@ -282,9 +302,16 @@ export default function Step6Review({
                                         <div key={idx} className="p-2.5 flex items-center justify-between">
                                             <div>
                                                 <span className="font-medium text-foreground">{s.description}</span>
-                                                <span className="text-[11px] text-muted-foreground block">Due: {s.due_date}</span>
+                                                <span className="text-[11px] text-muted-foreground block">
+                                                    Due: {s.due_date}
+                                                </span>
                                             </div>
-                                            <MoneyText amount={Number(s.amount)} currency={currency} size="sm" weight="semibold" />
+                                            <MoneyText
+                                                amount={Number(s.amount)}
+                                                currency={currency}
+                                                size="sm"
+                                                weight="semibold"
+                                            />
                                         </div>
                                     ))}
                                 </div>
@@ -297,10 +324,17 @@ export default function Step6Review({
                                             Initial Payment Recorded:
                                         </span>
                                         <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                                            Method: {paymentMethod.toUpperCase()} {paymentReference ? `(Ref: ${paymentReference})` : ''}
+                                            Method: {paymentMethod.toUpperCase()}{' '}
+                                            {paymentReference ? `(Ref: ${paymentReference})` : ''}
                                         </span>
                                     </div>
-                                    <MoneyText amount={paymentAmount} currency={currency} size="sm" weight="bold" className="text-emerald-700 dark:text-emerald-300" />
+                                    <MoneyText
+                                        amount={paymentAmount}
+                                        currency={currency}
+                                        size="sm"
+                                        weight="bold"
+                                        className="text-emerald-700 dark:text-emerald-300"
+                                    />
                                 </div>
                             )}
                         </CardContent>
@@ -314,7 +348,7 @@ export default function Step6Review({
                         <Textarea
                             id="review_notes"
                             value={notes}
-                            onChange={e => onChangeNotes(e.target.value)}
+                            onChange={(e) => onChangeNotes(e.target.value)}
                             placeholder="Add any internal remarks, customer preferences, or special arrangements..."
                             rows={3}
                         />
@@ -363,7 +397,15 @@ export default function Step6Review({
                                 {discountAmount > 0 && (
                                     <div className="flex justify-between items-center text-emerald-600 font-medium">
                                         <span>Discount:</span>
-                                        <span>-<MoneyText amount={discountAmount} currency={currency} size="sm" className="text-emerald-600" /></span>
+                                        <span>
+                                            -
+                                            <MoneyText
+                                                amount={discountAmount}
+                                                currency={currency}
+                                                size="sm"
+                                                className="text-emerald-600"
+                                            />
+                                        </span>
                                     </div>
                                 )}
 
@@ -386,7 +428,12 @@ export default function Step6Review({
                                         </div>
                                         <div className="flex justify-between items-center text-muted-foreground font-semibold pt-1 border-t">
                                             <span>Remaining Balance:</span>
-                                            <MoneyText amount={balanceAmount} currency={currency} size="base" weight="bold" />
+                                            <MoneyText
+                                                amount={balanceAmount}
+                                                currency={currency}
+                                                size="base"
+                                                weight="bold"
+                                            />
                                         </div>
                                     </>
                                 )}

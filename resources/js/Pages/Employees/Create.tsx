@@ -4,7 +4,7 @@ import EmployeeForm from './Partials/EmployeeForm';
 import { User } from '@/types';
 
 interface CreateProps {
-    roles: { id: number, name: string }[];
+    roles: { id: number; name: string }[];
 }
 
 export default function Create({ roles }: CreateProps) {

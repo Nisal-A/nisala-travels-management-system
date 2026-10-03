@@ -7,7 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Laptop, Smartphone, CheckCircle2, ShieldAlert, KeyRound, UserRound, MapPin, Phone } from 'lucide-react';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -22,17 +29,21 @@ const personalDetailsSchema = z.object({
     emergency_contact_phone: z.string().optional().or(z.literal('')),
 });
 
-const passwordSchema = z.object({
-    current_password: z.string().min(1, 'Current password is required'),
-    password: z.string().min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Must contain at least one number')
-        .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
-    password_confirmation: z.string()
-}).refine((data) => data.password === data.password_confirmation, {
-    message: "Passwords don't match",
-    path: ["password_confirmation"],
-});
+const passwordSchema = z
+    .object({
+        current_password: z.string().min(1, 'Current password is required'),
+        password: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+            .regex(/[0-9]/, 'Must contain at least one number')
+            .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character'),
+        password_confirmation: z.string(),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+        message: "Passwords don't match",
+        path: ['password_confirmation'],
+    });
 
 export default function ProfileEdit({ user, sessions }: any) {
     const { props } = usePage<any>();
@@ -167,7 +178,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Personal Information</CardTitle>
-                                <CardDescription>Update your contact details and communication preferences.</CardDescription>
+                                <CardDescription>
+                                    Update your contact details and communication preferences.
+                                </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={onPersonalSubmit} className="space-y-6">
@@ -180,7 +193,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                 onChange={(e) => personalForm.setData('full_name', e.target.value)}
                                             />
                                             {(zodErrors.full_name || personalForm.errors.full_name) && (
-                                                <p className="text-sm text-destructive">{zodErrors.full_name || personalForm.errors.full_name}</p>
+                                                <p className="text-sm text-destructive">
+                                                    {zodErrors.full_name || personalForm.errors.full_name}
+                                                </p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
@@ -192,7 +207,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                 onChange={(e) => personalForm.setData('email', e.target.value)}
                                             />
                                             {(zodErrors.email || personalForm.errors.email) && (
-                                                <p className="text-sm text-destructive">{zodErrors.email || personalForm.errors.email}</p>
+                                                <p className="text-sm text-destructive">
+                                                    {zodErrors.email || personalForm.errors.email}
+                                                </p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
@@ -207,7 +224,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                 />
                                             </div>
                                             {(zodErrors.phone || personalForm.errors.phone) && (
-                                                <p className="text-sm text-destructive">{zodErrors.phone || personalForm.errors.phone}</p>
+                                                <p className="text-sm text-destructive">
+                                                    {zodErrors.phone || personalForm.errors.phone}
+                                                </p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
@@ -232,7 +251,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             />
                                         </div>
                                         {(zodErrors.address || personalForm.errors.address) && (
-                                            <p className="text-sm text-destructive">{zodErrors.address || personalForm.errors.address}</p>
+                                            <p className="text-sm text-destructive">
+                                                {zodErrors.address || personalForm.errors.address}
+                                            </p>
                                         )}
                                     </div>
 
@@ -244,7 +265,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                 <Input
                                                     id="emergency_contact_name"
                                                     value={personalForm.data.emergency_contact_name}
-                                                    onChange={(e) => personalForm.setData('emergency_contact_name', e.target.value)}
+                                                    onChange={(e) =>
+                                                        personalForm.setData('emergency_contact_name', e.target.value)
+                                                    }
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -252,7 +275,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                 <Input
                                                     id="emergency_contact_phone"
                                                     value={personalForm.data.emergency_contact_phone}
-                                                    onChange={(e) => personalForm.setData('emergency_contact_phone', e.target.value)}
+                                                    onChange={(e) =>
+                                                        personalForm.setData('emergency_contact_phone', e.target.value)
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -268,14 +293,19 @@ export default function ProfileEdit({ user, sessions }: any) {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="security" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <TabsContent
+                        value="security"
+                        className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                    >
                         {/* Change Password */}
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <KeyRound className="h-5 w-5" /> Change Password
                                 </CardTitle>
-                                <CardDescription>Ensure your account is using a long, random password to stay secure.</CardDescription>
+                                <CardDescription>
+                                    Ensure your account is using a long, random password to stay secure.
+                                </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={onPasswordSubmit} className="space-y-4 max-w-md">
@@ -287,8 +317,12 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             value={passwordForm.data.current_password}
                                             onChange={(e) => passwordForm.setData('current_password', e.target.value)}
                                         />
-                                        {(passwordZodErrors.current_password || passwordForm.errors.current_password) && (
-                                            <p className="text-sm text-destructive">{passwordZodErrors.current_password || passwordForm.errors.current_password}</p>
+                                        {(passwordZodErrors.current_password ||
+                                            passwordForm.errors.current_password) && (
+                                            <p className="text-sm text-destructive">
+                                                {passwordZodErrors.current_password ||
+                                                    passwordForm.errors.current_password}
+                                            </p>
                                         )}
                                     </div>
 
@@ -313,7 +347,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                         )}
 
                                         {(passwordZodErrors.password || passwordForm.errors.password) && (
-                                            <p className="text-sm text-destructive">{passwordZodErrors.password || passwordForm.errors.password}</p>
+                                            <p className="text-sm text-destructive">
+                                                {passwordZodErrors.password || passwordForm.errors.password}
+                                            </p>
                                         )}
                                     </div>
 
@@ -323,10 +359,14 @@ export default function ProfileEdit({ user, sessions }: any) {
                                             id="password_confirmation"
                                             type="password"
                                             value={passwordForm.data.password_confirmation}
-                                            onChange={(e) => passwordForm.setData('password_confirmation', e.target.value)}
+                                            onChange={(e) =>
+                                                passwordForm.setData('password_confirmation', e.target.value)
+                                            }
                                         />
                                         {passwordZodErrors.password_confirmation && (
-                                            <p className="text-sm text-destructive">{passwordZodErrors.password_confirmation}</p>
+                                            <p className="text-sm text-destructive">
+                                                {passwordZodErrors.password_confirmation}
+                                            </p>
                                         )}
                                     </div>
 
@@ -343,11 +383,15 @@ export default function ProfileEdit({ user, sessions }: any) {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Browser Sessions</CardTitle>
-                                <CardDescription>Manage and log out your active sessions on other browsers and devices.</CardDescription>
+                                <CardDescription>
+                                    Manage and log out your active sessions on other browsers and devices.
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <p className="text-sm text-muted-foreground">
-                                    If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive.
+                                    If necessary, you may log out of all of your other browser sessions across all of
+                                    your devices. Some of your recent sessions are listed below; however, this list may
+                                    not be exhaustive.
                                 </p>
 
                                 {sessions.length > 0 && (
@@ -368,7 +412,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                                                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                                                         {session.ip_address} •
                                                         {session.is_current_device ? (
-                                                            <span className="text-emerald-500 font-medium">This device</span>
+                                                            <span className="text-emerald-500 font-medium">
+                                                                This device
+                                                            </span>
                                                         ) : (
                                                             <span>Last active {session.last_active}</span>
                                                         )}
@@ -393,7 +439,8 @@ export default function ProfileEdit({ user, sessions }: any) {
                     <DialogHeader>
                         <DialogTitle>Log Out Other Browser Sessions</DialogTitle>
                         <DialogDescription>
-                            Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.
+                            Please enter your password to confirm you would like to log out of your other browser
+                            sessions across all of your devices.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -410,7 +457,9 @@ export default function ProfileEdit({ user, sessions }: any) {
                             )}
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" type="button" onClick={closeLogoutModal}>Cancel</Button>
+                            <Button variant="outline" type="button" onClick={closeLogoutModal}>
+                                Cancel
+                            </Button>
                             <Button type="submit" variant="destructive" disabled={logoutSessionsForm.processing}>
                                 {logoutSessionsForm.processing ? 'Logging out...' : 'Log Out Other Browser Sessions'}
                             </Button>

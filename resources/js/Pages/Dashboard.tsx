@@ -101,37 +101,68 @@ interface StatCardProps {
     accentColor?: string;
 }
 
-function StatCard({ title, value, description, icon, trend, trendValue, linkTo, accentColor = 'primary' }: StatCardProps) {
+function StatCard({
+    title,
+    value,
+    description,
+    icon,
+    trend,
+    trendValue,
+    linkTo,
+    accentColor = 'primary',
+}: StatCardProps) {
     const accentClasses: Record<string, { bg: string; icon: string; hover: string }> = {
-        primary: { bg: 'from-primary/[0.06] to-primary/[0.02]', icon: 'bg-primary/10 text-primary group-hover:bg-primary/15', hover: 'hover:shadow-primary/5' },
-        blue: { bg: 'from-blue-500/[0.06] to-blue-500/[0.02]', icon: 'bg-blue-500/10 text-blue-500 group-hover:bg-blue-500/15', hover: 'hover:shadow-blue-500/5' },
-        emerald: { bg: 'from-emerald-500/[0.06] to-emerald-500/[0.02]', icon: 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500/15', hover: 'hover:shadow-emerald-500/5' },
-        amber: { bg: 'from-amber-500/[0.06] to-amber-500/[0.02]', icon: 'bg-amber-500/10 text-amber-500 group-hover:bg-amber-500/15', hover: 'hover:shadow-amber-500/5' },
-        rose: { bg: 'from-rose-500/[0.06] to-rose-500/[0.02]', icon: 'bg-rose-500/10 text-rose-500 group-hover:bg-rose-500/15', hover: 'hover:shadow-rose-500/5' },
+        primary: {
+            bg: 'from-primary/[0.06] to-primary/[0.02]',
+            icon: 'bg-primary/10 text-primary group-hover:bg-primary/15',
+            hover: 'hover:shadow-primary/5',
+        },
+        blue: {
+            bg: 'from-blue-500/[0.06] to-blue-500/[0.02]',
+            icon: 'bg-blue-500/10 text-blue-500 group-hover:bg-blue-500/15',
+            hover: 'hover:shadow-blue-500/5',
+        },
+        emerald: {
+            bg: 'from-emerald-500/[0.06] to-emerald-500/[0.02]',
+            icon: 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500/15',
+            hover: 'hover:shadow-emerald-500/5',
+        },
+        amber: {
+            bg: 'from-amber-500/[0.06] to-amber-500/[0.02]',
+            icon: 'bg-amber-500/10 text-amber-500 group-hover:bg-amber-500/15',
+            hover: 'hover:shadow-amber-500/5',
+        },
+        rose: {
+            bg: 'from-rose-500/[0.06] to-rose-500/[0.02]',
+            icon: 'bg-rose-500/10 text-rose-500 group-hover:bg-rose-500/15',
+            hover: 'hover:shadow-rose-500/5',
+        },
     };
 
     const accent = accentClasses[accentColor] ?? accentClasses.primary;
 
     const content = (
-        <Card className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${accent.hover} hover:-translate-y-0.5 h-full border-border/60`}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${accent.bg} opacity-0 transition-opacity group-hover:opacity-100`} />
+        <Card
+            className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${accent.hover} hover:-translate-y-0.5 h-full border-border/60`}
+        >
+            <div
+                className={`absolute inset-0 bg-gradient-to-br ${accent.bg} opacity-0 transition-opacity group-hover:opacity-100`}
+            />
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {title}
-                </CardTitle>
-                <div className={`rounded-lg p-2.5 transition-colors ${accent.icon}`}>
-                    {icon}
-                </div>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+                <div className={`rounded-lg p-2.5 transition-colors ${accent.icon}`}>{icon}</div>
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold tracking-tight">{value}</div>
                 <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                     {trend && trendValue !== undefined && trendValue !== 0 && (
-                        <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium ${
-                            trend === 'up'
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                        }`}>
+                        <span
+                            className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium ${
+                                trend === 'up'
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            }`}
+                        >
                             {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                             {trendValue}
                         </span>
@@ -148,7 +179,11 @@ function StatCard({ title, value, description, icon, trend, trendValue, linkTo, 
     );
 
     if (linkTo) {
-        return <Link href={linkTo} className="block h-full">{content}</Link>;
+        return (
+            <Link href={linkTo} className="block h-full">
+                {content}
+            </Link>
+        );
     }
 
     return content;
@@ -209,7 +244,9 @@ function DashboardLoadingSkeleton() {
     return (
         <div className="space-y-8">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {[1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)}
+                {[1, 2, 3, 4].map((i) => (
+                    <StatCardSkeleton key={i} />
+                ))}
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 <Card className="col-span-4 flex flex-col h-[420px] border-border/60">
@@ -260,7 +297,7 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
     const [checkedTasks, setCheckedTasks] = useState<Set<string>>(new Set());
 
     const toggleTask = (taskId: string) => {
-        setCheckedTasks(prev => {
+        setCheckedTasks((prev) => {
             const next = new Set(prev);
             if (next.has(taskId)) {
                 next.delete(taskId);
@@ -277,71 +314,73 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
         const tileOrder = stats.tileOrder ?? ['todaysBookings', 'pendingPayments', 'newLeads', 'pendingDocuments'];
 
         const tileMap: Record<string, ReactNode | null> = {
-            todaysBookings: isSales && stats.todaysBookings ? (
-                <StatCard
-                    key="todaysBookings"
-                    title="Today's Bookings"
-                    value={stats.todaysBookings.count.toString()}
-                    description="vs yesterday"
-                    icon={<CalendarCheck className="h-4 w-4" />}
-                    trend={stats.todaysBookings.trend}
-                    trendValue={stats.todaysBookings.diff}
-                    linkTo="/bookings"
-                    accentColor="blue"
-                />
-            ) : null,
+            todaysBookings:
+                isSales && stats.todaysBookings ? (
+                    <StatCard
+                        key="todaysBookings"
+                        title="Today's Bookings"
+                        value={stats.todaysBookings.count.toString()}
+                        description="vs yesterday"
+                        icon={<CalendarCheck className="h-4 w-4" />}
+                        trend={stats.todaysBookings.trend}
+                        trendValue={stats.todaysBookings.diff}
+                        linkTo="/bookings"
+                        accentColor="blue"
+                    />
+                ) : null,
 
-            pendingPayments: isFinance && stats.pendingPayments ? (
-                <StatCard
-                    key="pendingPayments"
-                    title="Pending Payments"
-                    value={`Rs. ${Number(stats.pendingPayments.total).toLocaleString()}`}
-                    description={`${stats.pendingPayments.count} bookings with balances`}
-                    icon={<CreditCard className="h-4 w-4" />}
-                    trend={stats.pendingPayments.trend}
-                    trendValue={`Rs. ${Number(stats.pendingPayments.diff).toLocaleString()}`}
-                    linkTo="/payments"
-                    accentColor="rose"
-                />
-            ) : null,
+            pendingPayments:
+                isFinance && stats.pendingPayments ? (
+                    <StatCard
+                        key="pendingPayments"
+                        title="Pending Payments"
+                        value={`Rs. ${Number(stats.pendingPayments.total).toLocaleString()}`}
+                        description={`${stats.pendingPayments.count} bookings with balances`}
+                        icon={<CreditCard className="h-4 w-4" />}
+                        trend={stats.pendingPayments.trend}
+                        trendValue={`Rs. ${Number(stats.pendingPayments.diff).toLocaleString()}`}
+                        linkTo="/payments"
+                        accentColor="rose"
+                    />
+                ) : null,
 
-            newLeads: isSales && stats.newLeads ? (
-                <StatCard
-                    key="newLeads"
-                    title="New Leads"
-                    value={stats.newLeads.count.toString()}
-                    description="in the last 7 days"
-                    icon={<Users className="h-4 w-4" />}
-                    trend={stats.newLeads.trend}
-                    trendValue={stats.newLeads.diff}
-                    linkTo="/customers"
-                    accentColor="emerald"
-                />
-            ) : null,
+            newLeads:
+                isSales && stats.newLeads ? (
+                    <StatCard
+                        key="newLeads"
+                        title="New Leads"
+                        value={stats.newLeads.count.toString()}
+                        description="in the last 7 days"
+                        icon={<Users className="h-4 w-4" />}
+                        trend={stats.newLeads.trend}
+                        trendValue={stats.newLeads.diff}
+                        linkTo="/customers"
+                        accentColor="emerald"
+                    />
+                ) : null,
 
-            pendingDocuments: isSales && stats.pendingDocuments ? (
-                <StatCard
-                    key="pendingDocuments"
-                    title="Document Actions"
-                    value={stats.pendingDocuments.count.toString()}
-                    description={`${stats.pendingDocuments.expiring} expiring · ${stats.pendingDocuments.pendingVerification} pending`}
-                    icon={<FileText className="h-4 w-4" />}
-                    trend={stats.pendingDocuments.trend}
-                    trendValue={stats.pendingDocuments.diff}
-                    linkTo="/documents"
-                    accentColor="amber"
-                />
-            ) : null,
+            pendingDocuments:
+                isSales && stats.pendingDocuments ? (
+                    <StatCard
+                        key="pendingDocuments"
+                        title="Document Actions"
+                        value={stats.pendingDocuments.count.toString()}
+                        description={`${stats.pendingDocuments.expiring} expiring · ${stats.pendingDocuments.pendingVerification} pending`}
+                        icon={<FileText className="h-4 w-4" />}
+                        trend={stats.pendingDocuments.trend}
+                        trendValue={stats.pendingDocuments.diff}
+                        linkTo="/documents"
+                        accentColor="amber"
+                    />
+                ) : null,
         };
 
-        return tileOrder
-            .map(key => tileMap[key])
-            .filter(Boolean);
+        return tileOrder.map((key) => tileMap[key]).filter(Boolean);
     };
 
     // ── Overdue count ────────────────────────────────────────────────
 
-    const overdueCount = officeStats?.tasks?.filter(t => t.is_overdue && !checkedTasks.has(t.id)).length ?? 0;
+    const overdueCount = officeStats?.tasks?.filter((t) => t.is_overdue && !checkedTasks.has(t.id)).length ?? 0;
 
     return (
         <AppLayout title="Dashboard">
@@ -351,14 +390,11 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                 {/* Welcome Section */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">
-                            Welcome back, {user?.name?.split(' ')[0]}
-                        </h2>
+                        <h2 className="text-2xl font-bold tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h2>
                         <p className="text-muted-foreground">
                             {isCustomer
-                                ? 'Here\'s an overview of your travel activity.'
-                                : 'Here\'s what\'s happening in your travel agency today.'
-                            }
+                                ? "Here's an overview of your travel activity."
+                                : "Here's what's happening in your travel agency today."}
                         </p>
                     </div>
                     {isOffice && (
@@ -392,21 +428,22 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                                 Last 15 events
                                             </Badge>
                                         </div>
-                                        <CardDescription>
-                                            Latest actions across the platform.
-                                        </CardDescription>
+                                        <CardDescription>Latest actions across the platform.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-y-auto pr-2">
-                                        {(!officeStats?.recentActivity || officeStats.recentActivity.length === 0) ? (
+                                        {!officeStats?.recentActivity || officeStats.recentActivity.length === 0 ? (
                                             <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
                                                 <Activity className="mb-2 h-8 w-8 opacity-30" />
                                                 <p className="text-sm font-medium">No recent activity</p>
-                                                <p className="text-xs mt-1">Activity will appear here as events occur.</p>
+                                                <p className="text-xs mt-1">
+                                                    Activity will appear here as events occur.
+                                                </p>
                                             </div>
                                         ) : (
                                             <div className="space-y-1">
                                                 {officeStats.recentActivity.map((activity, index) => {
-                                                    const config = activityIcons[activity.type] ?? activityIcons.new_booking;
+                                                    const config =
+                                                        activityIcons[activity.type] ?? activityIcons.new_booking;
                                                     return (
                                                         <Link
                                                             key={activity.id}
@@ -414,7 +451,9 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                                             className="flex gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50 group"
                                                         >
                                                             <div className="mt-0.5 shrink-0">
-                                                                <div className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${config.bg}`}>
+                                                                <div
+                                                                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${config.bg}`}
+                                                                >
                                                                     {config.icon}
                                                                 </div>
                                                             </div>
@@ -444,18 +483,19 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                                 Tasks Due
                                             </CardTitle>
                                             {overdueCount > 0 && (
-                                                <Badge variant="destructive" className="text-[0.65rem] font-medium gap-1">
+                                                <Badge
+                                                    variant="destructive"
+                                                    className="text-[0.65rem] font-medium gap-1"
+                                                >
                                                     <AlertTriangle className="h-3 w-3" />
                                                     {overdueCount} overdue
                                                 </Badge>
                                             )}
                                         </div>
-                                        <CardDescription>
-                                            Upcoming deadlines and follow-ups.
-                                        </CardDescription>
+                                        <CardDescription>Upcoming deadlines and follow-ups.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex-1 overflow-y-auto pr-2">
-                                        {(!officeStats?.tasks || officeStats.tasks.length === 0) ? (
+                                        {!officeStats?.tasks || officeStats.tasks.length === 0 ? (
                                             <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
                                                 <CheckCircle2 className="mb-2 h-8 w-8 opacity-30" />
                                                 <p className="text-sm font-medium">You're all caught up!</p>
@@ -465,11 +505,14 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                             <div className="space-y-2">
                                                 {officeStats.tasks.map((task) => {
                                                     const isChecked = checkedTasks.has(task.id);
-                                                    const taskTypeIcon = task.type === 'payment'
-                                                        ? <CreditCard className="h-3.5 w-3.5" />
-                                                        : task.type === 'document'
-                                                            ? <FileText className="h-3.5 w-3.5" />
-                                                            : <Bookmark className="h-3.5 w-3.5" />;
+                                                    const taskTypeIcon =
+                                                        task.type === 'payment' ? (
+                                                            <CreditCard className="h-3.5 w-3.5" />
+                                                        ) : task.type === 'document' ? (
+                                                            <FileText className="h-3.5 w-3.5" />
+                                                        ) : (
+                                                            <Bookmark className="h-3.5 w-3.5" />
+                                                        );
 
                                                     return (
                                                         <div
@@ -478,8 +521,8 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                                                 isChecked
                                                                     ? 'bg-muted/30 border-border/40 opacity-60'
                                                                     : task.is_overdue
-                                                                        ? 'border-rose-500/30 bg-rose-500/[0.03] hover:bg-rose-500/[0.06]'
-                                                                        : 'border-border/60 hover:bg-muted/50'
+                                                                      ? 'border-rose-500/30 bg-rose-500/[0.03] hover:bg-rose-500/[0.06]'
+                                                                      : 'border-border/60 hover:bg-muted/50'
                                                             }`}
                                                         >
                                                             <input
@@ -497,12 +540,18 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                                                                 </Link>
                                                                 <div className="flex items-center gap-2 flex-wrap">
                                                                     {task.is_overdue ? (
-                                                                        <Badge variant="destructive" className="text-[0.6rem] px-1.5 py-0 h-4 gap-0.5">
+                                                                        <Badge
+                                                                            variant="destructive"
+                                                                            className="text-[0.6rem] px-1.5 py-0 h-4 gap-0.5"
+                                                                        >
                                                                             <AlertTriangle className="h-2.5 w-2.5" />
                                                                             Overdue
                                                                         </Badge>
                                                                     ) : (
-                                                                        <Badge variant="secondary" className="text-[0.6rem] px-1.5 py-0 h-4">
+                                                                        <Badge
+                                                                            variant="secondary"
+                                                                            className="text-[0.6rem] px-1.5 py-0 h-4"
+                                                                        >
                                                                             Upcoming
                                                                         </Badge>
                                                                     )}

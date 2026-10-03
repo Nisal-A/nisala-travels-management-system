@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Bell, Check, Loader2 } from 'lucide-react';
 import { Link, router } from '@inertiajs/react';
 import axios from 'axios';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -64,9 +60,7 @@ export function NotificationBell() {
         try {
             await axios.patch(`/notifications/${id}/mark-as-read`);
             setNotifications((prev) =>
-                prev.map((n) =>
-                    n.id === id ? { ...n, read_at: new Date().toISOString() } : n
-                )
+                prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
             );
             setUnreadCount((prev) => Math.max(0, prev - 1));
         } catch (error) {
@@ -77,9 +71,7 @@ export function NotificationBell() {
     const markAllAsRead = async () => {
         try {
             await axios.post('/notifications/mark-all-as-read');
-            setNotifications((prev) =>
-                prev.map((n) => ({ ...n, read_at: new Date().toISOString() }))
-            );
+            setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
             setUnreadCount(0);
         } catch (error) {
             console.error('Failed to mark all as read', error);
@@ -110,7 +102,7 @@ export function NotificationBell() {
                         </Button>
                     )}
                 </div>
-                
+
                 <ScrollArea className="h-80">
                     {isLoading ? (
                         <div className="flex h-full items-center justify-center py-8">
@@ -154,9 +146,13 @@ export function NotificationBell() {
                         </div>
                     )}
                 </ScrollArea>
-                
+
                 <div className="border-t p-2">
-                    <Button render={<Link href={route('notifications.index')} />} variant="ghost" className="w-full justify-center text-sm">
+                    <Button
+                        render={<Link href={route('notifications.index')} />}
+                        variant="ghost"
+                        className="w-full justify-center text-sm"
+                    >
                         View all notifications
                     </Button>
                 </div>

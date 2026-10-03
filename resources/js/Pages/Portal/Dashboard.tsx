@@ -25,12 +25,8 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
             <div className="space-y-8">
                 {/* Greeting */}
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight">
-                        Hello, {firstName}! 👋
-                    </h2>
-                    <p className="text-muted-foreground text-lg">
-                        Welcome to your personal travel hub.
-                    </p>
+                    <h2 className="text-3xl font-bold tracking-tight">Hello, {firstName}! 👋</h2>
+                    <p className="text-muted-foreground text-lg">Welcome to your personal travel hub.</p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
@@ -47,28 +43,40 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                         <CardTitle className="text-2xl font-bold text-primary-foreground flex items-center gap-2">
                                             {nextBooking.tour_package?.name || 'Custom Tour'}
                                         </CardTitle>
-                                        <StatusBadge 
-                                            type="booking" 
-                                            status={(nextBooking.booking_status.charAt(0).toUpperCase() + nextBooking.booking_status.slice(1)) as any} 
+                                        <StatusBadge
+                                            type="booking"
+                                            status={
+                                                (nextBooking.booking_status.charAt(0).toUpperCase() +
+                                                    nextBooking.booking_status.slice(1)) as any
+                                            }
                                             className="bg-background/20 text-primary-foreground border-none backdrop-blur-sm"
                                         />
                                     </div>
                                     <CardDescription className="text-primary-foreground/80 text-base">
-                                        {new Date(nextBooking.travel_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                        {new Date(nextBooking.travel_date).toLocaleDateString(undefined, {
+                                            weekday: 'long',
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="relative z-10 pt-6">
                                     <div className="flex flex-col">
-                                        <span className="text-5xl font-black tracking-tighter">
-                                            {daysRemaining}
-                                        </span>
+                                        <span className="text-5xl font-black tracking-tighter">{daysRemaining}</span>
                                         <span className="text-lg font-medium text-primary-foreground/80 uppercase tracking-widest">
                                             Days to go
                                         </span>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="relative z-10 mt-auto">
-                                    <Button render={<Link href={route('portal.bookings.show', { booking: nextBooking.id })} />} variant="secondary" className="w-full sm:w-auto font-semibold">
+                                    <Button
+                                        render={
+                                            <Link href={route('portal.bookings.show', { booking: nextBooking.id })} />
+                                        }
+                                        variant="secondary"
+                                        className="w-full sm:w-auto font-semibold"
+                                    >
                                         View trip details
                                     </Button>
                                 </CardFooter>
@@ -80,11 +88,10 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                 </div>
                                 <h3 className="text-xl font-semibold mb-2">Ready for your next adventure?</h3>
                                 <p className="text-muted-foreground mb-6 max-w-sm">
-                                    You don't have any upcoming trips planned. Discover our latest destinations and book your next getaway.
+                                    You don't have any upcoming trips planned. Discover our latest destinations and book
+                                    your next getaway.
                                 </p>
-                                <Button render={<a href="/tours" />}>
-                                    Browse Tours
-                                </Button>
+                                <Button render={<a href="/tours" />}>Browse Tours</Button>
                             </Card>
                         )}
                     </div>
@@ -109,7 +116,12 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                 )}
                             </CardContent>
                             <CardFooter>
-                                <Button render={<Link href={route('portal.payments.index')} />} variant="outline" className="w-full text-sm h-9" size="sm">
+                                <Button
+                                    render={<Link href={route('portal.payments.index')} />}
+                                    variant="outline"
+                                    className="w-full text-sm h-9"
+                                    size="sm"
+                                >
                                     View payments
                                 </Button>
                             </CardFooter>
@@ -136,14 +148,23 @@ export default function PortalDashboard({ nextBooking, daysRemaining, totalOutst
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-4 text-center">
                                         <CheckCircle2 className="h-8 w-8 text-emerald-500 mb-2" />
-                                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">All caught up!</p>
-                                        <p className="text-xs text-muted-foreground mt-1">No pending actions required.</p>
+                                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                            All caught up!
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            No pending actions required.
+                                        </p>
                                     </div>
                                 )}
                             </CardContent>
                             {actionItems.length > 0 && (
                                 <CardFooter>
-                                    <Button render={<Link href={route('portal.documents.index')} />} variant="ghost" className="w-full text-sm h-9 text-primary" size="sm">
+                                    <Button
+                                        render={<Link href={route('portal.documents.index')} />}
+                                        variant="ghost"
+                                        className="w-full text-sm h-9 text-primary"
+                                        size="sm"
+                                    >
                                         Review documents <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </CardFooter>

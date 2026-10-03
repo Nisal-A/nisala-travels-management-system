@@ -47,15 +47,23 @@ export default function PortalDocuments({ documents }: Props) {
                                                 </TableCell>
                                                 <TableCell>{doc.file_name}</TableCell>
                                                 <TableCell>
-                                                    {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'N/A'}
+                                                    {doc.created_at
+                                                        ? new Date(doc.created_at).toLocaleDateString()
+                                                        : 'N/A'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <StatusBadge 
-                                                        type="document" 
+                                                    <StatusBadge
+                                                        type="document"
                                                         status={
-                                                            doc.status === 'pending' ? 'Pending Review' : 
-                                                            (doc.status.charAt(0).toUpperCase() + doc.status.slice(1)) as "Pending Review" | "Verified" | "Rejected" | "Expired"
-                                                        } 
+                                                            doc.status === 'pending'
+                                                                ? 'Pending Review'
+                                                                : ((doc.status.charAt(0).toUpperCase() +
+                                                                      doc.status.slice(1)) as
+                                                                      | 'Pending Review'
+                                                                      | 'Verified'
+                                                                      | 'Rejected'
+                                                                      | 'Expired')
+                                                        }
                                                     />
                                                 </TableCell>
                                             </TableRow>

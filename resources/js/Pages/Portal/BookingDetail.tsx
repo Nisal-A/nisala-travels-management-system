@@ -4,7 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { StatusBadge, MoneyText } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, Download, MapPin, Map, Plane, Clock, ShieldCheck, FileText, CheckCircle2, CreditCard, Receipt } from 'lucide-react';
+import {
+    CalendarDays,
+    Download,
+    MapPin,
+    Map,
+    Plane,
+    Clock,
+    ShieldCheck,
+    FileText,
+    CheckCircle2,
+    CreditCard,
+    Receipt,
+} from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Traveler {
@@ -44,7 +56,7 @@ interface BookingDetail {
     final_amount: number;
     paid_amount: number;
     balance_amount: number;
-    currency: "LKR" | "USD";
+    currency: 'LKR' | 'USD';
     notes: string | null;
     payments: Payment[];
     documents: Document[];
@@ -79,10 +91,27 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                             <div className="flex gap-2 justify-start md:justify-end">
-                                <StatusBadge type="booking" status={(booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as any} className="text-sm px-3 py-1" />
-                                <StatusBadge type="payment" status={(booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)) as any} className="text-sm px-3 py-1" />
+                                <StatusBadge
+                                    type="booking"
+                                    status={
+                                        (booking.booking_status.charAt(0).toUpperCase() +
+                                            booking.booking_status.slice(1)) as any
+                                    }
+                                    className="text-sm px-3 py-1"
+                                />
+                                <StatusBadge
+                                    type="payment"
+                                    status={
+                                        (booking.payment_status.charAt(0).toUpperCase() +
+                                            booking.payment_status.slice(1)) as any
+                                    }
+                                    className="text-sm px-3 py-1"
+                                />
                             </div>
-                            <Button onClick={handleDownloadItinerary} className="gap-2 shrink-0 shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform">
+                            <Button
+                                onClick={handleDownloadItinerary}
+                                className="gap-2 shrink-0 shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform"
+                            >
                                 <Download className="h-4 w-4" />
                                 Itinerary PDF
                             </Button>
@@ -93,11 +122,36 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                 {/* Tabs Area */}
                 <Tabs defaultValue="overview" className="w-full">
                     <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 rounded-xl mb-6 flex-nowrap hide-scrollbar">
-                        <TabsTrigger value="overview" className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm">Overview</TabsTrigger>
-                        <TabsTrigger value="travelers" className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm">Travelers</TabsTrigger>
-                        <TabsTrigger value="itinerary" className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm">Itinerary</TabsTrigger>
-                        <TabsTrigger value="payments" className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm">Payments</TabsTrigger>
-                        <TabsTrigger value="documents" className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm">Documents</TabsTrigger>
+                        <TabsTrigger
+                            value="overview"
+                            className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm"
+                        >
+                            Overview
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="travelers"
+                            className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm"
+                        >
+                            Travelers
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="itinerary"
+                            className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm"
+                        >
+                            Itinerary
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="payments"
+                            className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm"
+                        >
+                            Payments
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="documents"
+                            className="rounded-lg py-2.5 px-4 font-medium min-w-fit data-[state=active]:shadow-sm"
+                        >
+                            Documents
+                        </TabsTrigger>
                     </TabsList>
 
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -146,15 +200,24 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                     <CardContent className="space-y-4">
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-muted-foreground">Total Amount</span>
-                                            <span className="font-medium"><MoneyText amount={booking.final_amount} currency={booking.currency} /></span>
+                                            <span className="font-medium">
+                                                <MoneyText amount={booking.final_amount} currency={booking.currency} />
+                                            </span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-muted-foreground">Amount Paid</span>
-                                            <span className="font-medium text-emerald-600 dark:text-emerald-400"><MoneyText amount={booking.paid_amount} currency={booking.currency} /></span>
+                                            <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                                                <MoneyText amount={booking.paid_amount} currency={booking.currency} />
+                                            </span>
                                         </div>
                                         <div className="pt-4 border-t border-primary/10 flex justify-between items-center">
                                             <span className="font-medium">Balance Due</span>
-                                            <span className="text-xl font-bold text-primary"><MoneyText amount={booking.balance_amount} currency={booking.currency} /></span>
+                                            <span className="text-xl font-bold text-primary">
+                                                <MoneyText
+                                                    amount={booking.balance_amount}
+                                                    currency={booking.currency}
+                                                />
+                                            </span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -165,7 +228,9 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                             <Card className="shadow-sm">
                                 <CardHeader>
                                     <CardTitle className="text-lg">Travelers ({booking.travelers.length})</CardTitle>
-                                    <CardDescription>People going on this trip and their document status.</CardDescription>
+                                    <CardDescription>
+                                        People going on this trip and their document status.
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
@@ -179,7 +244,9 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                         <TableBody>
                                             {booking.travelers.map((t, i) => (
                                                 <TableRow key={i}>
-                                                    <TableCell className="font-medium">{t.first_name} {t.last_name}</TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {t.first_name} {t.last_name}
+                                                    </TableCell>
                                                     <TableCell className="capitalize">{t.traveler_type}</TableCell>
                                                     <TableCell>
                                                         {i === 0 ? (
@@ -214,10 +281,16 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                             </div>
                                             <div className="bg-muted/30 rounded-lg p-4 border border-border/50 transition-all hover:bg-muted/50 hover:shadow-md">
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <h4 className="font-bold text-foreground">Day 1: Arrival & Check-in</h4>
-                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">08:00 AM</span>
+                                                    <h4 className="font-bold text-foreground">
+                                                        Day 1: Arrival & Check-in
+                                                    </h4>
+                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">
+                                                        08:00 AM
+                                                    </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground">Arrive at the airport, transfer to hotel. Rest and acclimatize.</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Arrive at the airport, transfer to hotel. Rest and acclimatize.
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="relative group">
@@ -227,9 +300,14 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                             <div className="bg-muted/30 rounded-lg p-4 border border-border/50 transition-all hover:bg-muted/50 hover:shadow-md">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <h4 className="font-bold text-foreground">Day 2: City Tour</h4>
-                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">09:30 AM</span>
+                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">
+                                                        09:30 AM
+                                                    </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground">Guided city tour exploring major landmarks, historical sites, and local markets.</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Guided city tour exploring major landmarks, historical sites, and
+                                                    local markets.
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="relative group">
@@ -239,9 +317,13 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                             <div className="bg-muted/30 rounded-lg p-4 border border-border/50 transition-all hover:bg-muted/50 hover:shadow-md">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <h4 className="font-bold text-foreground">Day 3: Departure</h4>
-                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">11:00 AM</span>
+                                                    <span className="text-xs font-medium text-muted-foreground bg-background px-2 py-1 rounded-md border shadow-sm">
+                                                        11:00 AM
+                                                    </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground">Transfer to airport for departure.</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Transfer to airport for departure.
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -274,11 +356,23 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                             <TableBody>
                                                 {booking.payments.map((p) => (
                                                     <TableRow key={p.id}>
-                                                        <TableCell className="font-mono text-sm">{p.receipt_number}</TableCell>
+                                                        <TableCell className="font-mono text-sm">
+                                                            {p.receipt_number}
+                                                        </TableCell>
                                                         <TableCell>{p.payment_date}</TableCell>
                                                         <TableCell className="capitalize">{p.payment_method}</TableCell>
-                                                        <TableCell className="font-medium"><MoneyText amount={p.amount} currency={booking.currency} /></TableCell>
-                                                        <TableCell><StatusBadge type="payment" status={(p.status.charAt(0).toUpperCase() + p.status.slice(1)) as any} /></TableCell>
+                                                        <TableCell className="font-medium">
+                                                            <MoneyText amount={p.amount} currency={booking.currency} />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <StatusBadge
+                                                                type="payment"
+                                                                status={
+                                                                    (p.status.charAt(0).toUpperCase() +
+                                                                        p.status.slice(1)) as any
+                                                                }
+                                                            />
+                                                        </TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
@@ -302,15 +396,35 @@ export default function PortalBookingDetail({ booking }: { booking: BookingDetai
                                     ) : (
                                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {booking.documents.map((d) => (
-                                                <div key={d.id} className="flex items-start gap-4 p-4 rounded-xl border bg-card hover:shadow-md transition-shadow">
+                                                <div
+                                                    key={d.id}
+                                                    className="flex items-start gap-4 p-4 rounded-xl border bg-card hover:shadow-md transition-shadow"
+                                                >
                                                     <div className="bg-primary/10 p-2 rounded-lg">
                                                         <FileText className="h-6 w-6 text-primary" />
                                                     </div>
                                                     <div className="flex-1 space-y-1 overflow-hidden">
-                                                        <h4 className="font-medium text-sm line-clamp-1" title={d.document_type || 'Document'}>{d.document_type || 'Document'}</h4>
-                                                        <p className="text-xs text-muted-foreground truncate" title={d.file_name}>{d.file_name}</p>
+                                                        <h4
+                                                            className="font-medium text-sm line-clamp-1"
+                                                            title={d.document_type || 'Document'}
+                                                        >
+                                                            {d.document_type || 'Document'}
+                                                        </h4>
+                                                        <p
+                                                            className="text-xs text-muted-foreground truncate"
+                                                            title={d.file_name}
+                                                        >
+                                                            {d.file_name}
+                                                        </p>
                                                         <div className="pt-2">
-                                                            <StatusBadge type="document" status={(d.status.charAt(0).toUpperCase() + d.status.slice(1)) as any} className="text-[10px] px-2 py-0" />
+                                                            <StatusBadge
+                                                                type="document"
+                                                                status={
+                                                                    (d.status.charAt(0).toUpperCase() +
+                                                                        d.status.slice(1)) as any
+                                                                }
+                                                                className="text-[10px] px-2 py-0"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>

@@ -1,0 +1,14 @@
+vendor
+node_modules
+public
+storage
+bootstrap/cache
+bootstrap/ssr
+database
+*.php
+*.md
+*.yml
+*.yaml
+package-lock.json
+composer.lock
+resources/js/components/ui

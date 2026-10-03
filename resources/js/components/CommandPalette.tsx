@@ -10,7 +10,19 @@ import {
     CommandSeparator,
 } from '@/components/ui/command';
 import { useAuth } from '@/hooks/use-auth';
-import { FileText, Users, CalendarCheck, Map, CreditCard, LayoutDashboard, Settings, UserCog, BarChart3, Plus, Search } from 'lucide-react';
+import {
+    FileText,
+    Users,
+    CalendarCheck,
+    Map,
+    CreditCard,
+    LayoutDashboard,
+    Settings,
+    UserCog,
+    BarChart3,
+    Plus,
+    Search,
+} from 'lucide-react';
 import axios from 'axios';
 
 // Map icon names from backend to Lucide components
@@ -37,7 +49,7 @@ export function CommandPalette() {
     const [results, setResults] = useState<Record<string, SearchResult[]>>({});
     const [loading, setLoading] = useState(false);
     const { hasRole, user } = useAuth();
-    
+
     // Quick Actions based on roles
     const quickActions = [];
     if (hasRole('super_admin', 'manager', 'staff')) {
@@ -47,7 +59,7 @@ export function CommandPalette() {
     if (hasRole('super_admin', 'manager', 'finance')) {
         quickActions.push({ label: 'Go to Reports', icon: BarChart3, url: route('reports.index') });
     }
-    
+
     // Toggle on Ctrl+K
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -69,14 +81,17 @@ export function CommandPalette() {
         try {
             const res = await axios.get(route('admin.search'), { params: { q } });
             const data: SearchResult[] = res.data.data;
-            const grouped = data.reduce((acc, item) => {
-                if (!acc[item.group]) acc[item.group] = [];
-                acc[item.group].push(item);
-                return acc;
-            }, {} as Record<string, SearchResult[]>);
+            const grouped = data.reduce(
+                (acc, item) => {
+                    if (!acc[item.group]) acc[item.group] = [];
+                    acc[item.group].push(item);
+                    return acc;
+                },
+                {} as Record<string, SearchResult[]>,
+            );
             setResults(grouped);
         } catch (error) {
-            console.error("Search failed", error);
+            console.error('Search failed', error);
         } finally {
             setLoading(false);
         }
@@ -110,14 +125,10 @@ export function CommandPalette() {
             </button>
 
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput 
-                    placeholder="Type a command or search..." 
-                    value={query} 
-                    onValueChange={setQuery} 
-                />
+                <CommandInput placeholder="Type a command or search..." value={query} onValueChange={setQuery} />
                 <CommandList>
                     <CommandEmpty>{loading ? 'Searching...' : 'No results found.'}</CommandEmpty>
-                    
+
                     {query.length < 2 && (
                         <CommandGroup heading="Quick Actions">
                             {quickActions.map((action, i) => {
@@ -141,7 +152,9 @@ export function CommandPalette() {
                                         <Icon className="mr-2 h-4 w-4" />
                                         <div className="flex flex-col">
                                             <span>{item.title}</span>
-                                            {item.subtitle && <span className="text-xs text-muted-foreground">{item.subtitle}</span>}
+                                            {item.subtitle && (
+                                                <span className="text-xs text-muted-foreground">{item.subtitle}</span>
+                                            )}
                                         </div>
                                     </CommandItem>
                                 );

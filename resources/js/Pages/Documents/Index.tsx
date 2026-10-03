@@ -12,7 +12,7 @@ export default function DocumentsIndex() {
                 title="Documents"
                 description="Document management — upload, verify, and manage customer travel documents such as passports, visas, and tickets."
             />
-            
+
             <EmptyState
                 icon={Construction}
                 title="Under Construction"

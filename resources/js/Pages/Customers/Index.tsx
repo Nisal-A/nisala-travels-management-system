@@ -55,7 +55,7 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                         </span>
                     </div>
                 );
-            }
+            },
         },
         {
             accessorKey: 'email',
@@ -70,7 +70,7 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                         <span className="text-xs text-muted-foreground">{customer.phone}</span>
                     </div>
                 );
-            }
+            },
         },
         {
             id: 'document',
@@ -80,15 +80,19 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                 return (
                     <div className="flex flex-col gap-1 text-sm">
                         {customer.nic ? (
-                            <span className="text-muted-foreground">NIC: <span className="font-medium">{customer.nic}</span></span>
+                            <span className="text-muted-foreground">
+                                NIC: <span className="font-medium">{customer.nic}</span>
+                            </span>
                         ) : customer.passport_number ? (
-                            <span className="text-muted-foreground">Passport: <span className="font-medium">{customer.passport_number}</span></span>
+                            <span className="text-muted-foreground">
+                                Passport: <span className="font-medium">{customer.passport_number}</span>
+                            </span>
                         ) : (
                             <span className="text-xs italic text-muted-foreground/70">Not provided</span>
                         )}
                     </div>
                 );
-            }
+            },
         },
         {
             accessorKey: 'status',
@@ -98,7 +102,11 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                 return (
                     <Badge
                         variant={status === 'active' ? 'default' : 'secondary'}
-                        className={status === 'active' ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20' : ''}
+                        className={
+                            status === 'active'
+                                ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20'
+                                : ''
+                        }
                     >
                         {status}
                     </Badge>
@@ -124,11 +132,17 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                             <DropdownMenuContent align="end" className="w-[160px]">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.show', { customer: customer.id }))}>
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => router.visit(route('customers.show', { customer: customer.id }))}
+                                >
                                     <Eye className="mr-2 h-4 w-4" /> View Profile
                                 </DropdownMenuItem>
                                 {canCreate && (
-                                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.edit', { customer: customer.id }))}>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => router.visit(route('customers.edit', { customer: customer.id }))}
+                                    >
                                         <Edit className="mr-2 h-4 w-4" /> Edit Details
                                     </DropdownMenuItem>
                                 )}
@@ -160,13 +174,17 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                 </div>
                 <Badge
                     variant={customer.status === 'active' ? 'default' : 'secondary'}
-                    className={customer.status === 'active' ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20' : ''}
+                    className={
+                        customer.status === 'active' ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20' : ''
+                    }
                 >
                     {customer.status}
                 </Badge>
             </div>
             <div className="flex flex-col gap-1 text-sm">
-                <a href={`mailto:${customer.email}`} className="text-primary hover:underline">{customer.email}</a>
+                <a href={`mailto:${customer.email}`} className="text-primary hover:underline">
+                    {customer.email}
+                </a>
                 <span className="text-muted-foreground">{customer.phone}</span>
             </div>
             <div className="flex justify-end pt-2 border-t mt-1">
@@ -179,11 +197,17 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                         }
                     />
                     <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.show', { customer: customer.id }))}>
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => router.visit(route('customers.show', { customer: customer.id }))}
+                        >
                             <Eye className="mr-2 h-4 w-4" /> View Profile
                         </DropdownMenuItem>
                         {canCreate && (
-                            <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('customers.edit', { customer: customer.id }))}>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => router.visit(route('customers.edit', { customer: customer.id }))}
+                            >
                                 <Edit className="mr-2 h-4 w-4" /> Edit Details
                             </DropdownMenuItem>
                         )}
@@ -207,10 +231,7 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
     return (
         <AppLayout
             title="Customers"
-            breadcrumbs={[
-                { label: 'Dashboard', href: route('dashboard') },
-                { label: 'Customers' },
-            ]}
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Customers' }]}
         >
             <Head title="Customers" />
             <div className="space-y-6">
@@ -219,14 +240,17 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                     description="Manage your client database and their profiles."
                     actions={
                         canCreate && (
-                            <Link href={route('customers.create')} className={buttonVariants({ variant: 'default' }) + " shrink-0 gap-2"}>
+                            <Link
+                                href={route('customers.create')}
+                                className={buttonVariants({ variant: 'default' }) + ' shrink-0 gap-2'}
+                            >
                                 <Plus className="h-4 w-4" />
                                 <span className="hidden sm:inline">Add Customer</span>
                             </Link>
                         )
                     }
                 />
-                
+
                 <DataTable
                     columns={columns}
                     data={customers.data}
@@ -239,19 +263,21 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                     savedFilters={savedFilters}
                     mobileCard={mobileCard}
                     bulkActions={
-                        canDelete ? [
-                            {
-                                label: 'Archive Selected',
-                                icon: Trash2,
-                                variant: 'destructive',
-                                onClick: (ids) => {
-                                    if(confirm(`Archive ${ids.length} customers?`)) {
-                                        console.log("Archive ids:", ids);
-                                        // implement bulk delete if needed
-                                    }
-                                }
-                            }
-                        ] : []
+                        canDelete
+                            ? [
+                                  {
+                                      label: 'Archive Selected',
+                                      icon: Trash2,
+                                      variant: 'destructive',
+                                      onClick: (ids) => {
+                                          if (confirm(`Archive ${ids.length} customers?`)) {
+                                              console.log('Archive ids:', ids);
+                                              // implement bulk delete if needed
+                                          }
+                                      },
+                                  },
+                              ]
+                            : []
                     }
                 />
             </div>

@@ -175,9 +175,9 @@ export default function Step3Travelers({
                                         <Input
                                             id={`name_${index}`}
                                             value={traveler.full_name}
-                                            onChange={e => updateTraveler(index, 'full_name', e.target.value)}
+                                            onChange={(e) => updateTraveler(index, 'full_name', e.target.value)}
                                             placeholder="e.g. Johnathan Doe"
-                                            className={cn("h-10", rowError('full_name') && "border-destructive")}
+                                            className={cn('h-10', rowError('full_name') && 'border-destructive')}
                                             required
                                         />
                                         {rowError('full_name') && (
@@ -192,7 +192,7 @@ export default function Step3Travelers({
                                         </Label>
                                         <Select
                                             value={traveler.traveler_type}
-                                            onValueChange={val => updateTraveler(index, 'traveler_type', val)}
+                                            onValueChange={(val) => updateTraveler(index, 'traveler_type', val)}
                                         >
                                             <SelectTrigger id={`type_${index}`} className="h-10">
                                                 <SelectValue />
@@ -213,7 +213,7 @@ export default function Step3Travelers({
                                         <Input
                                             id={`passport_${index}`}
                                             value={traveler.passport_number || ''}
-                                            onChange={e => updateTraveler(index, 'passport_number', e.target.value)}
+                                            onChange={(e) => updateTraveler(index, 'passport_number', e.target.value)}
                                             placeholder="e.g. N9876543"
                                             className="h-10"
                                         />
@@ -228,7 +228,7 @@ export default function Step3Travelers({
                                             id={`passport_expiry_${index}`}
                                             type="date"
                                             value={traveler.passport_expiry || ''}
-                                            onChange={e => updateTraveler(index, 'passport_expiry', e.target.value)}
+                                            onChange={(e) => updateTraveler(index, 'passport_expiry', e.target.value)}
                                             className="h-10"
                                         />
                                     </div>
@@ -242,7 +242,7 @@ export default function Step3Travelers({
                                             id={`dob_${index}`}
                                             type="date"
                                             value={traveler.dob || ''}
-                                            onChange={e => updateTraveler(index, 'dob', e.target.value)}
+                                            onChange={(e) => updateTraveler(index, 'dob', e.target.value)}
                                             className="h-10"
                                         />
                                     </div>
@@ -255,7 +255,7 @@ export default function Step3Travelers({
                                         <Input
                                             id={`nationality_${index}`}
                                             value={traveler.nationality || ''}
-                                            onChange={e => updateTraveler(index, 'nationality', e.target.value)}
+                                            onChange={(e) => updateTraveler(index, 'nationality', e.target.value)}
                                             placeholder="Sri Lankan"
                                             className="h-10"
                                         />
@@ -268,7 +268,7 @@ export default function Step3Travelers({
                                         </Label>
                                         <Select
                                             value={traveler.gender || 'Male'}
-                                            onValueChange={val => updateTraveler(index, 'gender', val)}
+                                            onValueChange={(val) => updateTraveler(index, 'gender', val)}
                                         >
                                             <SelectTrigger id={`gender_${index}`} className="h-10">
                                                 <SelectValue />
@@ -289,7 +289,9 @@ export default function Step3Travelers({
                                         <Input
                                             id={`req_${index}`}
                                             value={traveler.special_requirements || ''}
-                                            onChange={e => updateTraveler(index, 'special_requirements', e.target.value)}
+                                            onChange={(e) =>
+                                                updateTraveler(index, 'special_requirements', e.target.value)
+                                            }
                                             placeholder="e.g. Vegetarian, Wheelchair assistance"
                                             className="h-10"
                                         />

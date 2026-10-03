@@ -12,11 +12,5 @@ interface Props {
 }
 
 export default function Edit(props: Props) {
-    return (
-        <Create
-            {...props}
-            employees={props.employees || []}
-            isEditing={true}
-        />
-    );
+    return <Create {...props} employees={props.employees || []} isEditing={true} />;
 }

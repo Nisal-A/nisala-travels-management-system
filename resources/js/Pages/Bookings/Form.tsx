@@ -30,7 +30,13 @@ interface BookingFormData {
     travelers: Partial<Traveler>[];
 }
 
-export default function BookingForm({ booking, customers, packages, travelerTypes, isEditing = false }: BookingFormProps) {
+export default function BookingForm({
+    booking,
+    customers,
+    packages,
+    travelerTypes,
+    isEditing = false,
+}: BookingFormProps) {
     const { data, setData, post, put, processing, errors, transform } = useForm<BookingFormData>({
         customer_id: booking?.customer_id?.toString() || '',
         tour_package_id: booking?.tour_package_id?.toString() || '',
@@ -39,7 +45,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
         return_date: booking?.return_date || '',
         discount_amount: booking?.discount_amount ? Number(booking.discount_amount) : 0,
         notes: booking?.notes || '',
-        travelers: (booking?.travelers || [{ full_name: '', traveler_type: 'adult' }]) as Partial<Traveler>[]
+        travelers: (booking?.travelers || [{ full_name: '', traveler_type: 'adult' }]) as Partial<Traveler>[],
     });
 
     React.useEffect(() => {
@@ -49,7 +55,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
         }));
     }, []);
 
-    const selectedPackage = packages.find(p => p.id.toString() === data.tour_package_id);
+    const selectedPackage = packages.find((p) => p.id.toString() === data.tour_package_id);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,8 +110,10 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                     <SelectValue placeholder="Select Customer" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {customers.map(c => (
-                                        <SelectItem key={c.id} value={c.id.toString()}>{c.first_name} {c.last_name}</SelectItem>
+                                    {customers.map((c) => (
+                                        <SelectItem key={c.id} value={c.id.toString()}>
+                                            {c.first_name} {c.last_name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -123,8 +131,10 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                     <SelectValue placeholder="Select Package" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {packages.map(p => (
-                                        <SelectItem key={p.id} value={p.id.toString()}>{p.name}</SelectItem>
+                                    {packages.map((p) => (
+                                        <SelectItem key={p.id} value={p.id.toString()}>
+                                            {p.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -134,7 +144,9 @@ export default function BookingForm({ booking, customers, packages, travelerType
                         {selectedPackage && (
                             <div className="p-4 bg-muted rounded-md space-y-2">
                                 <p className="text-sm font-medium">Package Info</p>
-                                <p className="text-sm">Price: {Number(selectedPackage.price).toLocaleString()} {selectedPackage.currency}</p>
+                                <p className="text-sm">
+                                    Price: {Number(selectedPackage.price).toLocaleString()} {selectedPackage.currency}
+                                </p>
                                 <p className="text-sm">Capacity: {selectedPackage.capacity} travelers</p>
                             </div>
                         )}
@@ -145,7 +157,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                 type="number"
                                 id="discount_amount"
                                 value={data.discount_amount}
-                                onChange={e => setData('discount_amount', parseFloat(e.target.value) || 0)}
+                                onChange={(e) => setData('discount_amount', parseFloat(e.target.value) || 0)}
                             />
                             {errors.discount_amount && <p className="text-sm text-red-500">{errors.discount_amount}</p>}
                         </div>
@@ -164,7 +176,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                 type="date"
                                 id="booking_date"
                                 value={data.booking_date}
-                                onChange={e => setData('booking_date', e.target.value)}
+                                onChange={(e) => setData('booking_date', e.target.value)}
                             />
                             {errors.booking_date && <p className="text-sm text-red-500">{errors.booking_date}</p>}
                         </div>
@@ -175,7 +187,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                 type="date"
                                 id="travel_date"
                                 value={data.travel_date}
-                                onChange={e => setData('travel_date', e.target.value)}
+                                onChange={(e) => setData('travel_date', e.target.value)}
                             />
                             {errors.travel_date && <p className="text-sm text-red-500">{errors.travel_date}</p>}
                         </div>
@@ -186,7 +198,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                 type="date"
                                 id="return_date"
                                 value={data.return_date || ''}
-                                onChange={e => setData('return_date', e.target.value)}
+                                onChange={(e) => setData('return_date', e.target.value)}
                             />
                             {errors.return_date && <p className="text-sm text-red-500">{errors.return_date}</p>}
                         </div>
@@ -196,7 +208,7 @@ export default function BookingForm({ booking, customers, packages, travelerType
                             <Textarea
                                 id="notes"
                                 value={data.notes}
-                                onChange={e => setData('notes', e.target.value)}
+                                onChange={(e) => setData('notes', e.target.value)}
                             />
                             {errors.notes && <p className="text-sm text-red-500">{errors.notes}</p>}
                         </div>
@@ -217,15 +229,22 @@ export default function BookingForm({ booking, customers, packages, travelerType
                 <CardContent className="space-y-4">
                     {errors.travelers && <p className="text-sm text-red-500 font-medium">{errors.travelers}</p>}
                     {data.travelers.map((traveler: Partial<Traveler>, index: number) => (
-                        <div key={index} className="flex flex-col md:flex-row gap-4 items-start p-4 border rounded-lg relative">
+                        <div
+                            key={index}
+                            className="flex flex-col md:flex-row gap-4 items-start p-4 border rounded-lg relative"
+                        >
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Full Name *</Label>
                                 <Input
                                     value={traveler.full_name || ''}
-                                    onChange={e => updateTraveler(index, 'full_name', e.target.value)}
+                                    onChange={(e) => updateTraveler(index, 'full_name', e.target.value)}
                                     placeholder="Traveler Name"
                                 />
-                                {(errors as Record<string, string>)[`travelers.${index}.full_name`] && <p className="text-sm text-red-500">{(errors as Record<string, string>)[`travelers.${index}.full_name`]}</p>}
+                                {(errors as Record<string, string>)[`travelers.${index}.full_name`] && (
+                                    <p className="text-sm text-red-500">
+                                        {(errors as Record<string, string>)[`travelers.${index}.full_name`]}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Type *</Label>
@@ -237,18 +256,24 @@ export default function BookingForm({ booking, customers, packages, travelerType
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {travelerTypes.map(t => (
-                                            <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
+                                        {travelerTypes.map((t) => (
+                                            <SelectItem key={t} value={t}>
+                                                {t.charAt(0).toUpperCase() + t.slice(1)}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {(errors as Record<string, string>)[`travelers.${index}.traveler_type`] && <p className="text-sm text-red-500">{(errors as Record<string, string>)[`travelers.${index}.traveler_type`]}</p>}
+                                {(errors as Record<string, string>)[`travelers.${index}.traveler_type`] && (
+                                    <p className="text-sm text-red-500">
+                                        {(errors as Record<string, string>)[`travelers.${index}.traveler_type`]}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex-1 space-y-2 w-full">
                                 <Label>Passport (Optional)</Label>
                                 <Input
                                     value={traveler.passport_number || ''}
-                                    onChange={e => updateTraveler(index, 'passport_number', e.target.value)}
+                                    onChange={(e) => updateTraveler(index, 'passport_number', e.target.value)}
                                     placeholder="Passport Number"
                                 />
                             </div>

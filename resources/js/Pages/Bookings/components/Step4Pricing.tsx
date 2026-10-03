@@ -163,7 +163,7 @@ export default function Step4Pricing({
                                         <div key={index} className="flex items-center gap-2">
                                             <Input
                                                 value={item.name}
-                                                onChange={e => updateExtra(index, 'name', e.target.value)}
+                                                onChange={(e) => updateExtra(index, 'name', e.target.value)}
                                                 placeholder="Extra Item Description"
                                                 className="h-9 text-xs flex-1"
                                             />
@@ -171,7 +171,9 @@ export default function Step4Pricing({
                                                 <Input
                                                     type="number"
                                                     value={item.price || ''}
-                                                    onChange={e => updateExtra(index, 'price', parseFloat(e.target.value) || 0)}
+                                                    onChange={(e) =>
+                                                        updateExtra(index, 'price', parseFloat(e.target.value) || 0)
+                                                    }
                                                     placeholder="Price"
                                                     className="h-9 text-xs"
                                                 />
@@ -215,7 +217,7 @@ export default function Step4Pricing({
                                     min="0"
                                     step="0.01"
                                     value={taxAmount || ''}
-                                    onChange={e => onChangeTaxAmount(parseFloat(e.target.value) || 0)}
+                                    onChange={(e) => onChangeTaxAmount(parseFloat(e.target.value) || 0)}
                                     placeholder="0.00"
                                     className="h-10"
                                 />
@@ -244,13 +246,10 @@ export default function Step4Pricing({
                                         min="0"
                                         step="0.01"
                                         value={discountAmount || ''}
-                                        onChange={e => onChangeDiscountAmount(parseFloat(e.target.value) || 0)}
+                                        onChange={(e) => onChangeDiscountAmount(parseFloat(e.target.value) || 0)}
                                         disabled={!canDiscount}
-                                        placeholder={canDiscount ? "0.00" : "Manager approval required"}
-                                        className={cn(
-                                            "h-10",
-                                            !canDiscount && "bg-muted cursor-not-allowed opacity-75"
-                                        )}
+                                        placeholder={canDiscount ? '0.00' : 'Manager approval required'}
+                                        className={cn('h-10', !canDiscount && 'bg-muted cursor-not-allowed opacity-75')}
                                     />
                                     {!canDiscount && (
                                         <Lock className="w-4 h-4 absolute right-3 top-3 text-muted-foreground" />
@@ -271,14 +270,14 @@ export default function Step4Pricing({
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-primary" /> Live Price Summary
                             </CardTitle>
-                            <CardDescription>
-                                Real-time calculated quote for this reservation.
-                            </CardDescription>
+                            <CardDescription>Real-time calculated quote for this reservation.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-5 space-y-4">
                             <div className="space-y-2.5 text-sm">
                                 <div className="flex justify-between items-center text-muted-foreground">
-                                    <span>Base ({travelers.length} traveler{travelers.length > 1 ? 's' : ''}):</span>
+                                    <span>
+                                        Base ({travelers.length} traveler{travelers.length > 1 ? 's' : ''}):
+                                    </span>
                                     <MoneyText amount={baseSubtotal} currency={currency} size="sm" />
                                 </div>
 
@@ -299,7 +298,15 @@ export default function Step4Pricing({
                                 {discountAmount > 0 && (
                                     <div className="flex justify-between items-center text-emerald-600 font-medium">
                                         <span>Discount:</span>
-                                        <span>-<MoneyText amount={discountAmount} currency={currency} size="sm" className="text-emerald-600" /></span>
+                                        <span>
+                                            -
+                                            <MoneyText
+                                                amount={discountAmount}
+                                                currency={currency}
+                                                size="sm"
+                                                className="text-emerald-600"
+                                            />
+                                        </span>
                                     </div>
                                 )}
 

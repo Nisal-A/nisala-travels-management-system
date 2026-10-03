@@ -6,12 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,14 +16,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import {
-    Globe,
-    LogOut,
-    Menu,
-    PanelLeftClose,
-    PanelLeft,
-    Bell,
-} from 'lucide-react';
+import { Globe, LogOut, Menu, PanelLeftClose, PanelLeft, Bell } from 'lucide-react';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -36,7 +24,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
 import type { NavigationItem } from '@/types';
 import { Fragment, type FormEvent, type ReactNode, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -72,32 +60,26 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
         try {
             const routeUrl = route(routeName);
             const pathname = new URL(routeUrl).pathname;
-            return currentUrl === pathname
-                || currentUrl.startsWith(pathname + '/');
+            return currentUrl === pathname || currentUrl.startsWith(pathname + '/');
         } catch {
             return false;
         }
     }
 
-    const initials = user?.name
-        ?.split(' ')
-        .map((n) => n[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase() ?? '?';
+    const initials =
+        user?.name
+            ?.split(' ')
+            .map((n) => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() ?? '?';
 
     const roleBadge = user?.roles?.[0]?.replace('_', ' ') ?? 'user';
 
     // -----------------------------------------------------------------
     // Sidebar Nav Section Renderer
     // -----------------------------------------------------------------
-    function NavSection({
-        label,
-        items,
-    }: {
-        label?: string;
-        items: NavigationItem[];
-    }) {
+    function NavSection({ label, items }: { label?: string; items: NavigationItem[] }) {
         return (
             <div className="space-y-1">
                 {label && !collapsed && (
@@ -115,20 +97,20 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             className={`
                                 group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
                                 transition-all duration-200 ease-out
-                                ${active
-                                    ? 'bg-primary/10 text-primary shadow-sm shadow-primary/5'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                ${
+                                    active
+                                        ? 'bg-primary/10 text-primary shadow-sm shadow-primary/5'
+                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 }
                                 ${collapsed ? 'justify-center px-2' : ''}
                             `}
                         >
                             <Icon
-                                className={`shrink-0 transition-colors ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
-                                    } ${collapsed ? 'h-5 w-5' : 'h-4 w-4'}`}
+                                className={`shrink-0 transition-colors ${
+                                    active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                                } ${collapsed ? 'h-5 w-5' : 'h-4 w-4'}`}
                             />
-                            {!collapsed && (
-                                <span className="truncate">{item.label}</span>
-                            )}
+                            {!collapsed && <span className="truncate">{item.label}</span>}
                         </Link>
                     );
 
@@ -160,7 +142,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
         return (
             <div className="flex h-full flex-col">
                 {/* Header */}
-                <div className={`flex h-16 shrink-0 items-center border-b border-border/50 ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}>
+                <div
+                    className={`flex h-16 shrink-0 items-center border-b border-border/50 ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}
+                >
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/80 to-primary shadow-lg shadow-primary/20">
                         <Globe className="h-5 w-5 text-primary-foreground" />
                     </div>
@@ -169,9 +153,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             <span className="truncate text-sm font-bold tracking-tight text-foreground">
                                 Nisala Travels
                             </span>
-                            <span className="truncate text-[0.65rem] text-muted-foreground">
-                                Management System
-                            </span>
+                            <span className="truncate text-[0.65rem] text-muted-foreground">Management System</span>
                         </div>
                     )}
                 </div>
@@ -179,29 +161,19 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                 {/* Navigation */}
                 <ScrollArea className="flex-1 py-4">
                     <nav className={`space-y-6 ${isCollapsed ? 'px-2' : 'px-3'}`}>
-                        {navigation.main && (
-                            <NavSection
-                                items={navigation.main}
-                            />
-                        )}
+                        {navigation.main && <NavSection items={navigation.main} />}
 
                         {navigation.management && navigation.management.length > 0 && (
                             <>
                                 {!isCollapsed && <Separator className="opacity-50" />}
-                                <NavSection
-                                    label="Management"
-                                    items={navigation.management}
-                                />
+                                <NavSection label="Management" items={navigation.management} />
                             </>
                         )}
 
                         {navigation.portal && navigation.portal.length > 0 && (
                             <>
                                 {!isCollapsed && <Separator className="opacity-50" />}
-                                <NavSection
-                                    label="My Account"
-                                    items={navigation.portal}
-                                />
+                                <NavSection label="My Account" items={navigation.portal} />
                             </>
                         )}
                     </nav>
@@ -267,8 +239,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
             <div className="flex h-screen bg-background dark">
                 {/* Desktop Sidebar */}
                 <aside
-                    className={`relative hidden lg:flex flex-col border-r border-border/50 bg-card/50 backdrop-blur-xl transition-all duration-300 ease-out ${collapsed ? 'w-[68px]' : 'w-64'
-                        }`}
+                    className={`relative hidden lg:flex flex-col border-r border-border/50 bg-card/50 backdrop-blur-xl transition-all duration-300 ease-out ${
+                        collapsed ? 'w-[68px]' : 'w-64'
+                    }`}
                 >
                     <SidebarContent />
 
@@ -280,11 +253,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             onClick={() => setCollapsed(!collapsed)}
                             className="rounded-full shadow-md bg-card"
                         >
-                            {collapsed ? (
-                                <PanelLeft className="h-3 w-3" />
-                            ) : (
-                                <PanelLeftClose className="h-3 w-3" />
-                            )}
+                            {collapsed ? <PanelLeft className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
                         </Button>
                     </div>
                 </aside>
@@ -293,11 +262,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                 <Sheet>
                     <SheetTrigger
                         render={
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="fixed left-4 top-4 z-40 lg:hidden"
-                            >
+                            <Button variant="ghost" size="icon" className="fixed left-4 top-4 z-40 lg:hidden">
                                 <Menu className="h-5 w-5" />
                                 <span className="sr-only">Open menu</span>
                             </Button>
@@ -337,15 +302,11 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                     </BreadcrumbList>
                                 </Breadcrumb>
                             ) : title ? (
-                                <h1 className="text-lg font-semibold text-foreground tracking-tight">
-                                    {title}
-                                </h1>
+                                <h1 className="text-lg font-semibold text-foreground tracking-tight">{title}</h1>
                             ) : null}
                         </div>
                         <div className="flex items-center gap-3">
-                            {hasRole('super_admin', 'manager', 'staff', 'finance') && (
-                                <CommandPalette />
-                            )}
+                            {hasRole('super_admin', 'manager', 'staff', 'finance') && <CommandPalette />}
                             <NotificationBell />
                             <Badge variant="outline" className="hidden sm:inline-flex text-[0.65rem] capitalize">
                                 {roleBadge}
@@ -355,9 +316,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
 
                     {/* Page Content */}
                     <div className="flex-1 overflow-y-auto">
-                        <div className="p-6">
-                            {children}
-                        </div>
+                        <div className="p-6">{children}</div>
                     </div>
                 </main>
             </div>

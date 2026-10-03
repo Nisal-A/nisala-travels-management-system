@@ -16,7 +16,7 @@ import {
     step3Schema,
     step4Schema,
     step5Schema,
-    WizardFormData
+    WizardFormData,
 } from './components/wizard-schema';
 import { Customer, TourPackage, Employee, Booking } from '@/types';
 import axios from 'axios';
@@ -70,7 +70,7 @@ export default function Create({
                 travel_date: booking.travel_date || '',
                 return_date: booking.return_date || '',
                 assigned_to: booking.assigned_to?.toString() || '',
-                travelers: (booking.travelers || []).map(t => ({
+                travelers: (booking.travelers || []).map((t) => ({
                     id: t.id,
                     full_name: t.full_name,
                     traveler_type: (t.traveler_type as 'adult' | 'child' | 'infant') || 'adult',
@@ -85,8 +85,8 @@ export default function Create({
                 tax_amount: Number(booking.tax_amount || 0),
                 discount_amount: Number(booking.discount_amount || 0),
                 payment_plan: 'deposit_balance',
-                deposit_amount: Math.round(Number(booking.final_amount || 0) * 0.20),
-                payment_schedules: (booking.payment_schedules || []).map(s => ({
+                deposit_amount: Math.round(Number(booking.final_amount || 0) * 0.2),
+                payment_schedules: (booking.payment_schedules || []).map((s) => ({
                     description: s.description,
                     amount: Number(s.amount),
                     due_date: s.due_date,
@@ -116,7 +116,7 @@ export default function Create({
                     gender: 'Male',
                     nationality: 'Sri Lankan',
                     special_requirements: '',
-                }
+                },
             ],
             extras: [],
             tax_amount: 0,
@@ -132,15 +132,15 @@ export default function Create({
         };
     });
 
-    const selectedCustomer = customers.find(c => c.id.toString() === formData.customer_id);
-    const selectedPackage = packages.find(p => p.id.toString() === formData.tour_package_id);
-    const assignedStaff = employees.find(e => e.id.toString() === formData.assigned_to);
+    const selectedCustomer = customers.find((c) => c.id.toString() === formData.customer_id);
+    const selectedPackage = packages.find((p) => p.id.toString() === formData.tour_package_id);
+    const assignedStaff = employees.find((e) => e.id.toString() === formData.assigned_to);
 
     // Track dirty state
     const updateFormField = useCallback((field: keyof WizardFormData, value: any) => {
         isDirtyRef.current = true;
-        setFormData(prev => ({ ...prev, [field]: value }));
-        setStepErrors(prev => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        setStepErrors((prev) => {
             const next = { ...prev };
             delete next[field];
             return next;
@@ -173,7 +173,9 @@ export default function Create({
                 });
                 if (response.data?.success) {
                     setDraftStatus('saved');
-                    setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                    setLastSavedTime(
+                        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    );
                 }
             } catch (err) {
                 console.error('Draft autosave failed', err);
@@ -195,7 +197,9 @@ export default function Create({
             });
             if (response.data?.success) {
                 setDraftStatus('saved');
-                setLastSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                setLastSavedTime(
+                    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                );
             }
         } catch (err) {
             console.error('Draft save failed', err);
@@ -205,7 +209,7 @@ export default function Create({
     // Resume draft action
     const handleResumeDraft = () => {
         if (!existingDraft) return;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             ...existingDraft.payload,
         }));
@@ -281,7 +285,7 @@ export default function Create({
         if (!validateStep(currentStep)) return;
 
         if (!completedSteps.includes(currentStep)) {
-            setCompletedSteps(prev => [...prev, currentStep]);
+            setCompletedSteps((prev) => [...prev, currentStep]);
         }
 
         const nextStep = currentStep + 1;
@@ -331,7 +335,7 @@ export default function Create({
             customer_id: parseInt(formData.customer_id),
             tour_package_id: parseInt(formData.tour_package_id),
             assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
-            travelers: formData.travelers.map(t => ({
+            travelers: formData.travelers.map((t) => ({
                 ...t,
                 id: t.id,
                 full_name: t.full_name,
@@ -363,7 +367,7 @@ export default function Create({
                     setSubmitting(false);
                     const msg = errors.error || Object.values(errors)[0] || 'Failed to update booking.';
                     toast.error(msg);
-                }
+                },
             });
         } else {
             router.post(route('bookings.store'), payload as any, {
@@ -374,14 +378,14 @@ export default function Create({
                     setSubmitting(false);
                     const msg = errors.error || Object.values(errors)[0] || 'Failed to create booking.';
                     toast.error(msg);
-                }
+                },
             });
         }
     };
 
     return (
         <AppLayout>
-            <Head title={isEditing ? `Edit Booking ${booking?.booking_reference}` : "New Booking Wizard"} />
+            <Head title={isEditing ? `Edit Booking ${booking?.booking_reference}` : 'New Booking Wizard'} />
 
             <div className="max-w-6xl mx-auto space-y-6 pb-12">
                 {/* Header with Title and Autosave Status */}
@@ -430,25 +434,17 @@ export default function Create({
                             <div>
                                 <AlertTitle className="font-semibold text-primary">Unfinished Draft Found</AlertTitle>
                                 <AlertDescription className="text-xs text-muted-foreground">
-                                    You have a draft saved on {new Date(existingDraft.updated_at).toLocaleString()} (Step {existingDraft.step}). Would you like to resume where you left off?
+                                    You have a draft saved on {new Date(existingDraft.updated_at).toLocaleString()}{' '}
+                                    (Step {existingDraft.step}). Would you like to resume where you left off?
                                 </AlertDescription>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleDiscardDraft}
-                                className="text-xs h-8"
-                            >
+                            <Button size="sm" variant="outline" onClick={handleDiscardDraft} className="text-xs h-8">
                                 Discard
                             </Button>
-                            <Button
-                                size="sm"
-                                onClick={handleResumeDraft}
-                                className="text-xs h-8 gap-1"
-                            >
+                            <Button size="sm" onClick={handleResumeDraft} className="text-xs h-8 gap-1">
                                 <RotateCcw className="w-3.5 h-3.5" /> Resume Draft
                             </Button>
                         </div>
@@ -523,10 +519,10 @@ export default function Create({
                             currency={(selectedPackage?.currency as 'LKR' | 'USD') || 'LKR'}
                             finalTotal={Math.max(
                                 0,
-                                (Number(selectedPackage?.price || 0) * formData.travelers.length) +
-                                formData.extras.reduce((s, e) => s + Number(e.price || 0), 0) +
-                                Number(formData.tax_amount || 0) -
-                                Number(formData.discount_amount || 0)
+                                Number(selectedPackage?.price || 0) * formData.travelers.length +
+                                    formData.extras.reduce((s, e) => s + Number(e.price || 0), 0) +
+                                    Number(formData.tax_amount || 0) -
+                                    Number(formData.discount_amount || 0),
                             )}
                             travelDate={formData.travel_date}
                             bookingDate={formData.booking_date}
@@ -589,16 +585,10 @@ export default function Create({
                     </Button>
 
                     <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground hidden sm:inline">
-                            Step {currentStep} of 6
-                        </span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">Step {currentStep} of 6</span>
 
                         {currentStep < 6 ? (
-                            <Button
-                                type="button"
-                                onClick={handleNext}
-                                className="gap-2 font-semibold shadow-xs"
-                            >
+                            <Button type="button" onClick={handleNext} className="gap-2 font-semibold shadow-xs">
                                 Next Step <ArrowRight className="w-4 h-4" />
                             </Button>
                         ) : (

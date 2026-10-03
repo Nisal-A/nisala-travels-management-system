@@ -41,7 +41,9 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
         {
             accessorKey: 'booking_reference',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Reference" />,
-            cell: ({ row }) => <span className="font-medium text-muted-foreground">{row.getValue('booking_reference')}</span>,
+            cell: ({ row }) => (
+                <span className="font-medium text-muted-foreground">{row.getValue('booking_reference')}</span>
+            ),
         },
         {
             id: 'customer',
@@ -50,11 +52,13 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                 const customer: any = row.original.customer;
                 return (
                     <div className="flex flex-col">
-                        <span className="font-medium">{customer?.first_name} {customer?.last_name}</span>
+                        <span className="font-medium">
+                            {customer?.first_name} {customer?.last_name}
+                        </span>
                         {customer?.email && <span className="text-xs text-muted-foreground">{customer.email}</span>}
                     </div>
                 );
-            }
+            },
         },
         {
             id: 'tourPackage',
@@ -62,7 +66,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
             cell: ({ row }) => {
                 const pkg: any = row.original.tour_package;
                 return <span className="font-medium">{pkg?.name}</span>;
-            }
+            },
         },
         {
             accessorKey: 'travel_date',
@@ -77,14 +81,21 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
         {
             accessorKey: 'final_amount',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
-            cell: ({ row }) => <MoneyText amount={Number(row.getValue('final_amount'))} currency={row.original.currency as "LKR" | "USD" | undefined} />,
+            cell: ({ row }) => (
+                <MoneyText
+                    amount={Number(row.getValue('final_amount'))}
+                    currency={row.original.currency as 'LKR' | 'USD' | undefined}
+                />
+            ),
         },
         {
             accessorKey: 'booking_status',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
             cell: ({ row }) => {
                 const status = row.getValue('booking_status') as string;
-                return <StatusBadge type="booking" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />;
+                return (
+                    <StatusBadge type="booking" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />
+                );
             },
         },
         {
@@ -106,11 +117,17 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                             <DropdownMenuContent align="end" className="w-[160px]">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('bookings.show', { booking: booking.id }))}>
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => router.visit(route('bookings.show', { booking: booking.id }))}
+                                >
                                     <Eye className="mr-2 h-4 w-4" /> View Booking
                                 </DropdownMenuItem>
                                 {canCreate && (
-                                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('bookings.edit', { booking: booking.id }))}>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => router.visit(route('bookings.edit', { booking: booking.id }))}
+                                    >
                                         <Edit className="mr-2 h-4 w-4" /> Edit Details
                                     </DropdownMenuItem>
                                 )}
@@ -130,7 +147,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                     </div>
                 );
             },
-        }
+        },
     ];
 
     const mobileCard = (booking: Booking) => (
@@ -138,17 +155,27 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
             <div className="flex justify-between items-start">
                 <div className="flex flex-col">
                     <span className="font-semibold">{booking.booking_reference}</span>
-                    <span className="text-xs text-muted-foreground">{booking.customer?.first_name} {booking.customer?.last_name}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {booking.customer?.first_name} {booking.customer?.last_name}
+                    </span>
                 </div>
-                <StatusBadge type="booking" status={(booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as any} />
+                <StatusBadge
+                    type="booking"
+                    status={(booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as any}
+                />
             </div>
             <div className="text-sm">
                 <div className="font-medium">{booking.tour_package?.name}</div>
-                <div className="text-muted-foreground">{booking.travel_date} • {booking.number_of_travelers} travelers</div>
+                <div className="text-muted-foreground">
+                    {booking.travel_date} • {booking.number_of_travelers} travelers
+                </div>
             </div>
             <div className="flex justify-between items-center mt-2 border-t pt-2">
                 <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    <MoneyText amount={Number(booking.final_amount)} currency={booking.currency as "LKR" | "USD" | undefined} />
+                    <MoneyText
+                        amount={Number(booking.final_amount)}
+                        currency={booking.currency as 'LKR' | 'USD' | undefined}
+                    />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger
@@ -159,11 +186,17 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                         }
                     />
                     <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('bookings.show', { booking: booking.id }))}>
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => router.visit(route('bookings.show', { booking: booking.id }))}
+                        >
                             <Eye className="mr-2 h-4 w-4" /> View Booking
                         </DropdownMenuItem>
                         {canCreate && (
-                            <DropdownMenuItem className="cursor-pointer" onClick={() => router.visit(route('bookings.edit', { booking: booking.id }))}>
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => router.visit(route('bookings.edit', { booking: booking.id }))}
+                            >
                                 <Edit className="mr-2 h-4 w-4" /> Edit Details
                             </DropdownMenuItem>
                         )}
@@ -187,10 +220,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
     return (
         <AppLayout
             title="Bookings"
-            breadcrumbs={[
-                { label: 'Dashboard', href: route('dashboard') },
-                { label: 'Bookings' },
-            ]}
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Bookings' }]}
         >
             <Head title="Bookings" />
             <div className="space-y-6">
@@ -199,7 +229,10 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                     description="Manage tour and travel bookings."
                     actions={
                         canCreate && (
-                            <Link href={route('bookings.create')} className={buttonVariants({ variant: 'default' }) + " shrink-0 gap-2"}>
+                            <Link
+                                href={route('bookings.create')}
+                                className={buttonVariants({ variant: 'default' }) + ' shrink-0 gap-2'}
+                            >
                                 <Plus className="h-4 w-4" />
                                 <span className="hidden sm:inline">New Booking</span>
                             </Link>
@@ -219,18 +252,20 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                     savedFilters={savedFilters}
                     mobileCard={mobileCard}
                     bulkActions={
-                        canDelete ? [
-                            {
-                                label: 'Archive Selected',
-                                icon: Trash2,
-                                variant: 'destructive',
-                                onClick: (ids) => {
-                                    if (confirm(`Archive ${ids.length} bookings?`)) {
-                                        console.log("Archive ids:", ids);
-                                    }
-                                }
-                            }
-                        ] : []
+                        canDelete
+                            ? [
+                                  {
+                                      label: 'Archive Selected',
+                                      icon: Trash2,
+                                      variant: 'destructive',
+                                      onClick: (ids) => {
+                                          if (confirm(`Archive ${ids.length} bookings?`)) {
+                                              console.log('Archive ids:', ids);
+                                          }
+                                      },
+                                  },
+                              ]
+                            : []
                     }
                 />
             </div>
