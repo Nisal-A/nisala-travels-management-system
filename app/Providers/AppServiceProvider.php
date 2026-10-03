@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\NotificationServiceInterface;
+use App\Listeners\LogNotificationDelivery;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,8 +16,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Contracts\NotificationServiceInterface::class,
-            \App\Services\NotificationService::class
+            NotificationServiceInterface::class,
+            NotificationService::class
         );
     }
 
@@ -22,6 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::subscribe(\App\Listeners\LogNotificationDelivery::class);
+        Event::subscribe(LogNotificationDelivery::class);
     }
 }

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
-
+use App\Models\Customer;
+use App\Models\DocumentType;
+use App\Models\SavedFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -19,17 +19,17 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Customer::class);
-        
+
         $perPage = $request->input('per_page', 10);
         $customers = Customer::query()
             ->filterAndSort($request->all())
             ->paginate($perPage)
             ->withQueryString();
 
-        $savedFilters = \App\Models\SavedFilter::where('user_id', $request->user()->id)
+        $savedFilters = SavedFilter::where('user_id', $request->user()->id)
             ->where('table_key', 'customers')
             ->get();
-            
+
         return Inertia::render('Customers/Index', [
             'customers' => $customers,
             'filters' => $request->all(),
@@ -43,7 +43,7 @@ class CustomerController extends Controller
     public function create()
     {
         Gate::authorize('create', Customer::class);
-        
+
         return Inertia::render('Customers/Create');
     }
 
@@ -53,15 +53,15 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         Gate::authorize('create', Customer::class);
-        
+
         $validated = $request->validated();
-        
+
         // Auto-generate Customer ID (protected from mass-assignment)
         $latestCustomer = Customer::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $latestCustomer ? $latestCustomer->id + 1 : 1;
 
         $customer = new Customer($validated);
-        $customer->customer_id = 'CUST-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        $customer->customer_id = 'CUST-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
         $customer->created_by = $request->user()->id;
         $customer->save();
 
@@ -69,7 +69,7 @@ class CustomerController extends Controller
             return response()->json([
                 'success' => true,
                 'customer' => $customer,
-                'message' => 'Customer created successfully.'
+                'message' => 'Customer created successfully.',
             ], 201);
         }
 
@@ -107,7 +107,7 @@ class CustomerController extends Controller
     public function show(Customer $customer)
     {
         Gate::authorize('view', $customer);
-        
+
         // Load documents with their types and uploaders
         $documents = $customer->documents()
             ->with(['documentType', 'uploadedBy:id,name', 'verifiedBy:id,name'])
@@ -116,10 +116,11 @@ class CustomerController extends Controller
             ->map(function ($doc) {
                 // Ensure we don't leak the physical storage path to the frontend
                 $doc->makeHidden(['storage_path']);
+
                 return $doc;
             });
 
-        $documentTypes = \App\Models\DocumentType::where('is_active', true)->get();
+        $documentTypes = DocumentType::where('is_active', true)->get();
 
         return Inertia::render('Customers/Show', [
             'customer' => $customer->load('creator:id,name'),
@@ -134,9 +135,9 @@ class CustomerController extends Controller
     public function edit(Customer $customer)
     {
         Gate::authorize('update', $customer);
-        
+
         return Inertia::render('Customers/Edit', [
-            'customer' => $customer
+            'customer' => $customer,
         ]);
     }
 
@@ -146,7 +147,7 @@ class CustomerController extends Controller
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
         Gate::authorize('update', $customer);
-        
+
         $customer->update($request->validated());
 
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
@@ -158,7 +159,7 @@ class CustomerController extends Controller
     public function destroy(Customer $customer)
     {
         Gate::authorize('delete', $customer);
-        
+
         $customer->delete();
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');

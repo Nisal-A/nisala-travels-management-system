@@ -3,8 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Enums\BookingStatus;
-use App\Enums\TravelerType;
 
 return new class extends Migration
 {
@@ -18,14 +16,14 @@ return new class extends Migration
             // SQLite doesn't fully support dropping/modifying easily, but we're on MySQL.
             // Alternatively, we just leave the strings and enforce them at the model level (Enum cast).
             // But let's add the missing financial and tracking fields.
-            
+
             $table->decimal('base_amount', 12, 2)->default(0)->after('number_of_travelers');
             $table->decimal('discount_amount', 12, 2)->default(0)->after('base_amount');
             $table->decimal('final_amount', 12, 2)->default(0)->after('discount_amount');
             $table->decimal('paid_amount', 12, 2)->default(0)->after('final_amount');
             $table->decimal('balance_amount', 12, 2)->default(0)->after('paid_amount');
             $table->string('currency', 3)->default('LKR')->after('balance_amount');
-            
+
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->after('notes');
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete()->after('created_by');
         });

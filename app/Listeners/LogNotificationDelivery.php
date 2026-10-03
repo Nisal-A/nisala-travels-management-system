@@ -2,10 +2,11 @@
 
 namespace App\Listeners;
 
-use Illuminate\Notifications\Events\NotificationSent;
-use Illuminate\Notifications\Events\NotificationFailed;
 use App\Models\NotificationLog;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Notifications\Events\NotificationSent;
 
 class LogNotificationDelivery
 {
@@ -22,13 +23,13 @@ class LogNotificationDelivery
     protected function log($event, $status, $error = null)
     {
         $notifiable = $event->notifiable;
-        $notifiableType = is_object($notifiable) && method_exists($notifiable, 'getMorphClass') 
-            ? $notifiable->getMorphClass() 
+        $notifiableType = is_object($notifiable) && method_exists($notifiable, 'getMorphClass')
+            ? $notifiable->getMorphClass()
             : (is_object($notifiable) ? get_class($notifiable) : null);
-        
+
         $notifiableId = is_object($notifiable) && isset($notifiable->id) ? $notifiable->id : null;
 
-        if ($notifiable instanceof \Illuminate\Notifications\AnonymousNotifiable) {
+        if ($notifiable instanceof AnonymousNotifiable) {
             $notifiableType = 'Anonymous';
             $routes = $notifiable->routes;
             $notifiableId = is_array($routes) ? implode(', ', array_values($routes)) : null;
@@ -37,7 +38,7 @@ class LogNotificationDelivery
         NotificationLog::create([
             'notification_id' => method_exists($event->notification, 'id') ? clone $event->notification->id : null,
             'notifiable_type' => $notifiableType,
-            'notifiable_id' => (string)$notifiableId,
+            'notifiable_id' => (string) $notifiableId,
             'type' => get_class($event->notification),
             'channel' => $event->channel,
             'status' => $status,

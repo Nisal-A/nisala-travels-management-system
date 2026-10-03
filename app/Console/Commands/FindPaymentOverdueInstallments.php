@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\PaymentSchedule;
 use App\Events\PaymentOverdue;
+use App\Models\PaymentSchedule;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class FindPaymentOverdueInstallments extends Command
 {

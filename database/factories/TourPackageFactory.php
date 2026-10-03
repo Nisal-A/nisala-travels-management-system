@@ -2,10 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Destination;
 use App\Models\TourPackage;
 use Illuminate\Database\Eloquent\Factories\Factory;
-
-use App\Models\Destination;
 
 /**
  * @extends Factory<TourPackage>

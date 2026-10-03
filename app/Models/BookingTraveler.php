@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\TravelerType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Enums\TravelerType;
 
 class BookingTraveler extends Model
 {

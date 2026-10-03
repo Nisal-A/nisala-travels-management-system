@@ -1,12 +1,13 @@
 <?php
 
+use App\Enums\BookingStatus;
+use App\Enums\TravelerType;
 use App\Models\Booking;
 use App\Models\BookingTraveler;
 use App\Models\Customer;
 use App\Models\TourPackage;
 use App\Models\User;
-use App\Enums\BookingStatus;
-use App\Enums\TravelerType;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -18,7 +19,7 @@ test('booking table has expected columns', function () {
         'assigned_to', 'booking_date', 'travel_date', 'number_of_travelers',
         'base_amount', 'discount_amount', 'final_amount', 'paid_amount', 'balance_amount',
         'currency', 'booking_status', 'payment_status', 'notes',
-        'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'
+        'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at',
     ]));
 });
 
@@ -27,7 +28,7 @@ test('booking traveler table has expected columns', function () {
         'id', 'booking_id', 'customer_id', 'full_name', 'dob', 'gender',
         'nationality', 'nic', 'passport_number', 'passport_expiry',
         'relationship_to_primary', 'traveler_type', 'contact_information',
-        'special_requirements', 'notes', 'created_at', 'updated_at'
+        'special_requirements', 'notes', 'created_at', 'updated_at',
     ]));
 });
 
@@ -81,9 +82,9 @@ test('can add multiple travelers to a booking', function () {
 
 test('booking reference is unique', function () {
     $booking1 = Booking::factory()->create(['booking_reference' => 'NT-1234']);
-    
-    $this->expectException(\Illuminate\Database\QueryException::class);
-    
+
+    $this->expectException(QueryException::class);
+
     Booking::factory()->create(['booking_reference' => 'NT-1234']);
 });
 

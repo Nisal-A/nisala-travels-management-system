@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class TourPackage extends Model
@@ -17,7 +17,7 @@ class TourPackage extends Model
         static::saved(function ($package) {
             Cache::flush(); // Simple cache clear for public pages
         });
-        
+
         static::deleted(function ($package) {
             Cache::flush();
         });

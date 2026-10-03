@@ -16,6 +16,7 @@ class NotificationController extends Controller
         if ($user->hasRole('customer') && $user->customer) {
             return $user->customer;
         }
+
         return $user;
     }
 
@@ -45,6 +46,7 @@ class NotificationController extends Controller
     public function unreadCount(Request $request)
     {
         $notifiable = $this->getNotifiable($request);
+
         return response()->json([
             'count' => $notifiable->unreadNotifications()->count(),
         ]);
@@ -56,6 +58,7 @@ class NotificationController extends Controller
     public function recent(Request $request)
     {
         $notifiable = $this->getNotifiable($request);
+
         return response()->json([
             'notifications' => $notifiable->notifications()->take(5)->get(),
         ]);
@@ -68,7 +71,7 @@ class NotificationController extends Controller
     {
         $notifiable = $this->getNotifiable($request);
         $notification = $notifiable->notifications()->findOrFail($id);
-        
+
         $notification->markAsRead();
 
         return response()->json(['success' => true]);

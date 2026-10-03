@@ -1,7 +1,23 @@
 <?php
 
+use App\Http\Controllers\Api\PublicTourController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\CustomerDocumentVerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\GlobalSearchController;
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Portal\DocumentController;
+use App\Http\Controllers\Portal\ProfileController;
+use App\Http\Controllers\SavedFilterController;
+use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,13 +38,13 @@ Route::get('/contact', function () {
 })->name('contact');
 
 Route::prefix('api/public')->group(function () {
-    Route::get('tours', [\App\Http\Controllers\Api\PublicTourController::class, 'index']);
-    Route::get('tours/featured', [\App\Http\Controllers\Api\PublicTourController::class, 'featured']);
-    Route::get('tours/{slug}', [\App\Http\Controllers\Api\PublicTourController::class, 'show']);
-    Route::get('destinations', [\App\Http\Controllers\Api\PublicTourController::class, 'destinations']);
+    Route::get('tours', [PublicTourController::class, 'index']);
+    Route::get('tours/featured', [PublicTourController::class, 'featured']);
+    Route::get('tours/{slug}', [PublicTourController::class, 'show']);
+    Route::get('destinations', [PublicTourController::class, 'destinations']);
 });
 
-Route::post('/inquiries', [\App\Http\Controllers\InquiryController::class, 'store'])
+Route::post('/inquiries', [InquiryController::class, 'store'])
     ->middleware('throttle:5,60')
     ->name('inquiries.store');
 
@@ -66,27 +82,27 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Saved Filters — accessible to all authenticated users
-    Route::post('/saved-filters', [\App\Http\Controllers\SavedFilterController::class, 'store'])->name('saved-filters.store');
-    Route::delete('/saved-filters/{savedFilter}', [\App\Http\Controllers\SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
+    Route::post('/saved-filters', [SavedFilterController::class, 'store'])->name('saved-filters.store');
+    Route::delete('/saved-filters/{savedFilter}', [SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
 
     // Notifications — accessible to all authenticated users
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
-        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unreadCount');
-        Route::get('/recent', [\App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
-        Route::patch('/{id}/mark-as-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('markAsRead');
-        Route::post('/mark-all-as-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unreadCount');
+        Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
+        Route::patch('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
+        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
     });
 
     // Administrative routes — accessible to all office roles
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
-        
+
         // Global Search
-        Route::get('/admin/search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('admin.search');
+        Route::get('/admin/search', [GlobalSearchController::class, 'search'])->name('admin.search');
 
         // Calendar
-        Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
-        Route::get('/admin/calendar/events', [\App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
+        Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
+        Route::get('/admin/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
     });
 
     // ------------------------------------------------------------------
@@ -117,37 +133,37 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
-        Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
+        Route::resource('employees', EmployeeController::class);
     });
 
     // ==============================
     // Super Admin + Manager + Staff (Operational)
     // ==============================
     Route::middleware('role:super_admin,manager,staff')->group(function () {
-        Route::resource('customers', \App\Http\Controllers\CustomerController::class);
-        Route::post('customers/{customer}/documents', [\App\Http\Controllers\CustomerDocumentController::class, 'store'])->name('customers.documents.store');
-        Route::get('customers/{customer}/documents/{document}/download', [\App\Http\Controllers\CustomerDocumentController::class, 'download'])->name('customers.documents.download');
-        Route::patch('customers/{customer}/documents/{document}/verify', [\App\Http\Controllers\CustomerDocumentVerificationController::class, 'verify'])->name('customers.documents.verify');
-        Route::patch('customers/{customer}/documents/{document}/reject', [\App\Http\Controllers\CustomerDocumentVerificationController::class, 'reject'])->name('customers.documents.reject');
+        Route::resource('customers', CustomerController::class);
+        Route::post('customers/{customer}/documents', [CustomerDocumentController::class, 'store'])->name('customers.documents.store');
+        Route::get('customers/{customer}/documents/{document}/download', [CustomerDocumentController::class, 'download'])->name('customers.documents.download');
+        Route::patch('customers/{customer}/documents/{document}/verify', [CustomerDocumentVerificationController::class, 'verify'])->name('customers.documents.verify');
+        Route::patch('customers/{customer}/documents/{document}/reject', [CustomerDocumentVerificationController::class, 'reject'])->name('customers.documents.reject');
 
         Route::prefix('documents')->name('documents.')->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
         });
 
-        Route::resource('destinations', \App\Http\Controllers\DestinationController::class);
-        Route::resource('tours', \App\Http\Controllers\TourPackageController::class);
+        Route::resource('destinations', DestinationController::class);
+        Route::resource('tours', TourPackageController::class);
 
-        Route::get('admin/customers/search', [\App\Http\Controllers\CustomerController::class, 'search'])->name('customers.search');
+        Route::get('admin/customers/search', [CustomerController::class, 'search'])->name('customers.search');
 
-        Route::post('bookings/draft', [\App\Http\Controllers\BookingController::class, 'saveDraft'])->name('bookings.draft.save');
-        Route::get('bookings/draft', [\App\Http\Controllers\BookingController::class, 'getDraft'])->name('bookings.draft.get');
-        Route::delete('bookings/draft', [\App\Http\Controllers\BookingController::class, 'deleteDraft'])->name('bookings.draft.delete');
+        Route::post('bookings/draft', [BookingController::class, 'saveDraft'])->name('bookings.draft.save');
+        Route::get('bookings/draft', [BookingController::class, 'getDraft'])->name('bookings.draft.get');
+        Route::delete('bookings/draft', [BookingController::class, 'deleteDraft'])->name('bookings.draft.delete');
 
-        Route::resource('bookings', \App\Http\Controllers\BookingController::class);
-        Route::patch('bookings/{booking}/status', [\App\Http\Controllers\BookingController::class, 'changeStatus'])->name('bookings.status');
-        Route::post('bookings/{booking}/notes', [\App\Http\Controllers\BookingController::class, 'addNote'])->name('bookings.notes.store');
-        Route::patch('bookings/{booking}/assign', [\App\Http\Controllers\BookingController::class, 'assignStaff'])->name('bookings.assign');
-        Route::post('bookings/{id}/restore', [\App\Http\Controllers\BookingController::class, 'restore'])->name('bookings.restore');
+        Route::resource('bookings', BookingController::class);
+        Route::patch('bookings/{booking}/status', [BookingController::class, 'changeStatus'])->name('bookings.status');
+        Route::post('bookings/{booking}/notes', [BookingController::class, 'addNote'])->name('bookings.notes.store');
+        Route::patch('bookings/{booking}/assign', [BookingController::class, 'assignStaff'])->name('bookings.assign');
+        Route::post('bookings/{id}/restore', [BookingController::class, 'restore'])->name('bookings.restore');
     });
 
     // ==============================
@@ -155,7 +171,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ==============================
     Route::middleware('role:super_admin,manager,finance')->group(function () {
         // Payments Management (NT-011)
-        Route::resource('payments', \App\Http\Controllers\PaymentController::class)->only(['index', 'store', 'destroy']);
+        Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
@@ -168,23 +184,23 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Customers access their own data through the portal. Server-side
     // policies further restrict them to their own records only.
     Route::middleware(['role:customer', 'customer'])->prefix('portal')->name('portal.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Portal\DashboardController::class, 'index'])->name('dashboard');
-        
-        Route::get('/bookings', [\App\Http\Controllers\Portal\BookingController::class, 'index'])->name('bookings.index');
-        Route::get('/bookings/{booking}', [\App\Http\Controllers\Portal\BookingController::class, 'show'])->name('bookings.show');
-        Route::get('/bookings/{booking}/itinerary', [\App\Http\Controllers\Portal\BookingController::class, 'itinerary'])->name('bookings.itinerary');
-        
-        Route::get('/documents', [\App\Http\Controllers\Portal\DocumentController::class, 'index'])->name('documents.index');
-        Route::post('/documents', [\App\Http\Controllers\Portal\DocumentController::class, 'store'])->name('documents.store');
-        Route::delete('/documents/{document}', [\App\Http\Controllers\Portal\DocumentController::class, 'destroy'])->name('documents.destroy');
-        
-        Route::get('/payments', [\App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');
-        Route::get('/payments/{payment}/receipt', [\App\Http\Controllers\Portal\PaymentController::class, 'receipt'])->name('payments.receipt');
-        
-        Route::get('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [\App\Http\Controllers\Portal\ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/password', [\App\Http\Controllers\Portal\ProfileController::class, 'updatePassword'])->name('password.update');
-        Route::delete('/profile/sessions', [\App\Http\Controllers\Portal\ProfileController::class, 'logoutOtherBrowserSessions'])->name('profile.sessions.destroy');
+        Route::get('/', [App\Http\Controllers\Portal\DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/bookings', [App\Http\Controllers\Portal\BookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}', [App\Http\Controllers\Portal\BookingController::class, 'show'])->name('bookings.show');
+        Route::get('/bookings/{booking}/itinerary', [App\Http\Controllers\Portal\BookingController::class, 'itinerary'])->name('bookings.itinerary');
+
+        Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+        Route::get('/payments', [App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');
+        Route::get('/payments/{payment}/receipt', [App\Http\Controllers\Portal\PaymentController::class, 'receipt'])->name('payments.receipt');
+
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::delete('/profile/sessions', [ProfileController::class, 'logoutOtherBrowserSessions'])->name('profile.sessions.destroy');
     });
 });
 

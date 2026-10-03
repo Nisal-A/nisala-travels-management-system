@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\UserRole;
+use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\User;
 use App\Policies\Concerns\ChecksCustomerOwnership;
@@ -51,7 +52,7 @@ class CustomerDocumentPolicy
      *
      * When called from a controller, pass the target customer to check ownership.
      */
-    public function upload(User $user, \App\Models\Customer $customer): bool
+    public function upload(User $user, Customer $customer): bool
     {
         if ($user->hasAnyRole([UserRole::Manager->value, UserRole::Staff->value])) {
             return true;

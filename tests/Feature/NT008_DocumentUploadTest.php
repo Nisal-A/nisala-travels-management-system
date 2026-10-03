@@ -5,9 +5,9 @@ use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\DocumentType;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -63,7 +63,7 @@ test('staff can upload valid image document', function () {
 
     $response->assertRedirect();
     $response->assertSessionHasNoErrors();
-    
+
     $document = CustomerDocument::first();
     expect($document->file_extension)->toBe('jpg');
     Storage::disk('private')->assertExists($document->storage_path);
@@ -116,7 +116,7 @@ test('unauthorized users cannot upload', function () {
 test('database failure rolls back transaction and deletes file', function () {
     // Mock the model to throw exception on save
     $file = UploadedFile::fake()->create('test.pdf', 1024, 'application/pdf');
-    
+
     // Pass an invalid document_type_id to force SQL constraint failure
     $response = $this->actingAs($this->manager)
         ->post("/customers/{$this->customer->id}/documents", [
@@ -125,10 +125,10 @@ test('database failure rolls back transaction and deletes file', function () {
         ]);
 
     $response->assertSessionHasErrors('document_type_id');
-    
+
     // Assert DB is empty
     expect(CustomerDocument::count())->toBe(0);
-    
+
     // Note: Due to Laravel's validation, it fails before reaching the controller.
     // So let's mock an exception inside the controller by creating a separate test
     // where validation passes but DB save fails.
@@ -144,15 +144,15 @@ test('malicious filename generates secure storage path', function () {
         ]);
 
     $response->assertSessionHasNoErrors();
-    
+
     $document = CustomerDocument::first();
     // PHP/Symfony automatically strips path information from uploaded filenames for security
     expect($document->original_filename)->toBe('passwd.pdf');
-    
+
     // Storage path should not contain directory traversal characters
     expect($document->storage_path)->not->toContain('..');
     expect(Str::startsWith($document->storage_path, "customers/{$this->customer->id}/documents/"))->toBeTrue();
-    
+
     Storage::disk('private')->assertExists($document->storage_path);
 });
 

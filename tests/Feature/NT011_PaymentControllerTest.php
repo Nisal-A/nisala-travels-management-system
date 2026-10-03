@@ -1,19 +1,20 @@
 <?php
 
-use App\Models\User;
-use App\Models\Customer;
-use App\Models\Booking;
-use App\Models\Payment;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $this->seed(RoleSeeder::class);
     $this->manager = User::factory()->manager()->create();
     $this->finance = User::factory()->finance()->create();
     $this->staff = User::factory()->staff()->create();
     $this->customer = Customer::factory()->create();
-    
+
     $this->booking = Booking::factory()->create([
         'customer_id' => $this->customer->id,
         'base_amount' => 5000,
@@ -21,7 +22,7 @@ beforeEach(function () {
         'final_amount' => 5000,
         'paid_amount' => 0,
         'balance_amount' => 5000,
-        'currency' => 'LKR'
+        'currency' => 'LKR',
     ]);
 });
 
@@ -42,7 +43,7 @@ test('finance can record a payment and booking amounts are updated transactional
             'payment_method' => PaymentMethod::BankTransfer->value,
             'payment_date' => now()->format('Y-m-d'),
             'reference_number' => 'REF123',
-            'notes' => 'First installment'
+            'notes' => 'First installment',
         ])
         ->assertSessionHasNoErrors();
 
@@ -65,7 +66,7 @@ test('cannot record a payment exceeding the balance', function () {
             'payment_date' => now()->format('Y-m-d'),
         ])
         ->assertSessionHasErrors('amount');
-        
+
     expect(Payment::count())->toBe(0);
 });
 
@@ -74,12 +75,12 @@ test('finance can void a payment and booking amounts are reversed', function () 
         'booking_id' => $this->booking->id,
         'customer_id' => $this->customer->id,
         'amount' => 2000,
-        'status' => PaymentStatus::Completed
+        'status' => PaymentStatus::Completed,
     ]);
 
     $this->booking->update([
         'paid_amount' => 2000,
-        'balance_amount' => 3000
+        'balance_amount' => 3000,
     ]);
 
     $this->actingAs($this->finance)
@@ -99,9 +100,9 @@ test('cannot void an already voided payment', function () {
     $payment = Payment::factory()->create([
         'booking_id' => $this->booking->id,
         'amount' => 2000,
-        'status' => PaymentStatus::Failed
+        'status' => PaymentStatus::Failed,
     ]);
-    
+
     // Attempting to delete when already failed
     $this->actingAs($this->finance)
         ->delete(route('payments.destroy', $payment))

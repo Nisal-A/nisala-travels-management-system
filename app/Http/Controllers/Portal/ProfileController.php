@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use Jenssegers\Agent\Agent;
 
 class ProfileController extends Controller
 {
@@ -16,14 +17,15 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $customer = $user->customer;
-        
-        $sessions = config('session.driver') === 'database' 
+
+        $sessions = config('session.driver') === 'database'
             ? DB::table('sessions')
                 ->where('user_id', $user->id)
                 ->orderBy('last_activity', 'desc')
                 ->get()
                 ->map(function ($session) use ($request) {
-                    $agent = tap(new \Jenssegers\Agent\Agent, fn ($agent) => $agent->setUserAgent($session->user_agent));
+                    $agent = tap(new Agent, fn ($agent) => $agent->setUserAgent($session->user_agent));
+
                     return (object) [
                         'id' => $session->id,
                         'ip_address' => $session->ip_address,
@@ -33,7 +35,7 @@ class ProfileController extends Controller
                             'platform' => $agent->platform(),
                             'browser' => $agent->browser(),
                         ],
-                        'last_active' => \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+                        'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
                     ];
                 })
             : [];
@@ -52,12 +54,12 @@ class ProfileController extends Controller
             'sessions' => $sessions,
         ]);
     }
-    
+
     public function update(Request $request)
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $request->user()->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$request->user()->id,
             'phone' => 'nullable|string|max:20',
             'whatsapp' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:1000',
@@ -66,7 +68,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         $user->update([
             'name' => $validated['full_name'],
             'email' => $validated['email'],
@@ -85,7 +87,7 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Profile information updated successfully.');
     }
-    
+
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([

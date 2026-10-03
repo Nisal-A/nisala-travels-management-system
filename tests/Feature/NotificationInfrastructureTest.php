@@ -2,15 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\NotificationServiceInterface;
+use App\Events\PaymentReceived;
+use App\Listeners\SendPaymentReceivedNotification;
+use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\Payment;
+use App\Notifications\PaymentReceivedNotification;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
-use App\Models\Customer;
-use App\Models\Payment;
-use App\Models\Booking;
-use App\Events\PaymentReceived;
-use App\Notifications\PaymentReceivedNotification;
-use App\Contracts\NotificationServiceInterface;
 use Tests\TestCase;
 
 class NotificationInfrastructureTest extends TestCase
@@ -30,8 +32,8 @@ class NotificationInfrastructureTest extends TestCase
 
         // Dispatch Event directly
         $event = new PaymentReceived($payment);
-        
-        $listener = app(\App\Listeners\SendPaymentReceivedNotification::class);
+
+        $listener = app(SendPaymentReceivedNotification::class);
         $listener->handle($event);
 
         Notification::assertSentTo(
@@ -44,11 +46,11 @@ class NotificationInfrastructureTest extends TestCase
         Notification::fake();
 
         $service = app(NotificationServiceInterface::class);
-        $this->assertInstanceOf(\App\Services\NotificationService::class, $service);
+        $this->assertInstanceOf(NotificationService::class, $service);
 
         $customer = new Customer(['id' => 1, 'email' => 'test@example.com', 'full_name' => 'Test User']);
         $payment = new Payment(['id' => 1, 'amount' => 500]);
-        
+
         $service->send($customer, new PaymentReceivedNotification($payment));
 
         Notification::assertSentTo(

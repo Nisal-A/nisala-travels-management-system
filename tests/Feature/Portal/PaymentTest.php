@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Portal;
 
-use App\Models\User;
-use App\Models\Customer;
 use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -37,7 +38,7 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($user1)->get(route('portal.payments.index'));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Portal/Payments')
             ->has('payments.data', 1)
             ->where('payments.data.0.id', $payment1->id)
@@ -61,10 +62,10 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($user2)->get(route('portal.payments.receipt', $payment1));
 
         $response->assertStatus(403);
-        
+
         // User 1 trying to access user 1's payment receipt
         $response2 = $this->actingAs($user1)->get(route('portal.payments.receipt', $payment1));
-        
+
         $response2->assertStatus(200);
     }
 }

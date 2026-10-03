@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 
@@ -46,7 +47,7 @@ function createUser(string $role): User
 
     // Customer role needs a linked Customer record for the EnsureCustomer middleware
     if ($role === 'customer') {
-        \App\Models\Customer::factory()->create(['user_id' => $user->id]);
+        Customer::factory()->create(['user_id' => $user->id]);
     }
 
     return $user;

@@ -18,7 +18,7 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
-            'customer_id' => 'CUST-' . $this->faker->unique()->numberBetween(1000, 99999),
+            'customer_id' => 'CUST-'.$this->faker->unique()->numberBetween(1000, 99999),
             'full_name' => $this->faker->name(),
             'nic' => $this->faker->unique()->numerify('#########V'),
             'passport_number' => $this->faker->unique()->bothify('?#######'),

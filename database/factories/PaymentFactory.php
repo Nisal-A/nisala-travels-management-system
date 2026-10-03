@@ -2,7 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,16 +23,16 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            'booking_id' => \App\Models\Booking::factory(),
-            'customer_id' => \App\Models\Customer::factory(),
+            'booking_id' => Booking::factory(),
+            'customer_id' => Customer::factory(),
             'amount' => $this->faker->randomFloat(2, 100, 5000),
             'currency' => 'LKR',
-            'payment_method' => $this->faker->randomElement(\App\Enums\PaymentMethod::cases()),
+            'payment_method' => $this->faker->randomElement(PaymentMethod::cases()),
             'payment_date' => $this->faker->date(),
             'reference_number' => $this->faker->uuid(),
-            'recorded_by' => \App\Models\User::factory(),
+            'recorded_by' => User::factory(),
             'notes' => $this->faker->sentence(),
-            'status' => $this->faker->randomElement(\App\Enums\PaymentStatus::cases()),
+            'status' => $this->faker->randomElement(PaymentStatus::cases()),
         ];
     }
 }

@@ -11,7 +11,7 @@ class PaymentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'receipt_number' => $this->reference_number ?? 'RCP-' . str_pad($this->id, 6, '0', STR_PAD_LEFT),
+            'receipt_number' => $this->reference_number ?? 'RCP-'.str_pad($this->id, 6, '0', STR_PAD_LEFT),
             'amount' => (float) $this->amount,
             'payment_date' => $this->payment_date?->format('M d, Y'),
             'payment_method' => $this->payment_method instanceof \BackedEnum

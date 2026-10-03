@@ -2,11 +2,11 @@
 
 namespace App\Notifications;
 
+use App\Models\Inquiry;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Inquiry;
 
 class InquirySubmittedNotification extends Notification implements ShouldQueue
 {
@@ -33,7 +33,7 @@ class InquirySubmittedNotification extends Notification implements ShouldQueue
         if (get_class($notifiable) === 'Illuminate\Notifications\AnonymousNotifiable') {
             return ['mail'];
         }
-        
+
         return ['mail', 'database'];
     }
 
@@ -46,13 +46,13 @@ class InquirySubmittedNotification extends Notification implements ShouldQueue
         if (get_class($notifiable) !== 'Illuminate\Notifications\AnonymousNotifiable' && isset($notifiable->full_name)) {
             $name = $notifiable->full_name;
         }
-        
+
         return (new MailMessage)
-            ->subject('Inquiry Received - ' . config('app.name'))
-            ->greeting('Hello ' . $name . ',')
+            ->subject('Inquiry Received - '.config('app.name'))
+            ->greeting('Hello '.$name.',')
             ->line('We have successfully received your inquiry.')
             ->line('Our team will get back to you shortly.')
-            ->line('Thank you for choosing ' . config('app.name') . '!');
+            ->line('Thank you for choosing '.config('app.name').'!');
     }
 
     /**

@@ -5,9 +5,9 @@ use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\DocumentType;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -42,7 +42,7 @@ test('manager can verify document', function () {
 
     $response->assertRedirect();
     $response->assertSessionHas('success', 'Document verified successfully.');
-    
+
     $this->document->refresh();
     expect($this->document->verification_status)->toBe('Verified');
     expect($this->document->verified_by)->toBe($this->manager->id);
@@ -52,12 +52,12 @@ test('manager can verify document', function () {
 test('manager can reject document with reason', function () {
     $response = $this->actingAs($this->manager)
         ->patch("/customers/{$this->customer->id}/documents/{$this->document->id}/reject", [
-            'reason' => 'Image is blurry'
+            'reason' => 'Image is blurry',
         ]);
 
     $response->assertRedirect();
     $response->assertSessionHas('success', 'Document rejected successfully.');
-    
+
     $this->document->refresh();
     expect($this->document->verification_status)->toBe('Rejected');
     expect($this->document->rejection_reason)->toBe('Image is blurry');
@@ -66,11 +66,11 @@ test('manager can reject document with reason', function () {
 test('rejecting document requires reason', function () {
     $response = $this->actingAs($this->manager)
         ->patch("/customers/{$this->customer->id}/documents/{$this->document->id}/reject", [
-            'reason' => ''
+            'reason' => '',
         ]);
 
     $response->assertSessionHasErrors('reason');
-    
+
     $this->document->refresh();
     expect($this->document->verification_status)->toBe('Pending');
 });
@@ -82,7 +82,7 @@ test('finance cannot verify or reject document', function () {
 
     $response2 = $this->actingAs($this->finance)
         ->patch("/customers/{$this->customer->id}/documents/{$this->document->id}/reject", [
-            'reason' => 'Blurry'
+            'reason' => 'Blurry',
         ]);
     $response2->assertForbidden();
 });
@@ -111,7 +111,7 @@ test('uploading new document of same type supersedes old document', function () 
 
     $this->document->refresh();
     expect($this->document->document_status)->toBe('superseded');
-    
+
     $newDoc = CustomerDocument::where('original_filename', 'passport_new.pdf')->first();
     expect($this->document->replaced_by_id)->toBe($newDoc->id);
     expect($newDoc->document_status)->toBe('active');

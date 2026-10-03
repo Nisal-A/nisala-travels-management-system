@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Portal;
 
-use App\Models\User;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -53,7 +53,7 @@ class ProfileTest extends TestCase
     public function test_password_change_rules()
     {
         $user = User::factory()->create([
-            'password' => Hash::make('OldPassword123!')
+            'password' => Hash::make('OldPassword123!'),
         ]);
         $user->assignRole('customer');
         $customer = Customer::factory()->create(['user_id' => $user->id]);

@@ -9,8 +9,7 @@ trait Filterable
     /**
      * Scope a query to apply standard filtering, sorting, and search from the request.
      *
-     * @param Builder $query
-     * @param array $params Request parameters (usually request()->all())
+     * @param  array  $params  Request parameters (usually request()->all())
      * @return Builder
      */
     public function scopeFilterAndSort(Builder $query, array $params)
@@ -20,22 +19,22 @@ trait Filterable
         $direction = $params['direction'] ?? 'desc';
 
         // 1. Search
-        if (!empty($search) && method_exists($this, 'getSearchableColumns')) {
+        if (! empty($search) && method_exists($this, 'getSearchableColumns')) {
             $searchableColumns = $this->getSearchableColumns();
-            if (!empty($searchableColumns)) {
+            if (! empty($searchableColumns)) {
                 $query->where(function ($q) use ($search, $searchableColumns) {
                     foreach ($searchableColumns as $index => $column) {
                         if (str_contains($column, '.')) {
                             // Handle relationship search (e.g., 'customer.first_name')
                             [$relation, $relColumn] = explode('.', $column);
                             $q->orWhereHas($relation, function ($relQuery) use ($relColumn, $search) {
-                                $relQuery->where($relColumn, 'like', '%' . $search . '%');
+                                $relQuery->where($relColumn, 'like', '%'.$search.'%');
                             });
                         } else {
                             if ($index === 0) {
-                                $q->where($column, 'like', '%' . $search . '%');
+                                $q->where($column, 'like', '%'.$search.'%');
                             } else {
-                                $q->orWhere($column, 'like', '%' . $search . '%');
+                                $q->orWhere($column, 'like', '%'.$search.'%');
                             }
                         }
                     }
@@ -64,7 +63,7 @@ trait Filterable
         }
 
         // 3. Sorting
-        if (!empty($sort) && method_exists($this, 'getSortableColumns')) {
+        if (! empty($sort) && method_exists($this, 'getSortableColumns')) {
             $sortableColumns = $this->getSortableColumns();
             if (in_array($sort, $sortableColumns)) {
                 $query->orderBy($sort, in_array(strtolower($direction), ['asc', 'desc']) ? $direction : 'desc');

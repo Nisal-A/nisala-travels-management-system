@@ -10,7 +10,7 @@ enum TravelerType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::Adult => 'Adult',
             self::Child => 'Child',
             self::Infant => 'Infant',

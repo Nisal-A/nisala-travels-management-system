@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Customer;
 use App\Models\CustomerDocument;
+use App\Models\DocumentType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,9 +20,9 @@ class CustomerDocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'document_id' => 'DOC-' . $this->faker->unique()->numberBetween(10000, 99999),
-            'customer_id' => \App\Models\Customer::factory(),
-            'document_type_id' => \App\Models\DocumentType::factory(),
+            'document_id' => 'DOC-'.$this->faker->unique()->numberBetween(10000, 99999),
+            'customer_id' => Customer::factory(),
+            'document_type_id' => DocumentType::factory(),
             'storage_path' => 'customers/documents/dummy.pdf',
             'original_filename' => 'document.pdf',
             'mime_type' => 'application/pdf',

@@ -13,7 +13,7 @@ class TourDetailResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'package_name' => $this->package_name,
-            'destination' => $this->whenLoaded('destination', fn() => $this->destination->country . ' - ' . $this->destination->city_region),
+            'destination' => $this->whenLoaded('destination', fn () => $this->destination->country.' - '.$this->destination->city_region),
             'description' => $this->description,
             'short_description' => $this->short_description,
             'hero_image' => $this->hero_image,

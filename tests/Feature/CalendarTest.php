@@ -7,7 +7,6 @@ use App\Models\DocumentType;
 use App\Models\TourPackage;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -96,7 +95,7 @@ test('calendar events endpoint returns events within date range', function () {
     expect($retEvents)->toHaveCount(1);
 
     // Should not include Dec booking
-    $decEvents = collect($events)->filter(fn($e) => str_contains($e['start'], '2026-12'));
+    $decEvents = collect($events)->filter(fn ($e) => str_contains($e['start'], '2026-12'));
     expect($decEvents)->toBeEmpty();
 });
 
@@ -144,7 +143,7 @@ test('calendar events include booking_id and status fields', function () {
     $events = $response->json();
 
     expect($events)->not->toBeEmpty();
-    
+
     $firstEvent = $events[0];
     expect($firstEvent)->toHaveKeys(['id', 'title', 'start', 'type', 'booking_id', 'status', 'booking']);
     expect($firstEvent['booking_id'])->toBe($booking->id);
@@ -220,7 +219,7 @@ test('events outside the date range are excluded', function () {
     // Should not contain any events
     $depEvents = collect($events)->where('type', 'departures');
     $retEvents = collect($events)->where('type', 'returns');
-    
+
     expect($depEvents)->toBeEmpty();
     expect($retEvents)->toBeEmpty();
 });
@@ -269,7 +268,7 @@ test('event booking data includes customer, destination, travelers, and balance'
 
     expect($events)->not->toBeEmpty();
     $booking = $events[0]['booking'];
-    
+
     expect($booking['customer'])->toBe('John Doe');
     expect($booking['travelers'])->toBe(3);
     expect($booking['balance'])->toEqual(7500);

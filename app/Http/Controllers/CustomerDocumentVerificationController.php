@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DocumentRejected;
+use App\Events\DocumentVerified;
 use App\Models\Customer;
 use App\Models\CustomerDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class CustomerDocumentVerificationController extends Controller
@@ -26,7 +29,7 @@ class CustomerDocumentVerificationController extends Controller
         $document->rejection_reason = null;
         $document->save();
 
-        \Illuminate\Support\Facades\DB::afterCommit(fn () => event(new \App\Events\DocumentVerified($document)));
+        DB::afterCommit(fn () => event(new DocumentVerified($document)));
 
         return back()->with('success', 'Document verified successfully.');
     }
@@ -43,14 +46,14 @@ class CustomerDocumentVerificationController extends Controller
         }
 
         $request->validate([
-            'reason' => ['required', 'string', 'max:1000']
+            'reason' => ['required', 'string', 'max:1000'],
         ]);
 
         $document->verification_status = 'Rejected';
         $document->rejection_reason = $request->input('reason');
         $document->save();
 
-        \Illuminate\Support\Facades\DB::afterCommit(fn () => event(new \App\Events\DocumentRejected($document)));
+        DB::afterCommit(fn () => event(new DocumentRejected($document)));
 
         return back()->with('success', 'Document rejected successfully.');
     }

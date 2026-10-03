@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->json('filters'); // Store sorting, filtering, columns, etc.
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'table_key', 'name']);
         });
     }

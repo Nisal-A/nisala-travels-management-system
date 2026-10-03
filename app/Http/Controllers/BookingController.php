@@ -2,28 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
+use App\Enums\TravelerType;
+use App\Enums\UserRole;
+use App\Events\BookingConfirmed;
+use App\Events\PaymentReceived;
+use App\Http\Requests\StoreBookingRequest;
+use App\Http\Requests\UpdateBookingRequest;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\BookingDraft;
 use App\Models\BookingNote;
 use App\Models\BookingTraveler;
 use App\Models\Customer;
-use App\Models\CustomerDocument;
 use App\Models\Employee;
 use App\Models\Payment;
 use App\Models\PaymentSchedule;
+use App\Models\SavedFilter;
 use App\Models\TourPackage;
-use App\Models\ActivityLog;
-use App\Http\Requests\StoreBookingRequest;
-use App\Http\Requests\UpdateBookingRequest;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Inertia\Inertia;
-use Illuminate\Validation\ValidationException;
-use App\Enums\BookingStatus;
-use App\Enums\TravelerType;
-use App\Enums\UserRole;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class BookingController extends Controller
 {
@@ -40,7 +45,7 @@ class BookingController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $savedFilters = \App\Models\SavedFilter::where('user_id', $request->user()->id)
+        $savedFilters = SavedFilter::where('user_id', $request->user()->id)
             ->where('table_key', 'bookings')
             ->get();
 
@@ -53,11 +58,13 @@ class BookingController extends Controller
 
     private function validateCapacity(TourPackage $package, int $newTravelerCount, ?int $excludeBookingId = null)
     {
-        if (!$package->capacity) return;
+        if (! $package->capacity) {
+            return;
+        }
 
         $existingTravelersQuery = BookingTraveler::whereHas('booking', function ($q) use ($package, $excludeBookingId) {
             $q->where('tour_package_id', $package->id)
-              ->whereIn('booking_status', [BookingStatus::Pending->value, BookingStatus::Confirmed->value, BookingStatus::Completed->value]);
+                ->whereIn('booking_status', [BookingStatus::Pending->value, BookingStatus::Confirmed->value, BookingStatus::Completed->value]);
             if ($excludeBookingId) {
                 $q->where('id', '!=', $excludeBookingId);
             }
@@ -66,7 +73,7 @@ class BookingController extends Controller
         $existingCount = $existingTravelersQuery->count();
         if (($existingCount + $newTravelerCount) > $package->capacity) {
             throw ValidationException::withMessages([
-                'travelers' => 'Tour package capacity exceeded. Only ' . max(0, $package->capacity - $existingCount) . ' seats available.'
+                'travelers' => 'Tour package capacity exceeded. Only '.max(0, $package->capacity - $existingCount).' seats available.',
             ]);
         }
     }
@@ -184,14 +191,14 @@ class BookingController extends Controller
             DB::beginTransaction();
 
             // SERVER-SIDE PRICE CALCULATION (Never trust client totals)
-            $baseAmount = (float)$package->price * $travelersCount;
+            $baseAmount = (float) $package->price * $travelersCount;
 
             $extrasAmount = 0;
             $extrasList = [];
-            if (!empty($validated['extras']) && is_array($validated['extras'])) {
+            if (! empty($validated['extras']) && is_array($validated['extras'])) {
                 foreach ($validated['extras'] as $extra) {
-                    if (!empty($extra['name']) && isset($extra['price'])) {
-                        $price = max(0, (float)$extra['price']);
+                    if (! empty($extra['name']) && isset($extra['price'])) {
+                        $price = max(0, (float) $extra['price']);
                         $extrasAmount += $price;
                         $extrasList[] = [
                             'name' => $extra['name'],
@@ -201,29 +208,29 @@ class BookingController extends Controller
                 }
             }
 
-            $taxAmount = max(0, (float)($validated['tax_amount'] ?? 0));
-            $discount = max(0, (float)($validated['discount_amount'] ?? 0));
+            $taxAmount = max(0, (float) ($validated['tax_amount'] ?? 0));
+            $discount = max(0, (float) ($validated['discount_amount'] ?? 0));
 
             // Permission check for discount was verified in StoreBookingRequest withValidator,
             // but double check here as defense-in-depth:
-            if ($discount > 0 && !$request->user()->can('applyDiscount', Booking::class)) {
+            if ($discount > 0 && ! $request->user()->can('applyDiscount', Booking::class)) {
                 throw ValidationException::withMessages([
-                    'discount_amount' => 'You do not have permission to authorize discounts.'
+                    'discount_amount' => 'You do not have permission to authorize discounts.',
                 ]);
             }
 
             $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
 
             // Record initial payment if requested
-            $recordPayment = !empty($validated['record_payment']);
-            $initialPaymentAmount = $recordPayment ? min($finalAmount, max(0, (float)($validated['payment_amount'] ?? 0))) : 0;
+            $recordPayment = ! empty($validated['record_payment']);
+            $initialPaymentAmount = $recordPayment ? min($finalAmount, max(0, (float) ($validated['payment_amount'] ?? 0))) : 0;
             $paidAmount = $initialPaymentAmount;
             $balanceAmount = max(0, $finalAmount - $paidAmount);
             $paymentStatus = $paidAmount >= $finalAmount && $finalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid');
 
             $latest = Booking::withTrashed()->orderBy('id', 'desc')->first();
             $nextId = $latest ? $latest->id + 1 : 1;
-            $bookingRef = 'NT-' . date('Y') . '-' . str_pad((string)$nextId, 6, '0', STR_PAD_LEFT);
+            $bookingRef = 'NT-'.date('Y').'-'.str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
 
             $booking = Booking::create([
                 'booking_reference' => $bookingRef,
@@ -254,16 +261,16 @@ class BookingController extends Controller
             $booking->travelers()->createMany($validated['travelers']);
 
             // Create Payment Schedules
-            if (!empty($validated['payment_schedules']) && is_array($validated['payment_schedules'])) {
+            if (! empty($validated['payment_schedules']) && is_array($validated['payment_schedules'])) {
                 foreach ($validated['payment_schedules'] as $index => $sched) {
-                    $schedAmount = (float)$sched['amount'];
+                    $schedAmount = (float) $sched['amount'];
                     $isPaid = false;
                     if ($index === 0 && $initialPaymentAmount >= $schedAmount && $schedAmount > 0) {
                         $isPaid = true;
                     }
                     PaymentSchedule::create([
                         'booking_id' => $booking->id,
-                        'description' => $sched['description'] ?? 'Installment ' . ($index + 1),
+                        'description' => $sched['description'] ?? 'Installment '.($index + 1),
                         'amount' => $schedAmount,
                         'due_date' => $sched['due_date'],
                         'status' => $isPaid ? 'paid' : 'unpaid',
@@ -273,7 +280,7 @@ class BookingController extends Controller
                 // Generate default 2-part schedule: 20% Deposit, 80% Final Balance
                 $deposit = round($finalAmount * 0.20, 2);
                 $balance = $finalAmount - $deposit;
-                $travelDate = \Carbon\Carbon::parse($validated['travel_date']);
+                $travelDate = Carbon::parse($validated['travel_date']);
                 $balanceDue = $travelDate->copy()->subDays(30)->isPast() ? $travelDate->toDateString() : $travelDate->copy()->subDays(30)->toDateString();
 
                 PaymentSchedule::create([
@@ -304,20 +311,20 @@ class BookingController extends Controller
                     'currency' => $booking->currency,
                     'payment_method' => $validated['payment_method'] ?? 'cash',
                     'payment_date' => $validated['booking_date'] ?? now()->toDateString(),
-                    'reference_number' => $validated['payment_reference'] ?? ('RCP-' . strtoupper(Str::random(8))),
+                    'reference_number' => $validated['payment_reference'] ?? ('RCP-'.strtoupper(Str::random(8))),
                     'recorded_by' => $request->user()->id,
                     'notes' => 'Initial payment recorded during booking creation',
-                    'status' => \App\Enums\PaymentStatus::Completed,
+                    'status' => PaymentStatus::Completed,
                 ]);
 
-                DB::afterCommit(fn () => event(new \App\Events\PaymentReceived($payment)));
+                DB::afterCommit(fn () => event(new PaymentReceived($payment)));
             }
 
             // Write initial entry to Notes Timeline
             BookingNote::create([
                 'booking_id' => $booking->id,
                 'user_id' => $request->user()->id,
-                'content' => "Booking {$booking->booking_reference} created with {$travelersCount} traveler(s). Total: " . number_format($finalAmount, 2) . " {$booking->currency}.",
+                'content' => "Booking {$booking->booking_reference} created with {$travelersCount} traveler(s). Total: ".number_format($finalAmount, 2)." {$booking->currency}.",
                 'type' => 'status_change',
             ]);
 
@@ -333,20 +340,22 @@ class BookingController extends Controller
                     'reference' => $booking->booking_reference,
                     'final_amount' => $finalAmount,
                     'travelers_count' => $travelersCount,
-                ]
+                ],
             ]);
 
             // Delete Draft after successful creation
             BookingDraft::where('user_id', $request->user()->id)->delete();
 
             DB::commit();
+
             return redirect()->route('bookings.show', $booking)->with('success', 'Booking created successfully.');
         } catch (ValidationException $e) {
             DB::rollBack();
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to create booking: ' . $e->getMessage()]);
+
+            return back()->withInput()->withErrors(['error' => 'Failed to create booking: '.$e->getMessage()]);
         }
     }
 
@@ -367,7 +376,7 @@ class BookingController extends Controller
             'bookingNotes.replies.user:id,name',
             'assignedTo:id,first_name,last_name,designation,email,phone',
             'createdBy:id,name',
-            'updatedBy:id,name'
+            'updatedBy:id,name',
         ]);
 
         $activityLogs = ActivityLog::where('subject_type', Booking::class)
@@ -384,10 +393,10 @@ class BookingController extends Controller
         // Calculate traveler document checklist
         $travelersWithDocs = $booking->travelers->map(function ($traveler) use ($booking) {
             // Check if customer has passport document
-            $hasPassportNo = !empty($traveler->passport_number);
+            $hasPassportNo = ! empty($traveler->passport_number);
             $passportExpired = false;
             if ($traveler->passport_expiry) {
-                $passportExpired = \Carbon\Carbon::parse($traveler->passport_expiry)->isPast();
+                $passportExpired = Carbon::parse($traveler->passport_expiry)->isPast();
             }
 
             // Customer linked documents
@@ -406,10 +415,10 @@ class BookingController extends Controller
                 'nationality' => $traveler->nationality,
                 'special_requirements' => $traveler->special_requirements,
                 'checklist' => [
-                    'passport_info' => $hasPassportNo && !$passportExpired ? 'valid' : ($passportExpired ? 'expired' : 'missing'),
+                    'passport_info' => $hasPassportNo && ! $passportExpired ? 'valid' : ($passportExpired ? 'expired' : 'missing'),
                     'passport_doc' => $passportDoc ? ($passportDoc->verification_status ?? 'pending') : 'missing',
                     'visa_doc' => $visaDoc ? ($visaDoc->verification_status ?? 'pending') : 'not_required',
-                ]
+                ],
             ];
         });
 
@@ -425,7 +434,7 @@ class BookingController extends Controller
                 'canRecordPayment' => auth()->user()->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Finance->value]),
                 'canDiscount' => auth()->user()->can('applyDiscount', Booking::class),
                 'canAddNote' => auth()->user()->can('addNote', $booking),
-            ]
+            ],
         ]);
     }
 
@@ -494,12 +503,12 @@ class BookingController extends Controller
             // Recalculate amounts if discount or travelers changed
             if ($travelers !== null) {
                 $baseAmount = $booking->tourPackage->price * count($travelers);
-                $discount = isset($validated['discount_amount']) ? (float)$validated['discount_amount'] : (float)$booking->discount_amount;
-                $extrasAmount = isset($validated['extras_amount']) ? (float)$validated['extras_amount'] : (float)$booking->extras_amount;
-                $taxAmount = isset($validated['tax_amount']) ? (float)$validated['tax_amount'] : (float)$booking->tax_amount;
+                $discount = isset($validated['discount_amount']) ? (float) $validated['discount_amount'] : (float) $booking->discount_amount;
+                $extrasAmount = isset($validated['extras_amount']) ? (float) $validated['extras_amount'] : (float) $booking->extras_amount;
+                $taxAmount = isset($validated['tax_amount']) ? (float) $validated['tax_amount'] : (float) $booking->tax_amount;
 
                 $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
-                $balanceAmount = max(0, $finalAmount - (float)$booking->paid_amount);
+                $balanceAmount = max(0, $finalAmount - (float) $booking->paid_amount);
 
                 $validated['number_of_travelers'] = count($travelers);
                 $validated['base_amount'] = $baseAmount;
@@ -507,11 +516,11 @@ class BookingController extends Controller
                 $validated['final_amount'] = $finalAmount;
                 $validated['balance_amount'] = $balanceAmount;
             } elseif (isset($validated['discount_amount'])) {
-                $discount = (float)$validated['discount_amount'];
+                $discount = (float) $validated['discount_amount'];
                 $finalAmount = max(0, ($booking->base_amount + $booking->extras_amount + $booking->tax_amount) - $discount);
                 $validated['discount_amount'] = $discount;
                 $validated['final_amount'] = $finalAmount;
-                $validated['balance_amount'] = max(0, $finalAmount - (float)$booking->paid_amount);
+                $validated['balance_amount'] = max(0, $finalAmount - (float) $booking->paid_amount);
             }
 
             $booking->update($validated);
@@ -532,15 +541,17 @@ class BookingController extends Controller
             BookingNote::create([
                 'booking_id' => $booking->id,
                 'user_id' => $request->user()->id,
-                'content' => 'Booking details updated by ' . $request->user()->name . '.',
+                'content' => 'Booking details updated by '.$request->user()->name.'.',
                 'type' => 'note',
             ]);
 
             DB::commit();
+
             return redirect()->route('bookings.show', $booking)->with('success', 'Booking updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to update booking: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Failed to update booking: '.$e->getMessage()]);
         }
     }
 
@@ -552,7 +563,7 @@ class BookingController extends Controller
         Gate::authorize('changeStatus', $booking);
 
         $validated = $request->validate([
-            'booking_status' => ['required', \Illuminate\Validation\Rule::enum(BookingStatus::class)],
+            'booking_status' => ['required', Rule::enum(BookingStatus::class)],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -566,7 +577,7 @@ class BookingController extends Controller
             BookingStatus::Cancelled->value => [],
         ];
 
-        if (!in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? [])) {
+        if (! in_array($newStatus->value, $validTransitions[$currentStatus->value] ?? [])) {
             return back()->withErrors(['error' => "Invalid status transition from {$currentStatus->value} to {$newStatus->value}."]);
         }
 
@@ -583,12 +594,12 @@ class BookingController extends Controller
 
             $booking->update([
                 'booking_status' => $newStatus,
-                'updated_by' => $request->user()->id
+                'updated_by' => $request->user()->id,
             ]);
 
             $noteContent = "Status changed from {$currentStatus->label()} to {$newStatus->label()}.";
-            if (!empty($validated['note'])) {
-                $noteContent .= " Note: " . $validated['note'];
+            if (! empty($validated['note'])) {
+                $noteContent .= ' Note: '.$validated['note'];
             }
 
             // Write entry to Notes timeline
@@ -611,18 +622,20 @@ class BookingController extends Controller
                     'from' => $currentStatus->value,
                     'to' => $newStatus->value,
                     'note' => $validated['note'] ?? null,
-                ]
+                ],
             ]);
 
             if ($newStatus === BookingStatus::Confirmed && $currentStatus !== BookingStatus::Confirmed) {
-                DB::afterCommit(fn () => event(new \App\Events\BookingConfirmed($booking)));
+                DB::afterCommit(fn () => event(new BookingConfirmed($booking)));
             }
 
             DB::commit();
-            return back()->with('success', 'Booking status updated to ' . $newStatus->label());
+
+            return back()->with('success', 'Booking status updated to '.$newStatus->label());
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to update booking status: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Failed to update booking status: '.$e->getMessage()]);
         }
     }
 
@@ -648,7 +661,7 @@ class BookingController extends Controller
 
         ActivityLog::create([
             'log_name' => 'booking',
-            'description' => 'Internal note added to booking ' . $booking->booking_reference,
+            'description' => 'Internal note added to booking '.$booking->booking_reference,
             'subject_type' => Booking::class,
             'subject_id' => $booking->id,
             'causer_type' => get_class($request->user()),
@@ -701,6 +714,7 @@ class BookingController extends Controller
         Gate::authorize('delete', $booking);
         $booking->update(['updated_by' => auth()->id()]);
         $booking->delete();
+
         return redirect()->route('bookings.index')->with('success', 'Booking archived successfully.');
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 
@@ -57,7 +58,7 @@ test('super admin can access office protected routes', function () {
 test('customer can access portal routes', function () {
     $this->withoutVite();
     $user = User::factory()->customer()->create();
-    \App\Models\Customer::factory()->create(['user_id' => $user->id]);
+    Customer::factory()->create(['user_id' => $user->id]);
 
     $portalRoutes = ['/portal', '/portal/bookings', '/portal/documents', '/portal/payments'];
 

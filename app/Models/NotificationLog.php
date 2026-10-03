@@ -14,7 +14,7 @@ class NotificationLog extends Model
         'channel',
         'status',
         'error',
-        'sent_at'
+        'sent_at',
     ];
 
     public function notifiable()

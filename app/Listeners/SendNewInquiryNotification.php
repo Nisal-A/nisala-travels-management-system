@@ -2,7 +2,9 @@
 
 namespace App\Listeners;
 
-use \App\Events\InquirySubmitted;
+use App\Events\InquirySubmitted;
+use App\Notifications\NewInquiryNotification;
+use App\Services\NotificationRecipients;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
@@ -11,8 +13,8 @@ class SendNewInquiryNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public function handle(\App\Events\InquirySubmitted $event): void
+    public function handle(InquirySubmitted $event): void
     {
-        Notification::send(\App\Services\NotificationRecipients::getStaffByRole(['Sales', 'Admin']), new \App\Notifications\NewInquiryNotification($event->lead));
+        Notification::send(NotificationRecipients::getStaffByRole(['Sales', 'Admin']), new NewInquiryNotification($event->lead));
     }
 }

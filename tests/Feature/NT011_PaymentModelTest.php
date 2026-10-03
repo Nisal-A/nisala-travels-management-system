@@ -1,14 +1,15 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\Booking;
-use App\Models\Payment;
-use App\Models\User;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $this->seed(RoleSeeder::class);
 });
 
 test('a payment can be created and cast correctly', function () {

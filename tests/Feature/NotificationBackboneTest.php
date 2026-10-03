@@ -2,25 +2,25 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
+use App\Events\BookingConfirmed;
+use App\Events\PaymentOverdue;
+use App\Events\PaymentReceived;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\PaymentSchedule;
-use App\Models\User;
 use App\Models\TourPackage;
-use Spatie\Permission\Models\Role;
-use Carbon\Carbon;
-use App\Events\BookingConfirmed;
-use App\Events\PaymentOverdue;
+use App\Models\User;
 use App\Notifications\BookingConfirmedNotification;
-use App\Notifications\PaymentOverdueNotification;
 use App\Notifications\PaymentReceivedStaffNotification;
+use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class NotificationBackboneTest extends TestCase
 {
@@ -29,7 +29,7 @@ class NotificationBackboneTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Ensure roles exist
         Role::firstOrCreate(['name' => 'Sales']);
         Role::firstOrCreate(['name' => 'Finance']);
@@ -77,7 +77,7 @@ class NotificationBackboneTest extends TestCase
 
         $payment = Payment::factory()->create();
 
-        event(new \App\Events\PaymentReceived($payment));
+        event(new PaymentReceived($payment));
 
         Notification::assertSentTo($financeUser, PaymentReceivedStaffNotification::class);
         Notification::assertNotSentTo($salesUser, PaymentReceivedStaffNotification::class);
@@ -85,7 +85,7 @@ class NotificationBackboneTest extends TestCase
 
     public function test_notifications_are_queued()
     {
-        $this->assertTrue(is_subclass_of(BookingConfirmedNotification::class, \Illuminate\Contracts\Queue\ShouldQueue::class));
+        $this->assertTrue(is_subclass_of(BookingConfirmedNotification::class, ShouldQueue::class));
     }
 
     public function test_nothing_sent_on_transaction_rollback()
@@ -95,10 +95,10 @@ class NotificationBackboneTest extends TestCase
         try {
             DB::transaction(function () {
                 $booking = Booking::factory()->create();
-                
+
                 // Using afterCommit means event only fires if transaction commits
                 DB::afterCommit(fn () => event(new BookingConfirmed($booking)));
-                
+
                 throw new \Exception('Rollback');
             });
         } catch (\Exception $e) {
@@ -133,7 +133,7 @@ class NotificationBackboneTest extends TestCase
         ]);
 
         $this->artisan('payments:find-overdue')
-             ->assertSuccessful();
+            ->assertSuccessful();
 
         Event::assertDispatched(PaymentOverdue::class, function ($event) use ($overdueUnpaid) {
             return $event->installment->id === $overdueUnpaid->id;

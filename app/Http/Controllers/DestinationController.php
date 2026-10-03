@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Destination;
 use App\Http\Requests\StoreDestinationRequest;
 use App\Http\Requests\UpdateDestinationRequest;
+use App\Models\Destination;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -16,9 +16,9 @@ class DestinationController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('country', 'like', "%{$search}%")
-                  ->orWhere('city_region', 'like', "%{$search}%");
+                    ->orWhere('city_region', 'like', "%{$search}%");
             });
         }
 
@@ -28,7 +28,7 @@ class DestinationController extends Controller
 
         $sortField = $request->input('sort', 'created_at');
         $sortDirection = $request->input('direction', 'desc');
-        
+
         $allowedSortFields = ['country', 'city_region', 'created_at', 'status'];
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortDirection === 'asc' ? 'asc' : 'desc');
@@ -40,7 +40,7 @@ class DestinationController extends Controller
 
         return Inertia::render('Destinations/Index', [
             'destinations' => $destinations,
-            'filters' => (object) $request->only(['search', 'status', 'sort', 'direction'])
+            'filters' => (object) $request->only(['search', 'status', 'sort', 'direction']),
         ]);
     }
 
@@ -52,12 +52,14 @@ class DestinationController extends Controller
     public function store(StoreDestinationRequest $request)
     {
         Destination::create($request->validated());
+
         return redirect()->route('destinations.index')->with('success', 'Destination created successfully.');
     }
 
     public function show(Destination $destination)
     {
         $destination->load('tourPackages');
+
         return Inertia::render('Destinations/Show', [
             'destination' => $destination,
         ]);
@@ -73,12 +75,14 @@ class DestinationController extends Controller
     public function update(UpdateDestinationRequest $request, Destination $destination)
     {
         $destination->update($request->validated());
+
         return redirect()->route('destinations.index')->with('success', 'Destination updated successfully.');
     }
 
     public function destroy(Destination $destination)
     {
         $destination->delete();
+
         return redirect()->route('destinations.index')->with('success', 'Destination removed successfully.');
     }
 }

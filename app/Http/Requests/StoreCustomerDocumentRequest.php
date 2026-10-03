@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreCustomerDocumentRequest extends FormRequest
 {
@@ -26,7 +25,7 @@ class StoreCustomerDocumentRequest extends FormRequest
             'expiry_date' => ['nullable', 'date'],
         ];
     }
-    
+
     public function messages(): array
     {
         return [

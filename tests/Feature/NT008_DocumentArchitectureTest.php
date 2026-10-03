@@ -3,6 +3,7 @@
 use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\DocumentType;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,7 +21,7 @@ test('document type can be created and retrieved', function () {
     expect($type->name)->toBe('Passport');
     expect($type->is_required)->toBeTrue();
     expect($type->tracks_expiry)->toBeTrue();
-    
+
     // Test defaults
     $type->refresh();
     expect($type->is_active)->toBeTrue();
@@ -58,14 +59,14 @@ test('customer document can be created and associated', function () {
 
 test('customer document handles soft deletes', function () {
     $document = CustomerDocument::factory()->create();
-    
+
     $document->delete();
-    
+
     $this->assertSoftDeleted('customer_documents', ['id' => $document->id]);
-    
+
     // Check it's not in normal queries
     expect(CustomerDocument::count())->toBe(0);
-    
+
     // Check it is in trashed queries
     expect(CustomerDocument::withTrashed()->count())->toBe(1);
 });
@@ -80,12 +81,12 @@ test('foreign key constraints prevent invalid associations', function () {
         'document_type_id' => $type->id,
         'storage_path' => 'path/to/file',
         'original_filename' => 'file.pdf',
-    ]))->toThrow(\Illuminate\Database\QueryException::class);
+    ]))->toThrow(QueryException::class);
 });
 
 test('private storage disk is configured correctly', function () {
     $config = config('filesystems.disks.private');
-    
+
     expect($config)->not->toBeNull();
     expect($config['driver'])->toBe('local');
     expect($config['root'])->toBe(storage_path('app/private'));
@@ -94,12 +95,12 @@ test('private storage disk is configured correctly', function () {
 
 test('can use private storage to store and retrieve files', function () {
     Storage::fake('private');
-    
+
     $content = 'Fake PDF Content';
     $path = 'customers/1/documents/DOC-123.pdf';
-    
+
     Storage::disk('private')->put($path, $content);
-    
+
     Storage::disk('private')->assertExists($path);
     expect(Storage::disk('private')->get($path))->toBe($content);
 });

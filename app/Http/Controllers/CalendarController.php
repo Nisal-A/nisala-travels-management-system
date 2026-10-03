@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Carbon;
 use App\Models\CustomerDocument;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Inertia\Inertia;
 
 class CalendarController extends Controller
 {
@@ -45,12 +45,12 @@ class CalendarController extends Controller
         if ($needsBookings) {
             // Single query with eager loading — avoids N+1
             $bookingsQuery = Booking::with(['customer:id,full_name', 'tourPackage:id,name', 'tourPackage.destination:id,name'])
-                ->where(function($q) use ($start, $end) {
+                ->where(function ($q) use ($start, $end) {
                     // Departures in range
                     $q->whereBetween('travel_date', [$start, $end])
                       // Returns in range
-                      ->orWhereBetween('return_date', [$start, $end]);
-                    
+                        ->orWhereBetween('return_date', [$start, $end]);
+
                     // Balance due dates (30 days prior to travel) that fall in the visible range
                     // travel_date between (start + 30 days) and (end + 30 days) means due date in range
                     $q->orWhere(function ($sub) use ($start, $end) {
@@ -81,8 +81,8 @@ class CalendarController extends Controller
                 if (empty($types) || in_array('departures', $types)) {
                     if ($booking->travel_date >= $start && $booking->travel_date <= $end) {
                         $events[] = [
-                            'id' => 'dep_' . $booking->id,
-                            'title' => 'Departure: ' . $customerName,
+                            'id' => 'dep_'.$booking->id,
+                            'title' => 'Departure: '.$customerName,
                             'start' => $booking->travel_date->format('Y-m-d'),
                             'allDay' => true,
                             'type' => 'departures',
@@ -97,8 +97,8 @@ class CalendarController extends Controller
                 if (empty($types) || in_array('returns', $types)) {
                     if ($booking->return_date && $booking->return_date >= $start && $booking->return_date <= $end) {
                         $events[] = [
-                            'id' => 'ret_' . $booking->id,
-                            'title' => 'Return: ' . $customerName,
+                            'id' => 'ret_'.$booking->id,
+                            'title' => 'Return: '.$customerName,
                             'start' => $booking->return_date->format('Y-m-d'),
                             'allDay' => true,
                             'type' => 'returns',
@@ -115,8 +115,8 @@ class CalendarController extends Controller
                         $balanceDueDate = Carbon::parse($booking->travel_date)->subDays(30);
                         if ($balanceDueDate >= $start && $balanceDueDate <= $end) {
                             $events[] = [
-                                'id' => 'bal_' . $booking->id,
-                                'title' => 'Balance Due: ' . $customerName . ' (LKR ' . number_format((float) $booking->balance_amount, 0) . ')',
+                                'id' => 'bal_'.$booking->id,
+                                'title' => 'Balance Due: '.$customerName.' (LKR '.number_format((float) $booking->balance_amount, 0).')',
                                 'start' => $balanceDueDate->format('Y-m-d'),
                                 'allDay' => true,
                                 'type' => 'balance',
@@ -129,7 +129,7 @@ class CalendarController extends Controller
                 }
             }
         }
-        
+
         // 2. Visa Deadlines
         if (empty($types) || in_array('visa', $types)) {
             $docs = CustomerDocument::with(['customer:id,full_name', 'documentType:id,name'])
@@ -138,19 +138,19 @@ class CalendarController extends Controller
                 })
                 ->whereBetween('expiry_date', [$start, $end])
                 ->get();
-            
+
             // Fallback to document_type_id = 2 if no Visa type found
             if ($docs->isEmpty()) {
                 $docs = CustomerDocument::with(['customer:id,full_name'])
-                    ->where('document_type_id', 2) 
+                    ->where('document_type_id', 2)
                     ->whereBetween('expiry_date', [$start, $end])
                     ->get();
             }
 
-            foreach($docs as $doc) {
+            foreach ($docs as $doc) {
                 $events[] = [
-                    'id' => 'doc_' . $doc->id,
-                    'title' => 'Visa Expiry: ' . ($doc->customer->full_name ?? 'Unknown'),
+                    'id' => 'doc_'.$doc->id,
+                    'title' => 'Visa Expiry: '.($doc->customer->full_name ?? 'Unknown'),
                     'start' => $doc->expiry_date->format('Y-m-d'),
                     'allDay' => true,
                     'type' => 'visa',

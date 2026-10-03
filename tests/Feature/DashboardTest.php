@@ -1,16 +1,16 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\CustomerDocument;
 use App\Models\DocumentType;
 use App\Models\Payment;
-use App\Models\TourPackage;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
-use Inertia\Testing\AssertableInertia as Assert;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -190,8 +190,8 @@ test('finance user tile order starts with pendingPayments', function () {
     $finance = createDashUser('finance');
 
     // Invoke the getTileOrder logic directly
-    $controller = app(\App\Http\Controllers\DashboardController::class);
-    $method = new \ReflectionMethod($controller, 'getTileOrder');
+    $controller = app(DashboardController::class);
+    $method = new ReflectionMethod($controller, 'getTileOrder');
     $method->setAccessible(true);
     $order = $method->invoke($controller, $finance);
 
@@ -201,8 +201,8 @@ test('finance user tile order starts with pendingPayments', function () {
 test('staff user tile order starts with newLeads', function () {
     $staff = createDashUser('staff');
 
-    $controller = app(\App\Http\Controllers\DashboardController::class);
-    $method = new \ReflectionMethod($controller, 'getTileOrder');
+    $controller = app(DashboardController::class);
+    $method = new ReflectionMethod($controller, 'getTileOrder');
     $method->setAccessible(true);
     $order = $method->invoke($controller, $staff);
 
@@ -212,8 +212,8 @@ test('staff user tile order starts with newLeads', function () {
 test('super admin tile order starts with todaysBookings', function () {
     $admin = createDashUser('super_admin');
 
-    $controller = app(\App\Http\Controllers\DashboardController::class);
-    $method = new \ReflectionMethod($controller, 'getTileOrder');
+    $controller = app(DashboardController::class);
+    $method = new ReflectionMethod($controller, 'getTileOrder');
     $method->setAccessible(true);
     $order = $method->invoke($controller, $admin);
 
@@ -248,5 +248,5 @@ test('dashboard cache key is per-user', function () {
     $staff = createDashUser('staff');
 
     // Both users should get different cache keys
-    expect('dashboard_stats_' . $admin->id)->not->toBe('dashboard_stats_' . $staff->id);
+    expect('dashboard_stats_'.$admin->id)->not->toBe('dashboard_stats_'.$staff->id);
 });

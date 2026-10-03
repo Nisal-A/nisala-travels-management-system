@@ -2,10 +2,10 @@
 
 namespace App\Events;
 
+use App\Models\CustomerDocument;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\CustomerDocument;
 
 class DocumentUploaded
 {

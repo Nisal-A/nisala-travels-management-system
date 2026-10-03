@@ -1,8 +1,6 @@
 <?php
 
 use App\Enums\BookingStatus;
-use App\Enums\TravelerType;
-use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\BookingDraft;
 use App\Models\BookingNote;
@@ -12,12 +10,13 @@ use App\Models\Payment;
 use App\Models\PaymentSchedule;
 use App\Models\TourPackage;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RoleSeeder::class);
+    $this->seed(RoleSeeder::class);
 
     $this->superAdmin = User::factory()->superAdmin()->create();
     $this->manager = User::factory()->manager()->create();
@@ -63,20 +62,20 @@ test('server recalculates pricing correctly and ignores client totals', function
     expect($booking)->not->toBeNull();
 
     // 2 travelers * 1500 package price = 3000 base
-    expect((float)$booking->base_amount)->toBe(3000.0);
+    expect((float) $booking->base_amount)->toBe(3000.0);
     // Extras: 300 + 100 = 400
-    expect((float)$booking->extras_amount)->toBe(400.0);
+    expect((float) $booking->extras_amount)->toBe(400.0);
     // Tax: 200
-    expect((float)$booking->tax_amount)->toBe(200.0);
+    expect((float) $booking->tax_amount)->toBe(200.0);
     // Discount: 500
-    expect((float)$booking->discount_amount)->toBe(500.0);
+    expect((float) $booking->discount_amount)->toBe(500.0);
     // Final Amount = (3000 + 400 + 200) - 500 = 3100
-    expect((float)$booking->final_amount)->toBe(3100.0);
+    expect((float) $booking->final_amount)->toBe(3100.0);
 
     // Initial Payment = 1000
-    expect((float)$booking->paid_amount)->toBe(1000.0);
+    expect((float) $booking->paid_amount)->toBe(1000.0);
     // Balance = 3100 - 1000 = 2100
-    expect((float)$booking->balance_amount)->toBe(2100.0);
+    expect((float) $booking->balance_amount)->toBe(2100.0);
     expect($booking->payment_status)->toBe('Partial');
 
     // Check Travelers created
@@ -85,7 +84,7 @@ test('server recalculates pricing correctly and ignores client totals', function
     // Check Payment created
     expect(Payment::where('booking_id', $booking->id)->count())->toBe(1);
     $payment = Payment::where('booking_id', $booking->id)->first();
-    expect((float)$payment->amount)->toBe(1000.0);
+    expect((float) $payment->amount)->toBe(1000.0);
 
     // Check Payment Schedule created
     expect(PaymentSchedule::where('booking_id', $booking->id)->count())->toBeGreaterThanOrEqual(1);
@@ -93,12 +92,12 @@ test('server recalculates pricing correctly and ignores client totals', function
 
 test('draft save, retrieval, discard, and deletion on booking creation', function () {
     $draftPayload = [
-        'customer_id' => (string)$this->customer->id,
-        'tour_package_id' => (string)$this->package->id,
+        'customer_id' => (string) $this->customer->id,
+        'tour_package_id' => (string) $this->package->id,
         'travel_date' => now()->addDays(20)->format('Y-m-d'),
         'travelers' => [
-            ['full_name' => 'Draft Traveler', 'traveler_type' => 'adult']
-        ]
+            ['full_name' => 'Draft Traveler', 'traveler_type' => 'adult'],
+        ],
     ];
 
     // 1. Save draft
@@ -131,8 +130,8 @@ test('draft save, retrieval, discard, and deletion on booking creation', functio
         'booking_date' => now()->format('Y-m-d'),
         'travel_date' => now()->addDays(20)->format('Y-m-d'),
         'travelers' => [
-            ['full_name' => 'Draft Traveler', 'traveler_type' => 'adult']
-        ]
+            ['full_name' => 'Draft Traveler', 'traveler_type' => 'adult'],
+        ],
     ];
 
     $this->actingAs($this->staff)
@@ -167,8 +166,8 @@ test('discounts require permission: staff without permission is rejected', funct
         'travel_date' => now()->addDays(10)->format('Y-m-d'),
         'discount_amount' => 250, // Discount requested by staff
         'travelers' => [
-            ['full_name' => 'Alice Traveler', 'traveler_type' => 'adult']
-        ]
+            ['full_name' => 'Alice Traveler', 'traveler_type' => 'adult'],
+        ],
     ];
 
     // Staff cannot authorize discount

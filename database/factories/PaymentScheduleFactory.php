@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Booking;
+use App\Models\PaymentSchedule;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PaymentSchedule>
+ * @extends Factory<PaymentSchedule>
  */
 class PaymentScheduleFactory extends Factory
 {

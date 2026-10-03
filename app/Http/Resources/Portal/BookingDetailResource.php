@@ -16,7 +16,7 @@ class BookingDetailResource extends JsonResource
                 'id' => $this->tourPackage->id,
                 'name' => $this->tourPackage->name,
             ] : null,
-            'travelers' => $this->travelers->map(fn($t) => [
+            'travelers' => $this->travelers->map(fn ($t) => [
                 'first_name' => $t->first_name,
                 'last_name' => $t->last_name,
                 'traveler_type' => $t->traveler_type,
@@ -32,7 +32,7 @@ class BookingDetailResource extends JsonResource
             'balance_amount' => $this->balance_amount,
             'currency' => $this->currency,
             'notes' => $this->notes, // Assuming these are customer-facing notes
-            'payments' => $this->payments->map(fn($p) => [
+            'payments' => $this->payments->map(fn ($p) => [
                 'id' => $p->id,
                 'receipt_number' => $p->receipt_number,
                 'amount' => $p->amount,
@@ -40,7 +40,7 @@ class BookingDetailResource extends JsonResource
                 'payment_method' => $p->payment_method,
                 'status' => $p->status,
             ]),
-            'documents' => $this->customer->documents->map(fn($d) => [
+            'documents' => $this->customer->documents->map(fn ($d) => [
                 'id' => $d->id,
                 'document_type' => $d->documentType?->name,
                 'file_name' => $d->file_name,

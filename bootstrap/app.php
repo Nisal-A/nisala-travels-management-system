@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCustomer;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -22,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'role' => EnsureUserHasRole::class,
-            'customer' => \App\Http\Middleware\EnsureCustomer::class,
+            'customer' => EnsureCustomer::class,
         ]);
 
         $middleware->redirectTo(

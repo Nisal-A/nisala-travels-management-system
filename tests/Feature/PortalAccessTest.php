@@ -2,16 +2,16 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Customer;
-use App\Models\Booking;
-use App\Models\Payment;
-use App\Models\CustomerDocument;
 use App\Enums\UserRole;
-use Spatie\Permission\Models\Role;
+use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\CustomerDocument;
+use App\Models\Payment;
+use App\Models\User;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class PortalAccessTest extends TestCase
 {
@@ -20,7 +20,7 @@ class PortalAccessTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Ensure roles exist
         if (Role::count() === 0) {
             $this->seed(RoleSeeder::class);
@@ -31,11 +31,11 @@ class PortalAccessTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole(UserRole::Customer->value);
-        
+
         $customer = Customer::factory()->create([
             'user_id' => $user->id,
         ]);
-        
+
         return [$user, $customer];
     }
 
@@ -49,7 +49,7 @@ class PortalAccessTest extends TestCase
     {
         $user = User::factory()->create();
         $user->assignRole(UserRole::Staff->value);
-        
+
         $response = $this->actingAs($user)->get('/portal/bookings');
         $response->assertStatus(403);
     }
@@ -58,12 +58,12 @@ class PortalAccessTest extends TestCase
     {
         [$userA, $customerA] = $this->createCustomerUser();
         [$userB, $customerB] = $this->createCustomerUser();
-        
+
         $bookingB = Booking::factory()->create(['customer_id' => $customerB->id]);
-        
+
         $response = $this->actingAs($userA)->get("/portal/bookings/{$bookingB->id}");
         $response->assertStatus(403);
-        
+
         $response = $this->actingAs($userA)->get("/portal/bookings/{$bookingB->id}/itinerary");
         $response->assertStatus(403);
     }
@@ -72,9 +72,9 @@ class PortalAccessTest extends TestCase
     {
         [$userA, $customerA] = $this->createCustomerUser();
         [$userB, $customerB] = $this->createCustomerUser();
-        
+
         $documentB = CustomerDocument::factory()->create(['customer_id' => $customerB->id]);
-        
+
         $response = $this->actingAs($userA)->delete("/portal/documents/{$documentB->id}");
         $response->assertStatus(403);
     }
@@ -83,9 +83,9 @@ class PortalAccessTest extends TestCase
     {
         [$userA, $customerA] = $this->createCustomerUser();
         [$userB, $customerB] = $this->createCustomerUser();
-        
+
         $paymentB = Payment::factory()->create(['customer_id' => $customerB->id]);
-        
+
         $response = $this->actingAs($userA)->get("/portal/payments/{$paymentB->id}/receipt");
         $response->assertStatus(403);
     }
@@ -93,26 +93,26 @@ class PortalAccessTest extends TestCase
     public function test_dashboard_numbers_are_correct()
     {
         [$user, $customer] = $this->createCustomerUser();
-        
+
         Booking::factory()->create([
             'customer_id' => $customer->id,
             'travel_date' => now()->addDays(5),
             'balance_amount' => 500,
         ]);
-        
+
         Booking::factory()->create([
             'customer_id' => $customer->id,
             'travel_date' => now()->addDays(10),
             'balance_amount' => 200,
         ]);
-        
+
         CustomerDocument::factory()->create([
             'customer_id' => $customer->id,
             'verification_status' => 'rejected',
         ]);
-        
-        $response = $this->actingAs($user)->get("/portal");
-        
+
+        $response = $this->actingAs($user)->get('/portal');
+
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Portal/Dashboard')
@@ -123,18 +123,18 @@ class PortalAccessTest extends TestCase
             })
         );
     }
-    
+
     public function test_resources_do_not_leak_hidden_fields()
     {
         [$user, $customer] = $this->createCustomerUser();
-        
+
         $booking = Booking::factory()->create([
             'customer_id' => $customer->id,
             'notes' => 'Some customer notes',
         ]);
-        
+
         $response = $this->actingAs($user)->get("/portal/bookings/{$booking->id}");
-        
+
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Portal/BookingDetail')

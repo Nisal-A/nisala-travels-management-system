@@ -26,7 +26,7 @@ class StoreInquiryRequest extends FormRequest
             'website_field' => 'nullable|string',
         ];
     }
-    
+
     protected function prepareForValidation()
     {
         if ($this->has('message')) {

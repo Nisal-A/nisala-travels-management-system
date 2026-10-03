@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Filterable;
 
 class Payment extends Model
 {
-    use SoftDeletes, \Illuminate\Database\Eloquent\Factories\HasFactory, Filterable;
+    use Filterable, \Illuminate\Database\Eloquent\Factories\HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
@@ -18,8 +20,8 @@ class Payment extends Model
         return [
             'amount' => 'decimal:2',
             'payment_date' => 'date',
-            'payment_method' => \App\Enums\PaymentMethod::class,
-            'status' => \App\Enums\PaymentStatus::class,
+            'payment_method' => PaymentMethod::class,
+            'status' => PaymentStatus::class,
         ];
     }
 

@@ -24,8 +24,8 @@ class UpdateCustomerRequest extends FormRequest
     {
         return [
             'full_name' => ['required', 'string', 'max:255'],
-            'nic' => ['nullable', 'string', 'max:20', 'unique:customers,nic,' . $this->customer->id],
-            'passport_number' => ['nullable', 'string', 'max:20', 'unique:customers,passport_number,' . $this->customer->id],
+            'nic' => ['nullable', 'string', 'max:20', 'unique:customers,nic,'.$this->customer->id],
+            'passport_number' => ['nullable', 'string', 'max:20', 'unique:customers,passport_number,'.$this->customer->id],
             'dob' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'string', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],

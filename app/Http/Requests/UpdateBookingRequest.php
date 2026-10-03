@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Booking;
+use App\Enums\TravelerType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBookingRequest extends FormRequest
 {
@@ -32,7 +33,7 @@ class UpdateBookingRequest extends FormRequest
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'assigned_to' => ['nullable', 'exists:employees,id'],
-            
+
             'travelers' => ['sometimes', 'required', 'array', 'min:1'],
             'travelers.*.id' => ['nullable', 'exists:booking_travelers,id'],
             'travelers.*.full_name' => ['required_with:travelers', 'string', 'max:255'],
@@ -43,7 +44,7 @@ class UpdateBookingRequest extends FormRequest
             'travelers.*.passport_number' => ['nullable', 'string', 'max:50'],
             'travelers.*.passport_expiry' => ['nullable', 'date'],
             'travelers.*.relationship_to_primary' => ['nullable', 'string', 'max:255'],
-            'travelers.*.traveler_type' => ['required_with:travelers', 'string', \Illuminate\Validation\Rule::enum(\App\Enums\TravelerType::class)],
+            'travelers.*.traveler_type' => ['required_with:travelers', 'string', Rule::enum(TravelerType::class)],
             'travelers.*.contact_information' => ['nullable', 'string', 'max:255'],
             'travelers.*.special_requirements' => ['nullable', 'string'],
             'travelers.*.notes' => ['nullable', 'string'],

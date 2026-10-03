@@ -1,11 +1,9 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Customer;
 use App\Models\User;
-use App\Enums\UserRole;
-
 use Database\Seeders\RoleSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +22,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 |
 */
 
-
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
 });
@@ -34,6 +31,7 @@ function createUserWithRole(string $role): User
 {
     $user = User::factory()->create();
     $user->assignRole($role);
+
     return $user;
 }
 
@@ -46,9 +44,10 @@ function createLinkedCustomer(User $user): Customer
         'email' => fake()->unique()->safeEmail(),
         'status' => 'active',
     ]);
-    $customer->customer_id = 'CUST-' . fake()->unique()->numberBetween(10000, 99999);
+    $customer->customer_id = 'CUST-'.fake()->unique()->numberBetween(10000, 99999);
     $customer->user_id = $user->id;
     $customer->save();
+
     return $customer;
 }
 

@@ -2,13 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
-use Illuminate\Database\Eloquent\Factories\Factory;
-
 use App\Models\Customer;
 use App\Models\TourPackage;
 use App\Models\User;
-use App\Enums\BookingStatus;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<Booking>
@@ -21,9 +20,9 @@ class BookingFactory extends Factory
         $discountAmount = $this->faker->randomFloat(2, 0, 100);
         $finalAmount = $baseAmount - $discountAmount;
         $paidAmount = $this->faker->randomFloat(2, 0, $finalAmount);
-        
+
         return [
-            'booking_reference' => 'NT-' . $this->faker->unique()->numerify('####-######'),
+            'booking_reference' => 'NT-'.$this->faker->unique()->numerify('####-######'),
             'customer_id' => Customer::factory(),
             'tour_package_id' => TourPackage::factory(),
             'assigned_to' => null,

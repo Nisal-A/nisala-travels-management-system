@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('roles')->whereHas('roles', function($q) {
+        $query = User::with('roles')->whereHas('roles', function ($q) {
             $q->whereIn('name', ['super_admin', 'manager', 'staff', 'finance']);
         });
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -32,7 +32,7 @@ class EmployeeController extends Controller
 
         if ($request->filled('role')) {
             $role = $request->input('role');
-            $query->whereHas('roles', function($q) use ($role) {
+            $query->whereHas('roles', function ($q) use ($role) {
                 $q->where('name', $role);
             });
         }
@@ -54,20 +54,21 @@ class EmployeeController extends Controller
         return Inertia::render('Employees/Index', [
             'employees' => $employees,
             'roles' => $roles,
-            'filters' => (object) $request->only(['search', 'status', 'role', 'sort', 'direction'])
+            'filters' => (object) $request->only(['search', 'status', 'role', 'sort', 'direction']),
         ]);
     }
 
     public function create()
     {
         $roles = Role::whereIn('name', ['super_admin', 'manager', 'staff', 'finance'])->get();
+
         return Inertia::render('Employees/Create', ['roles' => $roles]);
     }
 
     public function store(StoreEmployeeRequest $request)
     {
         $validated = $request->validated();
-        
+
         $employee = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -84,25 +85,25 @@ class EmployeeController extends Controller
     {
         $roles = Role::whereIn('name', ['super_admin', 'manager', 'staff', 'finance'])->get();
         $employee->load('roles');
-        
+
         return Inertia::render('Employees/Edit', [
             'employee' => $employee,
-            'roles' => $roles
+            'roles' => $roles,
         ]);
     }
 
     public function update(UpdateEmployeeRequest $request, User $employee)
     {
         $validated = $request->validated();
-        
+
         $employee->name = $validated['name'];
         $employee->email = $validated['email'];
         $employee->status = $validated['status'];
-        
-        if (!empty($validated['password'])) {
+
+        if (! empty($validated['password'])) {
             $employee->password = Hash::make($validated['password']);
         }
-        
+
         $employee->save();
 
         if (isset($validated['role'])) {
@@ -117,8 +118,9 @@ class EmployeeController extends Controller
         if (auth()->id() === $employee->id) {
             return back()->with('error', 'You cannot delete your own account.');
         }
-        
+
         $employee->delete();
+
         return redirect()->route('employees.index')->with('success', 'Employee removed successfully.');
     }
 }

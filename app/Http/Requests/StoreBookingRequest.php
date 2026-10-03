@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TravelerType;
 use App\Models\Booking;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -32,7 +34,7 @@ class StoreBookingRequest extends FormRequest
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'assigned_to' => ['nullable', 'exists:employees,id'],
-            
+
             'travelers' => ['required', 'array', 'min:1'],
             'travelers.*.full_name' => ['required', 'string', 'max:255'],
             'travelers.*.dob' => ['nullable', 'date'],
@@ -42,7 +44,7 @@ class StoreBookingRequest extends FormRequest
             'travelers.*.passport_number' => ['nullable', 'string', 'max:50'],
             'travelers.*.passport_expiry' => ['nullable', 'date'],
             'travelers.*.relationship_to_primary' => ['nullable', 'string', 'max:255'],
-            'travelers.*.traveler_type' => ['required', 'string', \Illuminate\Validation\Rule::enum(\App\Enums\TravelerType::class)],
+            'travelers.*.traveler_type' => ['required', 'string', Rule::enum(TravelerType::class)],
             'travelers.*.contact_information' => ['nullable', 'string', 'max:255'],
             'travelers.*.special_requirements' => ['nullable', 'string'],
             'travelers.*.notes' => ['nullable', 'string'],
@@ -74,7 +76,7 @@ class StoreBookingRequest extends FormRequest
         $validator->after(function ($validator) {
             $discount = (float) $this->input('discount_amount', 0);
             if ($discount > 0) {
-                if (!$this->user() || !$this->user()->can('applyDiscount', Booking::class)) {
+                if (! $this->user() || ! $this->user()->can('applyDiscount', Booking::class)) {
                     $validator->errors()->add('discount_amount', 'You do not have permission to apply discounts. Only managers can authorize discounts.');
                 }
             }

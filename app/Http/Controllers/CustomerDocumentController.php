@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DocumentUploaded;
 use App\Http\Requests\StoreCustomerDocumentRequest;
 use App\Models\Customer;
 use App\Models\CustomerDocument;
@@ -20,19 +21,19 @@ class CustomerDocumentController extends Controller
         Gate::authorize('upload', [CustomerDocument::class, $customer]);
 
         $file = $request->file('file');
-        
-        if (!$file->isValid()) {
+
+        if (! $file->isValid()) {
             return back()->withErrors(['file' => 'Upload failed. Please try again.']);
         }
 
         // Generate document ID
         $latestDoc = CustomerDocument::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $latestDoc ? $latestDoc->id + 1 : 1;
-        $documentId = 'DOC-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        $documentId = 'DOC-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
 
         // Generate secure filename
         $extension = $file->getClientOriginalExtension();
-        $secureFilename = Str::random(40) . '.' . $extension;
+        $secureFilename = Str::random(40).'.'.$extension;
         $storagePath = "customers/{$customer->id}/documents/{$documentId}/{$secureFilename}";
 
         try {
@@ -77,19 +78,19 @@ class CustomerDocumentController extends Controller
                 $secureFilename
             );
 
-            if (!$path) {
+            if (! $path) {
                 throw new \Exception('Failed to store file to disk.');
             }
 
-            DB::afterCommit(fn () => event(new \App\Events\DocumentUploaded($document)));
+            DB::afterCommit(fn () => event(new DocumentUploaded($document)));
 
             DB::commit();
 
             return back()->with('success', 'Document uploaded successfully.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Clean up the file if it was uploaded but DB failed
             if (Storage::disk('private')->exists($storagePath)) {
                 Storage::disk('private')->deleteDirectory("customers/{$customer->id}/documents/{$documentId}");
@@ -111,12 +112,12 @@ class CustomerDocumentController extends Controller
             abort(404);
         }
 
-        if (!Storage::disk('private')->exists($document->storage_path)) {
+        if (! Storage::disk('private')->exists($document->storage_path)) {
             abort(404, 'Document file not found.');
         }
 
         return Storage::disk('private')->download(
-            $document->storage_path, 
+            $document->storage_path,
             $document->original_filename
         );
     }

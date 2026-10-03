@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Payment;
-use App\Models\Booking;
+use App\Enums\PaymentStatus;
+use App\Events\PaymentReceived;
 use App\Http\Requests\StorePaymentRequest;
+use App\Models\Booking;
+use App\Models\Payment;
+use App\Models\SavedFilter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Inertia\Inertia;
 use Illuminate\Validation\ValidationException;
-use App\Enums\PaymentStatus;
+use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
@@ -27,7 +29,7 @@ class PaymentController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $savedFilters = \App\Models\SavedFilter::where('user_id', $request->user()->id)
+        $savedFilters = SavedFilter::where('user_id', $request->user()->id)
             ->where('table_key', 'payments')
             ->get();
 
@@ -47,11 +49,11 @@ class PaymentController extends Controller
         $validated = $request->validated();
 
         $booking = Booking::findOrFail($validated['booking_id']);
-        
+
         // Ensure payment amount doesn't exceed balance
         if ($validated['amount'] > $booking->balance_amount) {
             throw ValidationException::withMessages([
-                'amount' => 'Payment amount cannot exceed the remaining balance of ' . number_format($booking->balance_amount, 2) . ' ' . $booking->currency
+                'amount' => 'Payment amount cannot exceed the remaining balance of '.number_format($booking->balance_amount, 2).' '.$booking->currency,
             ]);
         }
 
@@ -76,12 +78,14 @@ class PaymentController extends Controller
             $booking->balance_amount -= $payment->amount;
             $booking->save();
 
-            DB::afterCommit(fn () => event(new \App\Events\PaymentReceived($payment)));
+            DB::afterCommit(fn () => event(new PaymentReceived($payment)));
 
             DB::commit();
+
             return back()->with('success', 'Payment recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => 'Failed to record payment.']);
         }
     }
@@ -108,13 +112,15 @@ class PaymentController extends Controller
 
             $payment->status = PaymentStatus::Failed;
             $payment->save();
-            
+
             $payment->delete();
 
             DB::commit();
+
             return back()->with('success', 'Payment voided successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => 'Failed to void payment.']);
         }
     }

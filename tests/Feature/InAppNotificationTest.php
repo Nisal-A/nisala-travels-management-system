@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\User;
-use App\Models\Customer;
 use Tests\TestCase;
 
 class InAppNotificationTest extends TestCase
@@ -18,7 +18,7 @@ class InAppNotificationTest extends TestCase
         parent::setUp();
         // Create an active user
         $this->user = User::factory()->create([
-            'status' => 'active'
+            'status' => 'active',
         ]);
     }
 
@@ -35,6 +35,7 @@ class InAppNotificationTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
         return $id;
     }
 
@@ -50,7 +51,7 @@ class InAppNotificationTest extends TestCase
         $this->createNotificationFor($this->user);
 
         $response = $this->actingAs($this->user)->get(route('notifications.unreadCount'));
-        
+
         $response->assertStatus(200);
         $response->assertJson(['count' => 2]);
     }
@@ -60,12 +61,12 @@ class InAppNotificationTest extends TestCase
         $this->createNotificationFor($this->user);
 
         $response = $this->actingAs($this->user)->get(route('notifications.recent'));
-        
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'notifications' => [
-                '*' => ['id', 'type', 'data', 'read_at', 'created_at']
-            ]
+                '*' => ['id', 'type', 'data', 'read_at', 'created_at'],
+            ],
         ]);
         $this->assertCount(1, $response->json('notifications'));
     }
@@ -75,7 +76,7 @@ class InAppNotificationTest extends TestCase
         $id = $this->createNotificationFor($this->user);
 
         $response = $this->actingAs($this->user)->patch(route('notifications.markAsRead', $id));
-        
+
         $response->assertStatus(200);
         $this->assertNotNull(DB::table('notifications')->where('id', $id)->first()->read_at);
         $this->assertEquals(0, $this->user->unreadNotifications()->count());
@@ -87,7 +88,7 @@ class InAppNotificationTest extends TestCase
         $this->createNotificationFor($this->user);
 
         $response = $this->actingAs($this->user)->post(route('notifications.markAllAsRead'));
-        
+
         $response->assertStatus(200);
         $this->assertEquals(0, $this->user->unreadNotifications()->count());
     }
@@ -95,7 +96,7 @@ class InAppNotificationTest extends TestCase
     public function test_customer_notifications_are_resolved_correctly()
     {
         $user = clone $this->user;
-        
+
         try {
             $user->assignRole('customer');
         } catch (\Exception $e) {
@@ -105,7 +106,7 @@ class InAppNotificationTest extends TestCase
         $customer = Customer::factory()->create([
             'user_id' => $user->id,
             'full_name' => 'Test Customer',
-            'email' => 'customer@example.com'
+            'email' => 'customer@example.com',
         ]);
 
         $this->createNotificationFor($customer);

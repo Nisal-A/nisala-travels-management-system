@@ -15,7 +15,7 @@ test('can create customer with factory', function () {
         ->and($customer->customer_id)->not->toBeNull()
         ->and($customer->full_name)->not->toBeNull()
         ->and($customer->status)->toBe('active');
-    
+
     $this->assertModelExists($customer);
 });
 
@@ -37,7 +37,7 @@ test('can have creator', function () {
 
 test('can soft delete customer', function () {
     $customer = Customer::factory()->create();
-    
+
     $customer->delete();
 
     $this->assertSoftDeleted($customer);

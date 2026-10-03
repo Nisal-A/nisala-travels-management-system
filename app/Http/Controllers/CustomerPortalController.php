@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
 use App\Models\Payment;
+use Inertia\Inertia;
 
 class CustomerPortalController extends Controller
 {
@@ -16,15 +15,17 @@ class CustomerPortalController extends Controller
     private function getCustomer()
     {
         $customer = auth()->user()->customer;
-        if (!$customer) {
+        if (! $customer) {
             abort(403, 'No customer profile found.');
         }
+
         return $customer;
     }
 
     public function dashboard()
     {
         $this->getCustomer(); // Ensure customer exists
+
         return Inertia::render('Portal/Dashboard');
     }
 
@@ -35,9 +36,9 @@ class CustomerPortalController extends Controller
             ->with('tourPackage')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-            
+
         return Inertia::render('Portal/Bookings', [
-            'bookings' => $bookings
+            'bookings' => $bookings,
         ]);
     }
 
@@ -48,9 +49,9 @@ class CustomerPortalController extends Controller
             ->with('documentType')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-            
+
         return Inertia::render('Portal/Documents', [
-            'documents' => $documents
+            'documents' => $documents,
         ]);
     }
 
@@ -61,9 +62,9 @@ class CustomerPortalController extends Controller
             ->with('booking.tourPackage')
             ->orderBy('payment_date', 'desc')
             ->paginate(10);
-            
+
         return Inertia::render('Portal/Payments', [
-            'payments' => $payments
+            'payments' => $payments,
         ]);
     }
 }
