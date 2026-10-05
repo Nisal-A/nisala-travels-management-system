@@ -28,8 +28,8 @@ class NotificationController extends Controller
         }
 
         if ($group = $request->query('group')) {
-            $types = $this->getGroupTypes($group);
-            if (!empty($types)) {
+            if ($group !== 'All') {
+                $types = $this->getGroupTypes($group);
                 $query->whereIn('type', $types);
             }
         }

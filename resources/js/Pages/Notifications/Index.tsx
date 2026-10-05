@@ -1,253 +1,203 @@
+import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import CustomerPortalLayout from '@/components/layouts/CustomerPortalLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Bell, CalendarCheck, CreditCard, FileText, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { getNotificationIcon, NotificationData } from '@/components/notifications/NotificationBell';
+import { formatDistanceToNow } from 'date-fns';
+import { Check, Trash2, FilterX } from 'lucide-react';
 import axios from 'axios';
-import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface AppNotification {
-    id: string;
-    type: string;
-    notifiable_type: string;
-    notifiable_id: number;
-    data: {
-        message: string;
-        payment_id?: number;
-        booking_id?: number;
-        document_id?: number;
-        inquiry_id?: number;
-        [key: string]: any;
-    };
-    read_at: string | null;
-    created_at: string;
-    updated_at: string;
-}
-
-interface PaginatedData<T> {
-    data: T[];
-    current_page: number;
-    last_page: number;
-    next_page_url: string | null;
-    prev_page_url: string | null;
-    total: number;
-}
 
 interface Props {
-    notifications: PaginatedData<AppNotification>;
+    notifications: {
+        data: NotificationData[];
+        links: any[];
+        current_page: number;
+        last_page: number;
+        total: number;
+    };
     filter: string;
+    group: string;
 }
 
-export default function NotificationsIndex({ notifications, filter }: Props) {
-    const { user, hasRole } = useAuth();
-    const isCustomer = hasRole('customer') && !hasRole('super_admin', 'manager', 'staff', 'finance');
-    const Layout = isCustomer ? CustomerPortalLayout : AppLayout;
+const GROUPS = ['All', 'Bookings', 'Payments', 'Documents', 'System'];
 
-    const [isMarkingAll, setIsMarkingAll] = useState(false);
-
-    const getIconForNotification = (notification: AppNotification) => {
-        const typeStr = notification.type.toLowerCase();
-        if (typeStr.includes('booking')) return <CalendarCheck className="h-5 w-5 text-blue-500" />;
-        if (typeStr.includes('document')) return <FileText className="h-5 w-5 text-indigo-500" />;
-        if (typeStr.includes('payment')) return <CreditCard className="h-5 w-5 text-emerald-500" />;
-        if (typeStr.includes('inquiry')) return <MessageSquare className="h-5 w-5 text-amber-500" />;
-        if (typeStr.includes('alert')) return <AlertTriangle className="h-5 w-5 text-rose-500" />;
-        return <Bell className="h-5 w-5 text-muted-foreground" />;
-    };
-
-    const getActionUrl = (notification: AppNotification) => {
-        const data = notification.data;
-        if (isCustomer) {
-            if (data.booking_id) return route('portal.bookings.show', { booking: data.booking_id });
-            if (data.payment_id) return route('portal.payments.index');
-            if (data.document_id) return route('portal.documents.index');
-            return route('portal.dashboard');
-        } else {
-            if (data.booking_id) return route('bookings.show', { booking: data.booking_id });
-            if (data.payment_id) return route('payments.index');
-            if (data.document_id) return route('documents.index');
-            // Assuming inquiries route might exist, otherwise dashboard
-            return route('dashboard');
-        }
-    };
-
-    const handleFilterChange = (value: string | null) => {
-        if (value) {
-            router.get(route('notifications.index'), { filter: value }, { preserveState: true });
-        }
-    };
-
-    const markAsRead = async (id: string) => {
-        try {
-            await axios.patch(route('notifications.markAsRead', { id }));
+export default function Index({ notifications, filter, group }: Props) {
+    const markAsRead = (id: string) => {
+        axios.patch(`/admin/notifications/${id}/mark-as-read`).then(() => {
             router.reload({ only: ['notifications'] });
-        } catch (error) {
-            console.error('Failed to mark as read', error);
-        }
+        });
     };
 
-    const markAllAsRead = async () => {
-        setIsMarkingAll(true);
-        try {
-            await axios.post(route('notifications.markAllAsRead'));
+    const markAllAsRead = () => {
+        axios.post('/admin/notifications/mark-all-as-read').then(() => {
             router.reload({ only: ['notifications'] });
-        } catch (error) {
-            console.error('Failed to mark all as read', error);
-        } finally {
-            setIsMarkingAll(false);
+        });
+    };
+
+    const deleteNotification = (id: string) => {
+        if (confirm('Are you sure you want to delete this notification?')) {
+            axios.delete(`/admin/notifications/${id}`).then(() => {
+                router.reload({ only: ['notifications'] });
+            });
         }
     };
 
-    const unreadCount = notifications.data.filter((n) => !n.read_at).length;
+    const handleFilterChange = (value: string) => {
+        router.get('/admin/notifications', { filter: value, group }, { preserveState: true });
+    };
+
+    const handleGroupChange = (value: string) => {
+        router.get('/admin/notifications', { filter, group: value }, { preserveState: true });
+    };
 
     return (
-        <Layout
-            title="Notifications"
-            breadcrumbs={[
-                { label: 'Dashboard', href: route(isCustomer ? 'portal.dashboard' : 'dashboard') },
-                { label: 'Notifications' },
-            ]}
-        >
+        <AppLayout title="Notifications">
             <Head title="Notifications" />
 
-            <div className="mx-auto max-w-4xl space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Your Notifications</h2>
-                        <p className="text-muted-foreground">Stay updated on system activities and alerts.</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Select value={filter} onValueChange={handleFilterChange}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Filter notifications" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Notifications</SelectItem>
-                                <SelectItem value="unread">Unread Only</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Button
-                            variant="outline"
-                            className="shrink-0"
-                            onClick={markAllAsRead}
-                            disabled={isMarkingAll || (filter === 'unread' && notifications.data.length === 0)}
-                        >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
+            <div className="max-w-4xl mx-auto py-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                    <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={markAllAsRead}>
+                            <Check className="h-4 w-4 mr-2" />
                             Mark all as read
                         </Button>
                     </div>
                 </div>
 
-                <Card>
-                    <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                        <CardTitle className="text-lg">Recent Alerts</CardTitle>
-                        <CardDescription>
-                            {filter === 'unread'
-                                ? `Showing ${notifications.total} unread notifications.`
-                                : `Total ${notifications.total} notifications.`}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
+                <div className="bg-white rounded-lg border shadow-sm flex flex-col mb-6">
+                    <div className="p-4 border-b flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 rounded-t-lg">
+                        <Tabs value={filter} onValueChange={handleFilterChange} className="w-full sm:w-auto">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="all">All</TabsTrigger>
+                                <TabsTrigger value="unread">Unread</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        <div className="flex flex-wrap gap-2">
+                            {GROUPS.map(g => (
+                                <Badge 
+                                    key={g} 
+                                    variant={group === g ? 'default' : 'outline'}
+                                    className="cursor-pointer select-none"
+                                    onClick={() => handleGroupChange(g)}
+                                >
+                                    {g}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col">
                         {notifications.data.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
-                                <Bell className="mb-4 h-12 w-12 opacity-20" />
-                                <h3 className="text-lg font-medium">No notifications</h3>
-                                <p className="text-sm">You're all caught up! Check back later.</p>
+                            <div className="p-12 text-center flex flex-col items-center justify-center text-gray-500">
+                                <FilterX className="h-12 w-12 text-gray-300 mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-1">No notifications found</h3>
+                                <p>We couldn't find any notifications matching your filters.</p>
+                                {(filter !== 'all' || group !== 'All') && (
+                                    <Button variant="link" onClick={() => router.get('/admin/notifications')} className="mt-2">
+                                        Clear filters
+                                    </Button>
+                                )}
                             </div>
                         ) : (
-                            <div className="flex flex-col divide-y divide-border/50">
-                                {notifications.data.map((notification) => (
-                                    <div
-                                        key={notification.id}
-                                        className={`flex items-start gap-4 p-4 transition-colors hover:bg-muted/50 ${
-                                            !notification.read_at ? 'bg-primary/5' : ''
-                                        }`}
-                                    >
-                                        <div
-                                            className={`mt-1 flex shrink-0 items-center justify-center rounded-full bg-background p-2 shadow-sm ring-1 ring-border ${
-                                                !notification.read_at ? 'ring-primary/30' : ''
-                                            }`}
-                                        >
-                                            {getIconForNotification(notification)}
+                            notifications.data.map((notification) => {
+                                const isUnread = !notification.read_at;
+                                const data = notification.data || {};
+                                
+                                return (
+                                    <div key={notification.id} className={`flex items-start gap-4 p-4 border-b last:border-0 hover:bg-gray-50 transition-colors ${isUnread ? 'bg-blue-50/30' : ''}`}>
+                                        <div className="mt-1 bg-white p-3 rounded-full shadow-sm border flex-shrink-0">
+                                            {getNotificationIcon(notification.type)}
                                         </div>
-                                        <div className="flex flex-1 flex-col gap-1">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <h4
-                                                    className={`text-sm font-semibold ${!notification.read_at ? 'text-foreground' : 'text-muted-foreground'}`}
-                                                >
-                                                    {notification.data.message ||
-                                                        notification.type
-                                                            .split('\\')
-                                                            .pop()
-                                                            ?.replace('Notification', '')}
+                                        
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start gap-2 mb-1">
+                                                <h4 className={`text-base font-semibold truncate ${isUnread ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                    {data.title || 'Notification'}
                                                 </h4>
-                                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                    {new Date(notification.created_at).toLocaleDateString()}
+                                                <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                                 </span>
                                             </div>
-
-                                            {/* Optional Call to Action */}
-                                            <div className="mt-2 flex gap-4 items-center">
-                                                <Link
-                                                    href={getActionUrl(notification)}
-                                                    className="inline-flex text-xs font-medium text-primary hover:underline"
-                                                >
-                                                    View details &rarr;
-                                                </Link>
-                                                {!notification.read_at && (
-                                                    <button
-                                                        onClick={() => markAsRead(notification.id)}
-                                                        className="inline-flex text-xs font-medium text-muted-foreground hover:text-foreground underline"
+                                            <p className="text-sm text-gray-600 mb-2">
+                                                {data.body}
+                                            </p>
+                                            
+                                            <div className="flex items-center gap-3">
+                                                {data.url && (
+                                                    <Button 
+                                                        variant="secondary" 
+                                                        size="sm" 
+                                                        className="h-8 text-xs"
+                                                        render={<a href={data.url} onClick={(e) => {
+                                                            if (isUnread) {
+                                                                markAsRead(notification.id);
+                                                            }
+                                                        }} />}
                                                     >
+                                                        View Details
+                                                    </Button>
+                                                )}
+                                                
+                                                {isUnread && (
+                                                    <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)} className="h-8 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                                                         Mark as read
-                                                    </button>
+                                                    </Button>
                                                 )}
                                             </div>
                                         </div>
-
-                                        {!notification.read_at && (
-                                            <div className="mt-2 shrink-0">
-                                                <Badge variant="default" className="h-2 w-2 rounded-full p-0" />
-                                            </div>
-                                        )}
+                                        
+                                        <div className="flex flex-col items-end gap-2 ml-4">
+                                            {isUnread && <div className="w-2 h-2 rounded-full bg-blue-600 mb-2 mt-2" />}
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-600" onClick={() => deleteNotification(notification.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                );
+                            })
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
 
                 {/* Pagination */}
-                {notifications.total > 0 && (
-                    <div className="flex justify-between items-center py-4">
-                        <Button
-                            variant="outline"
-                            disabled={!notifications.prev_page_url}
-                            onClick={() =>
-                                router.get(notifications.prev_page_url || '', { filter }, { preserveState: true })
+                {notifications.last_page > 1 && (
+                    <div className="flex justify-center gap-2">
+                        {notifications.links.map((link, i) => {
+                            const className = cn(
+                                link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''
+                            );
+                            
+                            if (link.url) {
+                                return (
+                                    <Link 
+                                        key={i}
+                                        href={link.url} 
+                                        className={cn(buttonVariants({ variant: link.active ? 'default' : 'outline', size: 'sm' }), className)}
+                                        dangerouslySetInnerHTML={{ __html: link.label }} 
+                                    />
+                                );
                             }
-                        >
-                            Previous
-                        </Button>
-                        <span className="text-sm text-muted-foreground">
-                            Page {notifications.current_page} of {notifications.last_page}
-                        </span>
-                        <Button
-                            variant="outline"
-                            disabled={!notifications.next_page_url}
-                            onClick={() =>
-                                router.get(notifications.next_page_url || '', { filter }, { preserveState: true })
-                            }
-                        >
-                            Next
-                        </Button>
+                            
+                            return (
+                                <Button 
+                                    key={i}
+                                    variant={link.active ? 'default' : 'outline'}
+                                    size="sm"
+                                    disabled
+                                    className={className}
+                                >
+                                    <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                </Button>
+                            );
+                        })}
                     </div>
                 )}
             </div>
-        </Layout>
+        </AppLayout>
     );
 }

@@ -85,21 +85,23 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/saved-filters', [SavedFilterController::class, 'store'])->name('saved-filters.store');
     Route::delete('/saved-filters/{savedFilter}', [SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
 
-    // Notifications — accessible to all authenticated users
-    Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unreadCount');
-        Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
-        Route::patch('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
-        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
-        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
-    });
+
 
     // Administrative routes — accessible to all office roles
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
 
         // Global Search
         Route::get('/admin/search', [GlobalSearchController::class, 'search'])->name('admin.search');
+
+        // Notifications
+        Route::prefix('admin/notifications')->name('admin.notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unreadCount');
+            Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
+            Route::patch('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
+            Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+            Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+        });
 
         // Calendar
         Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
@@ -194,6 +196,15 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', [App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+            Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unreadCount');
+            Route::get('/recent', [App\Http\Controllers\NotificationController::class, 'recent'])->name('recent');
+            Route::patch('/{id}/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('markAsRead');
+            Route::post('/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+            Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+        });
 
         Route::get('/payments', [App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/{payment}/receipt', [App\Http\Controllers\Portal\PaymentController::class, 'receipt'])->name('payments.receipt');

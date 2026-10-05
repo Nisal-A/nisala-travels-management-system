@@ -1,162 +1,204 @@
-import React, { useEffect, useState } from 'react';
-import { Bell, Check, Loader2 } from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
-import axios from 'axios';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Bell, Check, Calendar, CreditCard, FileText, UserPlus, Info } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Link, router, usePage } from '@inertiajs/react';
+import axios from 'axios';
+import { formatDistanceToNow } from 'date-fns';
 
-interface Notification {
+export interface NotificationData {
     id: string;
-    data: {
-        message: string;
-        [key: string]: any;
-    };
+    type: string;
+    data: any;
     read_at: string | null;
     created_at: string;
 }
 
-export function NotificationBell() {
-    const [unreadCount, setUnreadCount] = useState(0);
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [isOpen, setIsOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+export const getNotificationIcon = (type: string) => {
+    if (type.includes('Booking') || type.includes('Trip')) return <Calendar className="h-4 w-4 text-blue-500" />;
+    if (type.includes('Payment')) return <CreditCard className="h-4 w-4 text-emerald-500" />;
+    if (type.includes('Document')) return <FileText className="h-4 w-4 text-orange-500" />;
+    if (type.includes('Inquiry')) return <UserPlus className="h-4 w-4 text-purple-500" />;
+    return <Info className="h-4 w-4 text-gray-500" />;
+};
 
-    const fetchUnreadCount = async () => {
-        try {
-            const { data } = await axios.get('/notifications/unread-count');
-            setUnreadCount(data.count);
-        } catch (error) {
-            console.error('Failed to fetch unread count', error);
-        }
-    };
+export const NotificationBell = ({ isCustomer = false }: { isCustomer?: boolean }) => {
+    const { auth } = usePage().props as any;
+    const initialCount = auth?.unreadNotificationsCount || 0;
+
+    const [unreadCount, setUnreadCount] = useState<number>(initialCount);
+    const [notifications, setNotifications] = useState<NotificationData[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const apiPrefix = isCustomer ? '/portal/notifications' : '/admin/notifications';
 
     const fetchRecent = async () => {
-        setIsLoading(true);
+        setLoading(true);
         try {
-            const { data } = await axios.get('/notifications/recent');
-            setNotifications(data.notifications);
+            const res = await axios.get(`${apiPrefix}/recent`);
+            setNotifications(res.data.notifications);
         } catch (error) {
-            console.error('Failed to fetch recent notifications', error);
+            console.error("Failed to fetch notifications", error);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchUnreadCount();
-        const interval = setInterval(fetchUnreadCount, 60000); // Poll every minute
-        return () => clearInterval(interval);
+    const fetchUnreadCount = useCallback(async () => {
+        try {
+            const res = await axios.get(`${apiPrefix}/unread-count`);
+            const newCount = res.data.count;
+            setUnreadCount(newCount);
+        } catch (error) {
+            console.error("Failed to fetch unread count", error);
+        }
     }, []);
 
-    const handleOpenChange = (open: boolean) => {
-        setIsOpen(open);
-        if (open) {
+    useEffect(() => {
+        setUnreadCount(initialCount);
+    }, [initialCount]);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchUnreadCount();
+            }
+        }, 30000); // 30 seconds
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchUnreadCount();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [fetchUnreadCount]);
+
+    useEffect(() => {
+        if (isOpen) {
             fetchRecent();
         }
-    };
+    }, [isOpen]);
 
-    const markAsRead = async (id: string) => {
+    const markAsRead = async (id: string, url?: string) => {
         try {
-            await axios.patch(`/notifications/${id}/mark-as-read`);
-            setNotifications((prev) =>
-                prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
-            );
-            setUnreadCount((prev) => Math.max(0, prev - 1));
-        } catch (error) {
-            console.error('Failed to mark as read', error);
+            await axios.patch(`${apiPrefix}/${id}/mark-as-read`);
+            setUnreadCount(Math.max(0, unreadCount - 1));
+            setNotifications(notifications.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+
+            if (url) {
+                setIsOpen(false);
+                router.visit(url);
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
 
     const markAllAsRead = async () => {
         try {
-            await axios.post('/notifications/mark-all-as-read');
-            setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
+            await axios.post(`${apiPrefix}/mark-all-as-read`);
             setUnreadCount(0);
-        } catch (error) {
-            console.error('Failed to mark all as read', error);
+            setNotifications(notifications.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+        } catch (e) {
+            console.error(e);
         }
     };
 
+    const notificationsUrl = isCustomer ? '/portal/notifications' : '/notifications';
+
     return (
-        <Popover open={isOpen} onOpenChange={handleOpenChange}>
-            <PopoverTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                    <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                )}
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-0">
-                <div className="flex items-center justify-between border-b px-4 py-3">
-                    <h4 className="font-semibold text-sm">Notifications</h4>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger
+                render={
+                    <Button variant="ghost" size="icon" className="relative" aria-label={`Notifications, ${unreadCount} unread`}>
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                            >
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </Badge>
+                        )}
+                        <span className="sr-only" aria-live="polite">
+                            {unreadCount} unread notifications
+                        </span>
+                    </Button>
+                }
+            />
+            <PopoverContent className="w-80 sm:w-96 p-0" align="end">
+                <div className="flex items-center justify-between px-4 py-3 border-b">
+                    <h3 className="font-semibold text-sm">Notifications</h3>
                     {unreadCount > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 text-xs text-primary"
-                            onClick={markAllAsRead}
-                        >
+                        <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-auto text-xs p-0 text-blue-600 hover:text-blue-800">
                             Mark all as read
                         </Button>
                     )}
                 </div>
 
-                <ScrollArea className="h-80">
-                    {isLoading ? (
-                        <div className="flex h-full items-center justify-center py-8">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
+                <ScrollArea className="max-h-[400px]">
+                    {loading && notifications.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
                     ) : notifications.length === 0 ? (
-                        <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-                            <Bell className="mb-2 h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">No recent notifications</p>
+                        <div className="p-8 text-center text-sm text-gray-500">
+                            <Bell className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                            You're all caught up!
                         </div>
                     ) : (
                         <div className="flex flex-col">
-                            {notifications.map((notification) => (
-                                <div
-                                    key={notification.id}
-                                    className={`flex items-start gap-4 border-b p-4 transition-colors hover:bg-muted/50 ${
-                                        !notification.read_at ? 'bg-primary/5' : ''
-                                    }`}
-                                >
-                                    <div className="flex-1 space-y-1">
-                                        <p className={`text-sm ${!notification.read_at ? 'font-medium' : ''}`}>
-                                            {notification.data.message}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(notification.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    {!notification.read_at && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 shrink-0 rounded-full"
-                                            onClick={() => markAsRead(notification.id)}
-                                            title="Mark as read"
-                                        >
-                                            <Check className="h-3 w-3" />
-                                        </Button>
-                                    )}
-                                </div>
-                            ))}
+                            {notifications.map(notification => {
+                                const isUnread = !notification.read_at;
+                                const data = notification.data || {};
+
+                                return (
+                                    <button
+                                        key={notification.id}
+                                        onClick={() => markAsRead(notification.id, data.url)}
+                                        className={`flex items-start gap-3 p-4 text-left border-b hover:bg-gray-50 transition-colors ${isUnread ? 'bg-blue-50/50' : ''}`}
+                                    >
+                                        <div className="mt-1 bg-white p-2 rounded-full shadow-sm border">
+                                            {getNotificationIcon(notification.type)}
+                                        </div>
+                                        <div className="flex-1 space-y-1 overflow-hidden">
+                                            <p className={`text-sm leading-tight ${isUnread ? 'font-semibold text-gray-900' : 'text-gray-700 font-medium'}`}>
+                                                {data.title || data.message || 'Notification'}
+                                            </p>
+                                            <p className="text-xs text-gray-500 line-clamp-2 leading-snug">
+                                                {data.body || ''}
+                                            </p>
+                                            <p className="text-[10px] text-gray-400 font-medium">
+                                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                            </p>
+                                        </div>
+                                        {isUnread && (
+                                            <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </ScrollArea>
 
-                <div className="border-t p-2">
-                    <Button
-                        render={<Link href={route('notifications.index')} />}
-                        variant="ghost"
-                        className="w-full justify-center text-sm"
+                <div className="p-2 border-t text-center">
+                    <Link
+                        href={notificationsUrl}
+                        onClick={() => setIsOpen(false)}
+                        className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full text-xs text-gray-500" })}
                     >
                         View all notifications
-                    </Button>
+                    </Link>
                 </div>
             </PopoverContent>
         </Popover>
     );
-}
+};
