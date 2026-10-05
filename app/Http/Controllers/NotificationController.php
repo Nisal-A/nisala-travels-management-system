@@ -7,83 +7,82 @@ use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
-    /**
-     * Get the notifiable entity for the current user.
-     */
-    protected function getNotifiable(Request $request)
+    protected function getGroupTypes($group)
     {
-        $user = $request->user();
-        if ($user->hasRole('customer') && $user->customer) {
-            return $user->customer;
-        }
-
-        return $user;
+        return match ($group) {
+            'Bookings' => ['App\Notifications\BookingConfirmedNotification', 'App\Notifications\TripReminderNotification'],
+            'Payments' => ['App\Notifications\PaymentReceivedNotification', 'App\Notifications\PaymentOverdueNotification', 'App\Notifications\PaymentReceivedStaffNotification'],
+            'Documents' => ['App\Notifications\DocumentRejectedNotification', 'App\Notifications\DocumentVerifiedNotification', 'App\Notifications\DocumentUploadedNotification'],
+            'Leads' => ['App\Notifications\NewInquiryNotification', 'App\Notifications\InquirySubmittedNotification'],
+            default => [],
+        };
     }
 
-    /**
-     * Display a listing of notifications.
-     */
     public function index(Request $request)
     {
-        $notifiable = $this->getNotifiable($request);
-        $query = $notifiable->notifications();
+        $user = $request->user();
+        $query = $user->notifications();
 
         if ($request->query('filter') === 'unread') {
             $query->unread();
         }
 
+        if ($group = $request->query('group')) {
+            $types = $this->getGroupTypes($group);
+            if (!empty($types)) {
+                $query->whereIn('type', $types);
+            }
+        }
+
         $notifications = $query->paginate(15);
 
-        return Inertia::render('Notifications/Index', [
+        $view = $user->hasRole('customer') ? 'Portal/Notifications' : 'Notifications/Index';
+
+        return Inertia::render($view, [
             'notifications' => $notifications,
             'filter' => $request->query('filter', 'all'),
+            'group' => $request->query('group', 'All'),
         ]);
     }
 
-    /**
-     * Get unread notifications count.
-     */
     public function unreadCount(Request $request)
     {
-        $notifiable = $this->getNotifiable($request);
+        $count = cache()->remember('unread_notifications_count_' . $request->user()->id, 10, function () use ($request) {
+            return $request->user()->unreadNotifications()->count();
+        });
 
-        return response()->json([
-            'count' => $notifiable->unreadNotifications()->count(),
-        ]);
+        return response()->json(['count' => $count]);
     }
 
-    /**
-     * Get recent notifications for the dropdown.
-     */
     public function recent(Request $request)
     {
-        $notifiable = $this->getNotifiable($request);
-
         return response()->json([
-            'notifications' => $notifiable->notifications()->take(5)->get(),
+            'notifications' => $request->user()->notifications()->take(8)->get(),
         ]);
     }
 
-    /**
-     * Mark a specific notification as read.
-     */
     public function markAsRead(Request $request, $id)
     {
-        $notifiable = $this->getNotifiable($request);
-        $notification = $notifiable->notifications()->findOrFail($id);
-
+        $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
+        cache()->forget('unread_notifications_count_' . $request->user()->id);
 
         return response()->json(['success' => true]);
     }
 
-    /**
-     * Mark all notifications as read.
-     */
     public function markAllAsRead(Request $request)
     {
-        $notifiable = $this->getNotifiable($request);
-        $notifiable->unreadNotifications->markAsRead();
+        $request->user()->unreadNotifications->markAsRead();
+        cache()->forget('unread_notifications_count_' . $request->user()->id);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->delete();
+        cache()->forget('unread_notifications_count_' . $request->user()->id);
 
         return response()->json(['success' => true]);
     }

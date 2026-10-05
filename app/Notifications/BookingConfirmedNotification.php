@@ -28,10 +28,11 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Booking Confirmed'))
-            ->greeting('Hello!')
-            ->line('Your booking (Ref: '.$this->booking->booking_reference.') has been confirmed.')
-            ->action('View Details', config('app.url').'/portal/bookings/'.$this->booking->id);
+            ->subject('Booking Confirmed: ' . $this->booking->booking_reference)
+            ->view('emails.booking.confirmed', [
+                'booking' => $this->booking,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+            ]);
     }
 
     public function toArray(object $notifiable): array

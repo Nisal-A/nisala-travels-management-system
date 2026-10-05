@@ -36,3 +36,11 @@ sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start nisalatravels-worker:*
 ```
+
+## Scheduled Tasks
+
+To run scheduled tasks like the trip reminders, add this cron entry:
+
+```bash
+* * * * * cd /path/to/nisala-travels-management-system && php artisan schedule:run >> /dev/null 2>&1
+```

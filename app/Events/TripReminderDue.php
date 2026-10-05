@@ -12,9 +12,11 @@ class TripReminderDue
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $booking;
+    public $daysBefore;
 
-    public function __construct(Booking $booking)
+    public function __construct(Booking $booking, int $daysBefore)
     {
         $this->booking = $booking;
+        $this->daysBefore = $daysBefore;
     }
 }

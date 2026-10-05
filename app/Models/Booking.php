@@ -103,6 +103,14 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    /**
+     * Reminders sent for this booking.
+     */
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(BookingReminder::class);
+    }
+
     // Filterable configuration
     public function getSearchableColumns()
     {

@@ -28,10 +28,12 @@ class DocumentVerifiedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Document Verified'))
-            ->greeting('Hello!')
-            ->line('Your document ('.($this->document->documentType->name ?? 'Document').') has been verified.')
-            ->action('View Details', config('app.url').'/portal/documents/'.$this->document->id);
+            ->subject('Document Verified Successfully')
+            ->view('emails.document.verified', [
+                'document' => $this->document,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+                'travelerName' => $this->document->traveler->full_name ?? null,
+            ]);
     }
 
     public function toArray(object $notifiable): array

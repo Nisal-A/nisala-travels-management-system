@@ -28,10 +28,10 @@ class DocumentUploadedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Document Uploaded'))
-            ->greeting('Hello!')
-            ->line('Customer uploaded a new document ('.($this->document->documentType->name ?? 'Document').').')
-            ->action('View Details', config('app.url').'/admin/documents/'.$this->document->id);
+            ->subject('New Document Uploaded')
+            ->view('emails.staff.document_uploaded', [
+                'document' => $this->document,
+            ]);
     }
 
     public function toArray(object $notifiable): array

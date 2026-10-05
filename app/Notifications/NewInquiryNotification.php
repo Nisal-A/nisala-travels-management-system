@@ -28,10 +28,10 @@ class NewInquiryNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('New Inquiry Submitted'))
-            ->greeting('Hello!')
-            ->line('A new inquiry was submitted by '.$this->lead->full_name.'.')
-            ->action('View Details', config('app.url').'/admin/inquiries/'.$this->lead->id);
+            ->subject('New Inquiry Received')
+            ->view('emails.staff.new_inquiry', [
+                'lead' => $this->lead,
+            ]);
     }
 
     public function toArray(object $notifiable): array

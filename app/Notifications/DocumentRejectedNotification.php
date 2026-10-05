@@ -28,10 +28,12 @@ class DocumentRejectedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Document Rejected'))
-            ->greeting('Hello!')
-            ->line('Your document ('.($this->document->documentType->name ?? 'Document').') was rejected. Reason: '.$this->document->rejection_reason)
-            ->action('View Details', config('app.url').'/portal/documents/'.$this->document->id);
+            ->subject('Action Required: Document Update Needed')
+            ->view('emails.document.rejected', [
+                'document' => $this->document,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+                'travelerName' => $this->document->traveler->full_name ?? null,
+            ]);
     }
 
     public function toArray(object $notifiable): array

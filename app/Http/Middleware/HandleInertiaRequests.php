@@ -41,6 +41,9 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $request->user()->getRoleNames(),
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                 ] : null,
+                'unreadNotificationsCount' => fn () => $request->user() 
+                    ? cache()->remember('unread_notifications_count_' . $request->user()->id, 10, fn () => $request->user()->unreadNotifications()->count()) 
+                    : 0,
             ],
             'navigation' => fn () => $request->user()
                 ? $this->buildNavigation($request->user())

@@ -14,10 +14,12 @@ class TripReminderNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public $booking;
+    public $daysBefore;
 
-    public function __construct(Booking $booking)
+    public function __construct(Booking $booking, int $daysBefore = 0)
     {
         $this->booking = $booking;
+        $this->daysBefore = $daysBefore;
     }
 
     public function via(object $notifiable): array
@@ -28,10 +30,12 @@ class TripReminderNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Upcoming Trip Reminder'))
-            ->greeting('Hello!')
-            ->line('Your trip to '.($this->booking->tourPackage->name ?? 'Destination').' is coming up on '.$this->booking->travel_date.'!')
-            ->action('View Details', config('app.url').'/portal/bookings/'.$this->booking->id);
+            ->subject('Upcoming Trip Reminder: ' . $this->daysBefore . ' Days to Go!')
+            ->view('emails.trip.reminder', [
+                'booking' => $this->booking,
+                'daysBefore' => $this->daysBefore,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+            ]);
     }
 
     public function toArray(object $notifiable): array

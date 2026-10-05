@@ -28,10 +28,11 @@ class PaymentOverdueNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Payment Overdue'))
-            ->greeting('Hello!')
-            ->line('Your installment of '.number_format($this->installment->amount, 2).' was due on '.$this->installment->due_date.'.')
-            ->action('View Details', config('app.url').'/portal/bookings/'.$this->installment->booking_id.'/payments');
+            ->subject('Payment Overdue Notice')
+            ->view('emails.payment.overdue', [
+                'payment' => $this->installment,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+            ]);
     }
 
     public function toArray(object $notifiable): array

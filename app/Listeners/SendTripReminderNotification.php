@@ -15,6 +15,6 @@ class SendTripReminderNotification implements ShouldQueue
 
     public function handle(TripReminderDue $event): void
     {
-        Notification::send(NotificationRecipients::getCustomer($event->booking->customer), new TripReminderNotification($event->booking));
+        Notification::send(NotificationRecipients::getCustomer($event->booking->customer), new TripReminderNotification($event->booking, $event->daysBefore));
     }
 }

@@ -92,6 +92,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/recent', [NotificationController::class, 'recent'])->name('recent');
         Route::patch('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('markAsRead');
         Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
     // Administrative routes — accessible to all office roles
@@ -208,4 +209,7 @@ if (app()->environment('local')) {
     Route::get('/dev/styleguide', function () {
         return Inertia::render('Dev/Styleguide');
     });
+
+    Route::get('/admin/dev/emails', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'index']);
+    Route::get('/admin/dev/emails/{type}', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'preview']);
 }

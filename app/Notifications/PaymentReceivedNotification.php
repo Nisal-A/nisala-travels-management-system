@@ -28,10 +28,11 @@ class PaymentReceivedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(strip_tags('Payment Received'))
-            ->greeting('Hello!')
-            ->line('We have received your payment of '.number_format($this->payment->amount, 2).' '.$this->payment->currency.'.')
-            ->action('View Details', config('app.url').'/portal/payments/'.$this->payment->id);
+            ->subject('Payment Receipt: ' . number_format($this->payment->amount, 2) . ' ' . $this->payment->currency)
+            ->view('emails.payment.receipt', [
+                'payment' => $this->payment,
+                'customerName' => $notifiable->full_name ?? 'Valued Customer',
+            ]);
     }
 
     public function toArray(object $notifiable): array
