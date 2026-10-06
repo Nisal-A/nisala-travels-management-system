@@ -16,10 +16,11 @@ class InAppNotificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Create an active user
+        // Create an active user with staff role
         $this->user = User::factory()->create([
             'status' => 'active',
         ]);
+        $this->user->assignRole('staff');
     }
 
     private function createNotificationFor($notifiable)

@@ -217,6 +217,14 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
+                                render={
+                                    <Link href={route('settings.notifications.index')} className="w-full cursor-pointer">
+                                        Notification Settings
+                                    </Link>
+                                }
+                            />
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
                                 onClick={(e: React.MouseEvent) => {
                                     e.preventDefault();
                                     handleLogout(e as unknown as FormEvent);

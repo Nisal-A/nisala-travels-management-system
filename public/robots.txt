@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /portal
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: https://nisalatravels.lk/sitemap.xml

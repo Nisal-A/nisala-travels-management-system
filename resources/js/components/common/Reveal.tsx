@@ -6,9 +6,17 @@ interface RevealProps {
     width?: 'fit-content' | '100%';
     delay?: number;
     className?: string;
+    /** Distance in px to fade-up from. Default 20. */
+    distance?: number;
 }
 
-export function Reveal({ children, width = '100%', delay = 0, className = '' }: RevealProps) {
+export function Reveal({
+    children,
+    width = '100%',
+    delay = 0,
+    className = '',
+    distance = 20,
+}: RevealProps) {
     const shouldReduceMotion = useReducedMotion();
 
     if (shouldReduceMotion) {
@@ -20,19 +28,23 @@ export function Reveal({ children, width = '100%', delay = 0, className = '' }: 
     }
 
     return (
-        <div style={{ width, position: 'relative', overflow: 'hidden' }} className={className}>
-            <motion.div
-                variants={{
-                    hidden: { opacity: 0, y: 50 },
-                    visible: { opacity: 1, y: 0 },
-                }}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: delay }}
-            >
-                {children}
-            </motion.div>
-        </div>
+        <motion.div
+            style={{ width }}
+            className={className}
+            variants={{
+                hidden: { opacity: 0, y: distance },
+                visible: { opacity: 1, y: 0 },
+            }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{
+                duration: 0.6,
+                delay,
+                ease: [0.25, 0.1, 0.25, 1],
+            }}
+        >
+            {children}
+        </motion.div>
     );
 }

@@ -29,6 +29,7 @@ class NotificationInfrastructureTest extends TestCase
         $booking->setRelation('customer', $customer);
         $payment = new Payment(['id' => 1, 'amount' => 1000]);
         $payment->setRelation('booking', $booking);
+        $payment->setRelation('customer', $customer);
 
         // Dispatch Event directly
         $event = new PaymentReceived($payment);

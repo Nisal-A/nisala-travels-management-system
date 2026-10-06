@@ -129,6 +129,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', fn () => Inertia::render('Settings/Index'))->name('index');
+            Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
+            Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });
     });
 
@@ -204,6 +206,11 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::patch('/{id}/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('markAsRead');
             Route::post('/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
             Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
+            Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });
 
         Route::get('/payments', [App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');

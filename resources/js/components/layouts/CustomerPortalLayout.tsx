@@ -128,6 +128,13 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
                                     }
                                 />
                                 <DropdownMenuItem
+                                    render={
+                                        <Link href={route('portal.settings.notifications.index')} className="cursor-pointer w-full">
+                                            Notification Settings
+                                        </Link>
+                                    }
+                                />
+                                <DropdownMenuItem
                                     onClick={handleLogout}
                                     disabled={processing}
                                     className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
