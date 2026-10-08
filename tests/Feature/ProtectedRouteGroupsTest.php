@@ -65,7 +65,7 @@ dataset('route_access_matrix', [
     'dashboard' => ['/dashboard', ['super_admin', 'manager', 'staff', 'finance', 'customer'], []],
 
     // Notifications — super_admin, manager, staff, finance
-    'notifications' => ['/notifications', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
+    'notifications' => ['/admin/notifications', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
 
     // Admin — super_admin only
     'admin' => ['/admin', ['super_admin'], ['manager', 'staff', 'finance', 'customer']],
@@ -137,7 +137,7 @@ test('unauthorized roles receive 403 when accessing restricted routes', function
 
 dataset('all_protected_routes', [
     ['/dashboard'],
-    ['/notifications'],
+    ['/admin/notifications'],
     ['/admin'],
     ['/settings'],
     ['/employees'],
@@ -168,7 +168,7 @@ test('customer cannot access any office route', function () {
     $customer = createUser('customer');
 
     $officeRoutes = ['/admin', '/settings', '/employees', '/customers',
-        '/documents', '/tours', '/bookings', '/payments', '/reports', '/notifications'];
+        '/documents', '/tours', '/bookings', '/payments', '/reports', '/admin/notifications'];
 
     foreach ($officeRoutes as $url) {
         $response = $this->actingAs($customer)->get($url);
@@ -265,11 +265,11 @@ test('super admin receives all navigation groups', function () {
     expect($mainLabels)->toContain('Customers');
     expect($mainLabels)->toContain('Payments');
 
-    // Management should include Employees, Reports, Settings
+    // Management should include Reports, Settings (Employees moved to user dropdown)
     $mgmtLabels = array_column($navigation['management'], 'label');
-    expect($mgmtLabels)->toContain('Employees');
     expect($mgmtLabels)->toContain('Reports');
     expect($mgmtLabels)->toContain('Settings');
+    expect($mgmtLabels)->not->toContain('Employees');
 
     // Should NOT have portal
     expect($navigation)->not->toHaveKey('portal');

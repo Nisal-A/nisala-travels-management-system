@@ -14,9 +14,13 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { Globe, LogOut, Menu, PanelLeftClose, PanelLeft, Bell } from 'lucide-react';
+import { Globe, LogOut, Menu, PanelLeftClose, PanelLeft, Bell, UserCog, User as UserIcon, Moon, Sun, Laptop } from 'lucide-react';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -29,6 +33,7 @@ import type { NavigationItem } from '@/types';
 import { Fragment, type FormEvent, type ReactNode, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useTheme } from '@/components/theme-provider';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -50,6 +55,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
     const { post, processing } = useForm({});
     const [collapsed, setCollapsed] = useState(false);
     const currentUrl = usePage().url;
+    const { theme, setTheme } = useTheme();
 
     function handleLogout(e: FormEvent) {
         e.preventDefault();
@@ -216,13 +222,51 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
+
                             <DropdownMenuItem
                                 render={
-                                    <Link href={route('settings.notifications.index')} className="w-full cursor-pointer">
-                                        Notification Settings
-                                    </Link>
+                                    <a href="#" className="w-full cursor-pointer flex items-center">
+                                        <UserIcon className="mr-2 h-4 w-4" />
+                                        My Profile
+                                    </a>
                                 }
                             />
+
+                            {hasRole('super_admin', 'manager') && (
+                                <DropdownMenuItem
+                                    render={
+                                        <Link href={route('employees.index')} className="w-full cursor-pointer flex items-center">
+                                            <UserCog className="mr-2 h-4 w-4" />
+                                            Employees
+                                        </Link>
+                                    }
+                                />
+                            )}
+
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="flex items-center">
+                                    <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                                    <Moon className="absolute h-4 w-4 mr-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                                    <span>Appearance</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem onClick={() => setTheme('light')}>
+                                            <Sun className="mr-2 h-4 w-4" />
+                                            <span>Light</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTheme('dark')}>
+                                            <Moon className="mr-2 h-4 w-4" />
+                                            <span>Dark</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setTheme('system')}>
+                                            <Laptop className="mr-2 h-4 w-4" />
+                                            <span>System</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenuSub>
+
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={(e: React.MouseEvent) => {

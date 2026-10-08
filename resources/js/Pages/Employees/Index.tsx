@@ -218,8 +218,8 @@ export default function EmployeesIndex({ employees, roles, filters }: IndexProps
                                                     employee.status === 'active'
                                                         ? 'default'
                                                         : employee.status === 'suspended'
-                                                          ? 'destructive'
-                                                          : 'secondary'
+                                                            ? 'destructive'
+                                                            : 'secondary'
                                                 }
                                                 className={
                                                     employee.status === 'active'
@@ -307,9 +307,8 @@ export default function EmployeesIndex({ employees, roles, filters }: IndexProps
                                             return (
                                                 <span
                                                     key={index}
-                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-input opacity-50 ${
-                                                        isPrevious ? 'rounded-l-md' : ''
-                                                    } ${isNext ? 'rounded-r-md' : ''}`}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground bg-background border border-input opacity-50 ${isPrevious ? 'rounded-l-md' : ''
+                                                        } ${isNext ? 'rounded-r-md' : ''}`}
                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                 />
                                             );
@@ -319,11 +318,10 @@ export default function EmployeesIndex({ employees, roles, filters }: IndexProps
                                             <Link
                                                 key={index}
                                                 href={link.url}
-                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border border-input transition-colors ${
-                                                    link.active
+                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-medium border border-input transition-colors ${link.active
                                                         ? 'z-10 bg-primary text-primary-foreground border-primary focus:z-20'
                                                         : 'bg-background text-foreground hover:bg-muted focus:z-20'
-                                                } ${isPrevious ? 'rounded-l-md' : ''} ${isNext ? 'rounded-r-md' : ''}`}
+                                                    } ${isPrevious ? 'rounded-l-md' : ''} ${isNext ? 'rounded-r-md' : ''}`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
                                         );
