@@ -17,6 +17,9 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        "public-primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+        "public-secondary": "border-2 border-thailand text-thailand bg-transparent hover:bg-thailand hover:text-thailand-foreground",
+        "public-accent": "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm",
       },
       size: {
         default:
@@ -30,6 +33,9 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        "public-sm": "h-11 md:h-9 px-4 text-sm rounded-full min-h-[44px] md:min-h-0",
+        "public-md": "h-12 md:h-11 px-6 text-base rounded-full min-h-[44px]",
+        "public-lg": "h-14 md:h-12 px-8 text-lg rounded-full min-h-[44px]",
       },
     },
     defaultVariants: {
