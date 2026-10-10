@@ -18,7 +18,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
         "@type": "TravelAgency",
         "name": company.name,
         "url": "https://nisalatravels.lk",
-        "logo": "https://nisalatravels.lk/images/brand/logo.png",
+        "logo": "https://nisalatravels.lk/images/nisala-travels-logo.png",
         "contactPoint": {
             "@type": "ContactPoint",
             "telephone": company.phone,

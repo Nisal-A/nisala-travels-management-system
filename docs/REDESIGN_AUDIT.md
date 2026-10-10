@@ -1,93 +1,133 @@
-# REDESIGN AUDIT REPORT
+# Nisala Travels Redesign Audit
 
-## 1. Public-site pages, layouts, and components
-All public-facing frontend files live under `resources/js/`:
-- **Pages**:
-  - `resources/js/Pages/Public/Home.tsx`
-  - `resources/js/Pages/Public/Tours/Index.tsx`
-  - `resources/js/Pages/Public/Tours/Show.tsx`
-  - `resources/js/Pages/Public/Contact.tsx`
-- **Layouts**:
-  - `resources/js/components/layouts/PublicLayout.tsx`
-- **Components**:
-  - `resources/js/components/common/Reveal.tsx`
-  - `resources/js/components/common/WhatsAppButton.tsx` (noted as missing/referenced in layouts/pages)
+## 1. Public-site Pages, Layouts, and Components
+All frontend React components are located under `resources/js/`.
 
-## 2. Routes (web.php)
-**Public Routes**:
-- `GET /` (Home)
-- `GET /tours` (Tours Index)
-- `GET /tours/{slug}` (Tour Detail)
-- `GET /contact` (Contact)
-- `GET api/public/tours` (Fetch tours list)
-- `GET api/public/tours/featured` (Fetch featured tours)
-- `GET api/public/tours/{slug}` (Fetch tour details)
-- `GET api/public/destinations` (Fetch destinations)
-- `POST /inquiries` (Contact/Enquiry submission)
+**Pages (resources/js/Pages/Public/):**
+- `Home.tsx` (Homepage)
+- `Contact.tsx` (Inquiry form & contact details)
+- `Destinations/Index.tsx` (Destinations listing)
+- `Tours/Index.tsx` (Tour packages listing)
+- `Tours/Show.tsx` (Individual tour details)
+- `Tours/Interactive.tsx` (Interactive map/tours page)
 
-**Office System Routes (Must NOT be affected)**:
-- Authenticated generic: `/dashboard`, `/saved-filters`
-- Admin/Staff role-protected: `/admin/*`, `/customers/*`, `/documents/*`, `/destinations/*`, `/tours/*`, `/bookings/*`, `/payments/*`, `/employees/*`, `/reports/*`, `/settings/*`, `/calendar/*`
-- Customer Portal: `/portal/*` (Bookings, payments, documents, profile)
+**Layouts:**
+- `resources/js/components/layouts/PublicLayout.tsx` (Main layout wrapper for public pages containing Navbar and Footer)
 
-## 3. Controllers, Form Requests, Models, API Endpoints
-- **Controllers**: 
-  - `App\Http\Controllers\Api\PublicTourController` (handles all `/api/public/` routes)
-  - `App\Http\Controllers\InquiryController` (handles `POST /inquiries`)
-- **Form Requests**: 
-  - `StoreInquiryRequest` (validates inquiries, includes honeypot `website_field`, strips HTML from messages)
-- **Models**: 
-  - `TourPackage`, `Destination`, `Customer` (inquiries can create/update leads)
-- **API Endpoints**: 
-  - `/api/public/tours`
-  - `/api/public/tours/featured`
-  - `/api/public/tours/{slug}`
-  - `/api/public/destinations`
-  - `/inquiries`
+**Components (resources/js/components/public/):**
+- `Navbar.tsx` (Top navigation)
+- `Footer.tsx` (Bottom footer)
+- `AboutSection.tsx`
+- `WhyChooseUsSection.tsx`
+- `TestimonialsSection.tsx`
+- `DestinationCard.tsx`
+- `TourPackageCard.tsx`
+- `Button.tsx`, `ImageFrame.tsx`, `InlineMessage.tsx`, `SectionHeading.tsx`, `Spinner.tsx`
 
-## 4. Data Sources (Tours, Destinations, Company)
-- **Tour Packages & Destinations**: The API routes fetch this data from the database (`tour_packages` and `destinations` tables). However, there is an inconsistency: the `Home.tsx` uses a static TypeScript file (`resources/js/content/tours.ts`) for featured tours, bypassing the API.
-- **Real Field Names (`tour_packages`)**: `id`, `destination_id`, `package_name`, `description`, `duration_days`, `start_date`, `end_date`, `price`, `currency`, `capacity`, `available_seats`, `hotel_information`, `transportation_information`, `meals`, `included_items`, `excluded_items`, `terms`, `status`, `slug`, `short_description`, `hero_image`, `gallery`, `price_from`, `is_featured`, `is_active`.
-- **India/Thailand & Luxury Levels**: 
-  - There are specific tours explicitly for India and Thailand in the static `tours.ts` file, and destinations are seeded/managed in the database for them.
-  - **Luxury / Semi Luxury**: There is NO field for "Luxury" or "Semi Luxury" tiers in the database schema (`tour_packages` table). The data does not currently have structural support for tracking these levels natively outside of generic text fields or tags.
-- **Company Data**: Stored entirely in static files at `resources/js/content/site.ts`.
+---
+
+## 2. Routes (routes/web.php)
+The application handles both the public-facing website and the internal office system/customer portal.
+
+**Public Routes (Inertia + API):**
+- `GET /` -> `Public/Home`
+- `GET /our-destinations` -> `Public/Destinations/Index`
+- `GET /our-tours` -> `Public/Tours/Index`
+- `GET /interactive-tours` -> `Public/Tours/Interactive`
+- `GET /our-tours/{slug}` -> `Public/Tours/Show`
+- `GET /contact` -> `Public/Contact`
+- `GET /api/public/tours` -> `Api\PublicTourController@index`
+- `GET /api/public/tours/featured` -> `Api\PublicTourController@featured`
+- `GET /api/public/tours/{slug}` -> `Api\PublicTourController@show`
+- `GET /api/public/destinations` -> `Api\PublicTourController@destinations`
+- `POST /inquiries` -> `InquiryController@store`
+
+**Guest/Shared:**
+- `GET/POST /login` (Used by staff and customers)
+
+**Office System / Portal Routes (Protected by auth/role middleware):**
+- `/dashboard`
+- `/saved-filters`
+- `/admin/*` (Settings, Search, Global Notifications)
+- `/employees`, `/customers`, `/documents`, `/destinations`, `/tours`, `/bookings`, `/payments`, `/reports`, `/calendar`
+- `/portal/*` (Customer self-service portal)
+
+---
+
+## 3. Controllers, Form Requests, Models, and APIs (Public Site)
+- **Controllers:** 
+  - `App\Http\Controllers\Api\PublicTourController` (Serves read-only tour and destination data to the public frontend)
+  - `App\Http\Controllers\InquiryController` (Handles contact form submissions)
+- **Form Requests:** 
+  - `App\Http\Requests\StoreInquiryRequest` (Validates public inquiry fields like `name`, `email`, `phone`, `tour_package_id`, etc.)
+- **Models:** 
+  - `App\Models\TourPackage`
+  - `App\Models\Destination`
+  - `App\Models\Customer` (Inquiries create a Customer lead with status 'New')
+- **API Endpoints:** 
+  - `GET /api/public/tours`, `GET /api/public/destinations`, `POST /inquiries`
+
+---
+
+## 4. Data Sources & Content
+- **Tour Packages & Destinations:** Fetched dynamically from the database via `/api/public/...`.
+  - *TourPackage DB fields:* `id`, `destination_id`, `package_name`, `description`, `duration_days`, `price`, `status`, `slug`, `gallery`, `price_from`, `is_featured`, `is_active`, etc.
+  - *Destination DB fields:* `id`, `country`, `city_region`, `description`, `travel_information`, etc.
+  - *Note on Data:* Currently, if the DB is empty (which happens frequently in the dev environment without seeders), the frontend has hardcoded fallbacks to display "Thailand" and "India" for destinations. Similar hardcoded arrays exist in `Tours/Index.tsx` to showcase "Semi Luxury" and "Luxury" examples when no data is returned.
+- **Company Information (Contact/Socials):** Static data located in `resources/js/content/site.ts`. Contains email, phone, address, and social links.
+- **Testimonials:** Static dummy data located in `resources/js/content/testimonials.ts`.
+- **FAQs:** Static dummy data located in `resources/js/content/faqs.ts`.
+
+---
 
 ## 5. Existing Styling System
-- **Tailwind Setup**: Tailwind v4 is initialized via CSS (`@import 'tailwindcss';`) in `resources/css/app.css`.
-- **CSS Variables**: Extensive theming system using `oklch` definitions across both light and dark modes located in `resources/css/theme.css`. Includes brand palettes, layout borders, status colors, and chart variations.
-- **shadcn/ui**: Utilized (`@import 'shadcn/tailwind.css';`), providing standardized UI components.
-- **Fonts**: Uses `@fontsource-variable/inter` (sans) and `@fontsource-variable/fraunces` (serif) through custom CSS `@theme inline` definitions.
+- **Framework:** Tailwind CSS v4 (`@tailwindcss/vite` and `tailwindcss` v4.0.8).
+- **CSS Variables:** The system heavily utilizes CSS variables for tokens in `resources/css/app.css` and `resources/css/theme.css`. Colors (e.g., `--color-primary`), spacing, radiuses, and fonts are mapped in the `@theme inline` block.
+- **Fonts:** Uses `@fontsource-variable` for Inter (sans), Fraunces (serif), and Geist.
+- **Components/UI:** Shadcn/ui is installed (`shadcn/tailwind.css` is imported) along with Radix UI primitives and Lucide icons. Framer-motion and Tailwind-animate are used for animations.
+
+---
 
 ## 6. Existing SEO
-- **Titles/Meta Tags**: The `@inertiajs/react` `<Head>` component manages titles dynamically. `resources/views/app.blade.php` has a static `meta description` and no Open Graph tags.
-- **Structured Data**: `PublicLayout.tsx` includes JSON-LD for a `@type: TravelAgency` schema.
-- **Sitemap/Robots**: `public/sitemap.xml` and `public/robots.txt` exist in the repository.
+- **Setup:** Very basic. 
+- **Tags:** Uses Inertia's `<Head>` component in page files (e.g., `<Head title="Premium Travel & Tour Packages to Thailand & India | Nisala Travels" />` in `Home.tsx`). `app.blade.php` has a single hardcoded `<meta name="description">` fallback.
+- **Missing Elements:** There are currently no Open Graph (OG) tags, Twitter cards, structured JSON-LD data, or dynamic sitemap generation for public pages.
 
-## 7. Image Assets and Logo
-- **Assets Directory**: Images live physically in `public/images/hero`, `public/images/india`, and `public/images/thailand`. 
-- **Logo Status**: The logo is referenced in code via an absolute URL (`https://nisalatravels.lk/images/brand/logo.png`) but the file **DOES NOT EXIST** locally within the project (`public/images/brand/` directory is missing).
+---
 
-## 8. Testimonials and Contact Details
-- **Contact Details**: Found in `resources/js/content/site.ts`. Some data is placeholder (`// SAMPLE: replace with real`), including phone, email, WhatsApp, address, and social links.
-- **Testimonials**: Provided by `resources/js/content/testimonials.ts` using static placeholder data.
-- **Missing Elements**: Real contact and testimonial data needs to be populated. 
+## 7. Image Assets & Logo
+- **Assets Directory:** Public images are served from `public/images/`. Some images might also exist in `storage/app/public` if uploaded via the admin panel.
+- **Logo Location:** The Nisala Travels logo is located at `public/images/nisala-travels-logo.png`. (A hashed version `Logo-BvnQS7fV.js` was also found in the build assets).
 
-## 9. Visual Inconsistencies & Broken Elements
-- **Missing Local Logo**: Local development environments will render a broken image for the logo.
-- **Data Splitting**: `Home.tsx` loads featured tours from static `tours.ts`, while `Show.tsx` and `Index.tsx` query the database.
-- **Mock Itineraries**: `Show.tsx` statically generates days ("Day 1", "Day 2", etc.) because there is no relationship in the database for an itinerary schedule.
+---
 
-## 10. "Must Not Break" List
-- **API Contracts**: The `POST /inquiries` endpoint logic (rate limiting, honeypot, event firing).
-- **Global Layouts & Views**: `resources/views/app.blade.php` serves Inertia globally, ensure no core scripts/tags are corrupted.
-- **Middleware Rules**: Role definitions in `routes/web.php` for `role:super_admin,manager,staff,finance` and `role:customer`.
-- **Office System Layouts**: `AppLayout.tsx` and `CustomerPortalLayout.tsx`. 
-- **Cache Invalidations**: The `TourPackage` model `booted()` method flushes cache upon saves/deletions.
+## 8. Existing Contact Details & Testimonials
+- **Contact Details:** Defined in `content/site.ts`. They include phone (`+94 77 123 4567`), email (`hello@nisalatravels.com`), WhatsApp (`+94771234567`), and address (`123 Travel Road, Colombo 03`). They are currently placeholders/samples ("replace with real").
+- **Testimonials:** Exists in `content/testimonials.ts` (e.g., "Sarah & James - Honeymoon in Maldives", "David Chen - Business Retreat"). Currently marked as mock data for the redesign.
+
+---
+
+## 9. Visual Inconsistencies or Broken Elements
+- Empty DB states cause the UI to rely on hardcoded fallback arrays (e.g., Destinations and Tours indexing) instead of standard empty states.
+- Missing actual image columns in the `destinations` table (frontend forces an `undefined` or hardcoded image path fallback).
+- "Sample" tags scattered across the contact data.
+- SEO `<Head>` tags are incomplete and inconsistent across subpages.
+
+---
+
+## 10. Must Not Break List
+The following files and systems are shared with the internal management system and must remain intact:
+1. **`routes/web.php` structure**: Do not alter or remove the `auth`, `role`, or `active` protected route groups.
+2. **`resources/views/app.blade.php`**: The root HTML template.
+3. **Database schemas and models**: `TourPackage`, `Destination`, `Customer`. Changing these breaks the admin CRUD panels.
+4. **Backend Controllers**: `InquiryController`, `CustomerController` etc.
+5. **Tailwind Config / CSS Variables**: Modifying core tokens (like `--sidebar-*`, `--color-primary`, `--radius`) might unexpectedly change the Admin Dashboard UI.
+6. **Authentication Flow**: The `/login` page and session logic.
+
+---
 
 ## Open Questions for the User
-1. Since the logo file is missing locally, would you like me to create a temporary text-based placeholder, or do you have the `logo.png` file available to upload?
-2. `Home.tsx` relies on static data (`tours.ts`) instead of the database API used by the rest of the application. Should this be refactored to fetch featured tours from the API?
-3. Currently, there is no database column representing "Semi Luxury" vs "Luxury" tiers. Should we introduce this field as part of the redesign, or rely on tags?
-4. Itineraries in `Show.tsx` are dynamically generated dummy data since no relational table exists for daily breakdowns. Are we adding this table, or keeping the mock behavior for now?
-5. You requested placeholder usage where real company data is missing (e.g. phone/address in `site.ts`). Should I populate those explicitly as `[TODO: add company address]`, or leave them as the current `SAMPLE` data?
+1. Do we need to build a seeder to populate the `destinations` and `tour_packages` tables for local development, or should we keep the hardcoded frontend fallbacks?
+2. Should we implement full SEO (Open Graph, structured data) for the public pages as part of this redesign?
+3. Since the `Destination` model lacks an `image` column, should we add one via a migration, or just rely on a default placeholder image in the UI?
+4. Can you provide the real contact details and testimonials to replace the placeholders in `site.ts` and `testimonials.ts`?

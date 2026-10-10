@@ -25,15 +25,24 @@ Route::get('/', function () {
     return Inertia::render('Public/Home');
 })->name('home');
 
-Route::get('/tours', function () {
-    return Inertia::render('Public/Tours/Index');
-})->name('tours.index');
+Route::get('/our-destinations', function () {
+    return Inertia::render('Public/Destinations/Index');
+})->name('public.destinations.index');
 
-Route::get('/tours/{slug}', function ($slug) {
+Route::get('/our-tours', function () {
+    return Inertia::render('Public/Tours/Index');
+})->name('public.tours.index');
+
+Route::get('/interactive-tours', function () {
+    return Inertia::render('Public/Tours/Interactive');
+})->name('tours.interactive');
+
+Route::get('/our-tours/{slug}', function ($slug) {
     return Inertia::render('Public/Tours/Show', ['slug' => $slug]);
-})->name('tours.show');
+})->name('public.tours.show');
 
 Route::get('/contact', function () {
+    session()->put('form_start_time', time());
     return Inertia::render('Public/Contact');
 })->name('contact');
 

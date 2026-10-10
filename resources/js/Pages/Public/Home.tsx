@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Head, Link } from '@inertiajs/react';
+import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
@@ -16,6 +17,10 @@ import { tours, type TourPackage } from '@/content/tours';
 import { testimonials } from '@/content/testimonials';
 import { faqs } from '@/content/faqs';
 import { site } from '@/content/site';
+import { DestinationCard } from '@/components/public/DestinationCard';
+import { AboutSection } from '@/components/public/AboutSection';
+import { WhyChooseUsSection } from '@/components/public/WhyChooseUsSection';
+import { TestimonialsSection } from '@/components/public/TestimonialsSection';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -58,6 +63,43 @@ export default function Home() {
         emblaApi.on('reInit', onSelect);
     }, [emblaApi, onSelect]);
 
+    // Fetch destinations
+    const [destinations, setDestinations] = useState<any[]>([]);
+    const [loadingDestinations, setLoadingDestinations] = useState(true);
+
+    useEffect(() => {
+        axios.get('/api/public/destinations').then(res => {
+            if (res.data.length > 0) {
+                const uniqueCountries = Array.from(new Set(res.data.map((d: any) => d.country))).filter(Boolean) as string[];
+                const mapped = uniqueCountries.map(country => {
+                    const dest = res.data.find((d: any) => d.country === country);
+                    return {
+                        name: country,
+                        description: dest.description || undefined,
+                        image: undefined, // No image column in DB schema
+                        href: `/our-tours?destination=${encodeURIComponent(country)}`
+                    };
+                });
+                setDestinations(mapped);
+            } else {
+                setDestinations([
+                    {
+                        name: 'Thailand',
+                        description: 'Escape in Style',
+                        image: '/images/thailand/phuket.jpg',
+                        href: '/our-tours?destination=Thailand'
+                    },
+                    {
+                        name: 'India',
+                        description: 'Journeys Made Comfortable',
+                        image: '/images/india/taj-mahal.jpg',
+                        href: '/our-tours?destination=India'
+                    }
+                ]);
+            }
+        }).catch(console.error).finally(() => setLoadingDestinations(false));
+    }, []);
+
     return (
         <PublicLayout>
             <Head title="Premium Travel & Tour Packages to Thailand & India | Nisala Travels" />
@@ -73,9 +115,8 @@ export default function Home() {
                         alt="Beautiful tropical landscape at sunset"
                         fetchPriority="high"
                         loading="eager"
-                        className={`w-full h-full object-cover ${
-                            !shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
-                        }`}
+                        className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
+                            }`}
                     />
                 </div>
 
@@ -92,21 +133,21 @@ export default function Home() {
                     >
                         {/* Gold Accent Line */}
                         <div className="w-16 h-1.5 bg-accent mb-8 rounded-full" />
-                        
+
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
                             Discover New Places.<br />
                             Create New Stories.
                         </h1>
-                        
+
                         <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
-                            Experience meticulously crafted journeys tailored to your preferences. 
-                            From relaxing getaways to cultural explorations, we handle every detail 
+                            Experience meticulously crafted journeys tailored to your preferences.
+                            From relaxing getaways to cultural explorations, we handle every detail
                             so you can immerse yourself in the moment.
                         </p>
-                        
+
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Button
-                                render={<Link href="/tours" />}
+                                render={<Link href="/our-tours" />}
                                 size="public-lg"
                                 variant="public-accent"
                                 className="w-full sm:w-auto shadow-lg shadow-accent/20"
@@ -126,59 +167,37 @@ export default function Home() {
             </section>
 
             {/* ================================================================
-                2. TWO-PATH DESTINATION SPLIT
+                2. DESTINATIONS GRID
             ================================================================ */}
-            <section className="py-0">
-                <div className="grid grid-cols-1 md:grid-cols-2">
-                    {/* Thailand Panel */}
-                    <Link
-                        href="/tours?destination=Thailand"
-                        className="group relative h-[420px] md:h-[520px] overflow-hidden cursor-pointer"
-                    >
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                            style={{ backgroundImage: `url('/images/thailand/phuket.jpg')` }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0b1a3d]/80 via-[#0b1a3d]/30 to-transparent" />
-                        {/* Teal accent line */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-thailand" />
-                        <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
-                            <span className="text-thailand text-xs font-bold uppercase tracking-[0.2em] mb-2">For adults &amp; couples</span>
-                            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-3">Thailand</h2>
-                            <p className="text-lg md:text-xl text-white/80 font-serif italic mb-4">Escape in Style</p>
-                            <p className="text-sm text-white/60 max-w-md mb-6 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                Phuket &bull; Krabi &bull; Phi Phi &bull; Bangkok &bull; Koh Samui &bull; Chiang Mai — island hopping, spa retreats, rooftop dining, and vibrant culture.
-                            </p>
-                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:text-thailand transition-colors">
-                                Explore Tours <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                            </span>
+            <section className="py-24 md:py-32 bg-white">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <Reveal>
+                        <div className="text-center mb-16">
+                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-2">Explore the world</p>
+                            <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary">Popular Destinations</h2>
                         </div>
-                    </Link>
+                    </Reveal>
 
-                    {/* India Panel */}
-                    <Link
-                        href="/tours?destination=India"
-                        className="group relative h-[420px] md:h-[520px] overflow-hidden cursor-pointer"
-                    >
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                            style={{ backgroundImage: `url('/images/india/taj-mahal.jpg')` }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0b1a3d]/80 via-[#0b1a3d]/30 to-transparent" />
-                        {/* Saffron accent line */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-india" />
-                        <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
-                            <span className="text-india text-xs font-bold uppercase tracking-[0.2em] mb-2">For seniors &amp; families</span>
-                            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-3">India</h2>
-                            <p className="text-lg md:text-xl text-white/80 font-serif italic mb-4">Journeys Made Comfortable</p>
-                            <p className="text-sm text-white/60 max-w-md mb-6 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                Buddhist Circuit &bull; Golden Triangle &bull; Kerala &bull; Varanasi &bull; South India Temples — slow pace, assisted travel, vegetarian meals, Sinhala-speaking guides.
-                            </p>
-                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:text-india transition-colors">
-                                Explore Tours <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                            </span>
+                    {loadingDestinations ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {[1, 2].map(i => (
+                                <div key={i} className="animate-pulse bg-neutral-200 aspect-[4/5] sm:aspect-square md:aspect-[3/4] rounded-2xl" />
+                            ))}
                         </div>
-                    </Link>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-center">
+                            {destinations.map((dest, idx) => (
+                                <Reveal key={dest.name} delay={idx * 100}>
+                                    <DestinationCard
+                                        name={dest.name}
+                                        description={dest.description}
+                                        image={dest.image}
+                                        href={dest.href}
+                                    />
+                                </Reveal>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -193,7 +212,7 @@ export default function Home() {
                                 <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-2">Handpicked packages</p>
                                 <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Featured Tours</h2>
                             </div>
-                            <Link href="/tours" className="hidden sm:flex items-center text-sm text-primary font-semibold hover:text-accent gap-1.5 transition-colors">
+                            <Link href="/our-tours" className="hidden sm:flex items-center text-sm text-primary font-semibold hover:text-accent gap-1.5 transition-colors">
                                 View all tours <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -205,7 +224,7 @@ export default function Home() {
                                 <div className="flex gap-6" style={{ touchAction: 'pan-y' }}>
                                     {featuredTours.map((tour) => (
                                         <div key={tour.slug} className="flex-[0_0_85%] sm:flex-[0_0_48%] lg:flex-[0_0_31.5%] min-w-0 group">
-                                            <Link href={`/tours/${tour.slug}`} className="block h-full">
+                                            <Link href={`/our-tours/${tour.slug}`} className="block h-full">
                                                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-neutral-200/60 group-hover:-translate-y-1">
                                                     {/* Image */}
                                                     <div className="h-56 overflow-hidden bg-neutral-100 relative">
@@ -216,11 +235,10 @@ export default function Home() {
                                                             aria-label={tour.title}
                                                         />
                                                         {/* Destination badge */}
-                                                        <span className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                                                            tour.destination === 'Thailand'
-                                                                ? 'bg-thailand/90 text-white'
-                                                                : 'bg-india/90 text-white'
-                                                        }`}>
+                                                        <span className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${tour.destination === 'Thailand'
+                                                            ? 'bg-thailand/90 text-white'
+                                                            : 'bg-india/90 text-white'
+                                                            }`}>
                                                             {tour.destination}
                                                         </span>
                                                         {/* Audience tag */}
@@ -284,49 +302,20 @@ export default function Home() {
 
                     {/* Mobile "View all" link */}
                     <div className="sm:hidden mt-8 text-center">
-                        <Link href="/tours" className="text-sm text-primary font-semibold">View all tours &rarr;</Link>
+                        <Link href="/our-tours" className="text-sm text-primary font-semibold">View all tours &rarr;</Link>
                     </div>
                 </div>
             </section>
 
             {/* ================================================================
-                4. WHY NISALA — Split: Thailand Benefits / India Benefits
+                3.5 ABOUT US
             ================================================================ */}
-            <section className="py-20 md:py-28 bg-primary text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <Reveal>
-                        <div className="text-center mb-16">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-3">Why travel with us</p>
-                            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-4">Crafted for Every Traveller</h2>
-                            <p className="text-base text-white/60 max-w-2xl mx-auto">
-                                Whether you seek vibrant adventure or a comfortable pilgrimage, our local expertise ensures a flawless experience.
-                            </p>
-                        </div>
-                    </Reveal>
+            <AboutSection />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[
-                            { icon: Compass, title: 'Sri Lankan Expertise', desc: 'A team that understands your culture, language, and travel preferences — from Colombo to the world.' },
-                            { icon: MapPin, title: 'Tailored Itineraries', desc: 'Every trip is customised to fit your style, pace, and interests. No cookie-cutter packages.' },
-                            { icon: Shield, title: 'Transparent Pricing', desc: 'No hidden charges. You see every cost upfront before you confirm your trip.' },
-                            { icon: Stethoscope, title: 'Senior-Friendly Care', desc: 'Wheelchair access, slow pace options, medical support on standby, and an accompanying tour escort.' },
-                            { icon: UtensilsCrossed, title: 'Home Comforts', desc: 'Sri Lankan and vegetarian meal options on all India tours. Familiar flavours, far from home.' },
-                            { icon: Phone, title: '24/7 Support', desc: 'Round-the-clock assistance from departure to return — one call away, always.' },
-                        ].map((feature, i) => (
-                            <Reveal key={feature.title} delay={i * 0.08}>
-                                <div className="bg-white/5 border border-white/10 p-7 rounded-2xl hover:bg-white/10 transition-colors h-full">
-                                    <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center mb-5">
-                                        <feature.icon className="w-5 h-5 text-accent" />
-                                    </div>
-                                    <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-                                    <p className="text-sm text-white/60 leading-relaxed">{feature.desc}</p>
-                                </div>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            {/* ================================================================
+                4. WHY CHOOSE US
+            ================================================================ */}
+            <WhyChooseUsSection />
 
             {/* ================================================================
                 5. SENIOR CARE PROMISE (India)
@@ -367,7 +356,7 @@ export default function Home() {
                                 </ul>
                                 <div className="mt-8">
                                     <Button
-                                        render={<Link href="/tours?destination=India" />}
+                                        render={<Link href="/our-tours?destination=India" />}
                                         className="rounded-full px-6 bg-india text-white hover:bg-india/90 h-11"
                                     >
                                         Browse India Tours
@@ -478,41 +467,7 @@ export default function Home() {
             {/* ================================================================
                 8. TESTIMONIALS
             ================================================================ */}
-            <section className="py-20 md:py-28 bg-white overflow-hidden">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <Reveal>
-                        <div className="text-center mb-14">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-3">Traveller stories</p>
-                            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">What Our Travellers Say</h2>
-                        </div>
-                    </Reveal>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                        {/* SAMPLE: replace with real testimonials */}
-                        {testimonials.map((review, i) => (
-                            <Reveal key={review.id} delay={i * 0.08}>
-                                <div className="bg-background p-6 rounded-2xl border border-neutral-200/60 h-full flex flex-col">
-                                    <div className="flex text-accent mb-4">
-                                        {Array.from({ length: review.rating }).map((_, si) => (
-                                            <Star key={si} className="w-4 h-4 fill-current" />
-                                        ))}
-                                    </div>
-                                    <p className="text-sm text-foreground leading-relaxed mb-6 flex-grow">&ldquo;{review.text}&rdquo;</p>
-                                    <div className="flex items-center gap-3 pt-4 border-t border-neutral-100">
-                                        <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm">
-                                            {review.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-sm text-foreground">{review.name}</h4>
-                                            <span className="text-[11px] text-muted-foreground">{review.trip}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <TestimonialsSection />
 
             {/* ================================================================
                 9. FAQ

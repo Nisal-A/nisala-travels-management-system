@@ -69,8 +69,8 @@ export function Navbar() {
 
     const navLinks = [
         { name: 'Home', href: '/' },
-        { name: 'Destinations', href: '/destinations' },
-        { name: 'Tour Packages', href: '/tours' },
+        { name: 'Destinations', href: '/our-destinations' },
+        { name: 'Tour Packages', href: '/interactive-tours' },
         { name: 'About Us', href: '/about' },
         { name: 'Contact Us', href: '/contact' },
     ];
@@ -81,7 +81,7 @@ export function Navbar() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex items-center justify-between">
                     <Link href="/" className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md" aria-label="Nisala Travels Home">
                         <img
-                            src="https://nisalatravels.lk/images/brand/logo.png"
+                            src="/images/nisala-travels-logo.png"
                             alt={`${company.name} Logo`}
                             className="h-10 w-auto object-contain"
                         />
@@ -141,7 +141,7 @@ export function Navbar() {
                     >
                         <div className="flex items-center justify-between mb-8">
                             <img
-                                src="https://nisalatravels.lk/images/brand/logo.png"
+                                src="/images/nisala-travels-logo.png"
                                 alt={`${company.name} Logo`}
                                 className="h-8 w-auto object-contain"
                             />

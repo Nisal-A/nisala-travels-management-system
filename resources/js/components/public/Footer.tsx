@@ -7,7 +7,7 @@ export function Footer() {
     const hasRealAddress = company.address && !company.address.includes('SAMPLE');
     const hasRealPhone = company.phone && !company.phone.includes('SAMPLE');
     const hasRealEmail = company.email && !company.email.includes('SAMPLE');
-    
+
     const hasRealFacebook = company.social?.facebook && !company.social.facebook.includes('SAMPLE');
     const hasRealInstagram = company.social?.instagram && !company.social.instagram.includes('SAMPLE');
     const hasRealTwitter = company.social?.twitter && !company.social.twitter.includes('SAMPLE');
@@ -16,14 +16,14 @@ export function Footer() {
         <footer className="bg-primary text-white pt-16 pb-8">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-                    
+
                     {/* Brand Section */}
                     <div className="space-y-6">
                         <div className="bg-white inline-block p-3 rounded-xl">
-                            <img 
-                                src="https://nisalatravels.lk/images/brand/logo.png" 
-                                alt={`${company.name} Logo`} 
-                                className="h-10 w-auto object-contain" 
+                            <img
+                                src="/images/nisala-travels-logo.png"
+                                alt={`${company.name} Logo`}
+                                className="h-10 w-auto object-contain"
                             />
                         </div>
                         <p className="text-accent font-bold tracking-[0.2em] text-xs uppercase">
@@ -32,7 +32,7 @@ export function Footer() {
                         <p className="text-white/70 text-sm leading-relaxed max-w-sm">
                             {company.pitch}
                         </p>
-                        
+
                         {/* Social Links if exist */}
                         {(hasRealFacebook || hasRealInstagram || hasRealTwitter) && (
                             <div className="flex items-center gap-4">
