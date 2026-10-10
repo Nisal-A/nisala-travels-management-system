@@ -174,7 +174,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <div className="text-center mb-16">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-2">Explore the world</p>
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Explore the world</span>
                             <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary">Popular Destinations</h2>
                         </div>
                     </Reveal>
@@ -210,7 +210,7 @@ export default function Home() {
                     <Reveal>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
                             <div>
-                                <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-2">Handpicked packages</p>
+                                <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Handpicked packages</span>
                                 <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Featured Tours</h2>
                             </div>
                             <Link href="/our-tours" className="hidden sm:flex items-center text-sm text-primary font-semibold hover:text-accent gap-1.5 transition-colors">
@@ -439,7 +439,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <div className="text-center mb-16">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-3">Simple process</p>
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Simple process</span>
                             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Three Steps to Your Journey</h2>
                         </div>
                     </Reveal>
@@ -477,7 +477,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
                     <Reveal>
                         <div className="text-center mb-12">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-3">Got questions?</p>
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Got questions?</span>
                             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Frequently Asked Questions</h2>
                         </div>
                     </Reveal>

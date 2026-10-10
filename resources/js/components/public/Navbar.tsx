@@ -93,7 +93,7 @@ export function Navbar() {
                             <Link
                                 key={link.name}
                                 href={link.href}
-                                className={`relative text-sm font-semibold transition-colors py-2 text-primary hover:text-accent group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm`}
+                                className={`relative text-sm font-semibold transition-colors py-2 text-primary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm`}
                             >
                                 {link.name}
                                 <span className={`absolute bottom-0 left-0 h-[2px] bg-accent transition-all duration-300 ${url === link.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
@@ -158,7 +158,7 @@ export function Navbar() {
                                 <Link
                                     key={link.name}
                                     href={link.href}
-                                    className={`text-lg font-bold py-4 border-b border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm ${url === link.href ? 'text-accent' : 'text-primary'
+                                    className={`text-lg font-bold py-4 border-b border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm ${url === link.href ? 'text-primary border-l-4 border-accent pl-4' : 'text-primary'
                                         }`}
                                 >
                                     {link.name}

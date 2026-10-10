@@ -27,9 +27,9 @@ export function SectionHeading({
       {...props}
     >
       {eyebrow && (
-        <p className="text-sm font-bold tracking-[0.15em] uppercase text-accent mb-3">
+        <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">
           {eyebrow}
-        </p>
+        </span>
       )}
       <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight text-primary mb-4">
         {title}

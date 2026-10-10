@@ -27,7 +27,7 @@ export function AboutSection() {
 
                     <Reveal direction="left" delay={0.2}>
                         <div className="max-w-xl">
-                            <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-4">About Us</p>
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">About Us</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-primary mb-6 leading-tight">
                                 {site.name}
                             </h2>

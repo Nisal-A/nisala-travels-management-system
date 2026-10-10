@@ -40,7 +40,7 @@ export function WhyChooseUsSection() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <Reveal>
-                        <p className="text-sm font-medium tracking-[0.15em] uppercase text-accent mb-2">The Nisala Difference</p>
+                        <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">The Nisala Difference</span>
                         <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">
                             Why Choose Us
                         </h2>
