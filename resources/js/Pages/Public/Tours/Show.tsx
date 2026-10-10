@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useRef } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import {  Link } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Reveal } from '@/components/common/Reveal';
@@ -113,7 +114,7 @@ export default function TourDetail({ slug }: { slug: string }) {
 
     return (
         <PublicLayout>
-            <Head title={`${tour.package_name} | Nisala Travels`} />
+            <SEOHead title={tour.package_name} description={tour.short_description || tour.description.substring(0, 150)} image={tour.hero_image} url={`/our-tours/${tour.slug}`} />
             
             {/* Breadcrumbs */}
             <div className="bg-neutral-50 pt-24 pb-4 px-4 border-b border-neutral-200">

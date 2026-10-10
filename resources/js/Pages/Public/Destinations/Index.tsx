@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
+
 import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
@@ -44,7 +45,7 @@ export default function DestinationsIndex() {
 
     return (
         <PublicLayout>
-            <Head title="Destinations | Nisala Travels" />
+            <SEOHead title="Destinations" description="Explore our curated destinations across Asia including Thailand and India. Discover where your next journey will take you." url="/our-destinations" />
             
             <div className="pt-32 pb-16 bg-neutral-900 text-center px-4">
                 <div className="container mx-auto max-w-4xl">

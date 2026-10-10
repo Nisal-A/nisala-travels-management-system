@@ -1,10 +1,11 @@
-import { Head } from '@inertiajs/react';
+import { SEOHead } from '@/components/public/SEOHead';
+
 import PublicLayout from '@/components/layouts/PublicLayout';
 
 export default function InteractiveToursShowcase() {
     return (
         <PublicLayout>
-            <Head title="Interactive Tours Showcase | Nisala Travels" />
+            <SEOHead title="Interactive Tours Showcase" description="Explore our tour packages on an interactive map. Find the perfect location for your next luxury travel." url="/interactive-tours" />
             <div className="min-h-screen bg-neutral-900 pt-32 pb-16 px-4 flex flex-col items-center justify-center text-center">
                 <div className="container mx-auto">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white">Interactive Tours Showcase</h1>

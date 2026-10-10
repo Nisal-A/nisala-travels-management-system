@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useCallback } from 'react';
-import { Head, Link, usePage, router } from '@inertiajs/react';
+import {  Link, usePage, router } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -141,7 +142,7 @@ export default function ToursIndex() {
 
     return (
         <PublicLayout>
-            <Head title="Tour Packages | Nisala Travels" />
+            <SEOHead title="Tour Packages" description="Browse and filter our premium tour packages to find your perfect getaway. Explore our hand-picked selections." url="/our-tours" />
             
             <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />

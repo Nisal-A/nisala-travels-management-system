@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import {  Link, usePage } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -175,7 +176,7 @@ export default function Contact() {
     if (isSuccess) {
         return (
             <PublicLayout>
-                <Head title="Thank You | Nisala Travels" />
+                <SEOHead title="Thank You" description="Thank you for inquiring with Nisala Travels. We will get back to you soon." url="/contact" />
                 <div className="min-h-screen pt-32 pb-24 px-4 flex items-center justify-center bg-neutral-50">
                     <div className="max-w-2xl w-full bg-white p-8 md:p-12 rounded-3xl shadow-xl text-center border border-neutral-100">
                         <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -206,7 +207,7 @@ export default function Contact() {
 
     return (
         <PublicLayout>
-            <Head title="Contact Us | Nisala Travels" />
+            <SEOHead title="Contact Us" description="Get in touch with Nisala Travels to plan your next dream vacation to Thailand, India or beyond." url="/contact" />
 
             <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />

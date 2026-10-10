@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import {  Link } from '@inertiajs/react';
 import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
@@ -102,7 +103,7 @@ export default function Home() {
 
     return (
         <PublicLayout>
-            <Head title="Premium Travel & Tour Packages to Thailand & India | Nisala Travels" />
+            <SEOHead title="Premium Travel & Tour Packages to Thailand & India" description="Creating unforgettable travel experiences tailored to your dreams. We handle the details, you enjoy the journey." url="/" image="/images/hero/hero-poster.jpg" />
 
             {/* ================================================================
                 1. HERO
