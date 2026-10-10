@@ -6,9 +6,9 @@
     --popover: 1 0 0;
     --popover-foreground: 0.25 0.02 260;
 
-    /* Brand Palette - Primary: Deep Ocean Navy */
-    --primary: 0.35 0.07 250;
-    --primary-foreground: 0.98 0 0;
+    /* Brand Palette - Primary: Gold */
+    --primary: #C9A227;
+    --primary-foreground: #111827;
 
     /* Brand Palette - Accent: Warm Gold / Amber */
     --accent: 0.82 0.15 70;
@@ -27,7 +27,7 @@
     --secondary-foreground: 0.25 0.02 260;
 
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: oklch(0.45 0 0);
 
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.98 0 0);
@@ -97,8 +97,8 @@
     --popover-foreground: 0.97 0.01 90;
 
     /* Brand Palette - Primary */
-    --primary: 0.82 0.15 70; /* Invert primary/accent for dark mode optionally, or keep primary */
-    --primary-foreground: 0.2 0 0;
+    --primary: #C9A227;
+    --primary-foreground: #111827;
 
     /* Brand Palette - Accent */
     --accent: 0.35 0.07 250;
@@ -115,7 +115,7 @@
     --secondary: 0.25 0.02 260;
     --secondary-foreground: 0.97 0.01 90;
     --muted: 0.25 0.02 260;
-    --muted-foreground: 0.7 0.02 260;
+    --muted-foreground: 0.75 0.02 260;
     --destructive: oklch(0.704 0.191 22.216);
     --destructive-foreground: oklch(0.145 0 0);
     --border: oklch(1 0 0 / 10%);

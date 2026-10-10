@@ -12,6 +12,7 @@ import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { PageHeader } from '@/components/common/page-header';
 import { DatePicker } from '@/components/common/date-picker';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/Components/brand/Logo';
 export default function Styleguide() {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>(new Date());
@@ -164,6 +165,50 @@ export default function Styleguide() {
                     <h2 className="border-b pb-2 text-2xl font-semibold">Core Components</h2>
 
                     <div className="space-y-12">
+                        {/* Logo */}
+                        <div>
+                            <h3 className="mb-4 text-lg font-medium">Brand Logo</h3>
+                            <p className="mb-4 text-sm text-muted-foreground">
+                                Brand identity with variants, sizes, and automatic theme support.
+                            </p>
+                            
+                            <div className="space-y-8">
+                                <div>
+                                    <h4 className="mb-3 text-sm font-semibold">Variants (md size)</h4>
+                                    <div className="flex flex-wrap items-center gap-8 rounded-lg border bg-card p-6">
+                                        <Logo variant="full" />
+                                        <Logo variant="mark" />
+                                        <Logo variant="wordmark" />
+                                        <div className="bg-primary p-2 rounded flex items-center">
+                                           <Logo variant="mono" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 className="mb-3 text-sm font-semibold">Sizes (full variant)</h4>
+                                    <div className="flex flex-col items-start gap-6 rounded-lg border bg-card p-6">
+                                        <div className="flex items-center gap-4"><span className="w-8 text-xs text-muted-foreground">sm</span> <Logo size="sm" /></div>
+                                        <div className="flex items-center gap-4"><span className="w-8 text-xs text-muted-foreground">md</span> <Logo size="md" /></div>
+                                        <div className="flex items-center gap-4"><span className="w-8 text-xs text-muted-foreground">lg</span> <Logo size="lg" /></div>
+                                        <div className="flex items-center gap-4"><span className="w-8 text-xs text-muted-foreground">xl</span> <Logo size="xl" /></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="mb-3 text-sm font-semibold">Themes (forced)</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="rounded-lg border bg-white p-6 flex justify-center">
+                                            <Logo theme="light" />
+                                        </div>
+                                        <div className="rounded-lg border bg-neutral-950 p-6 flex justify-center">
+                                            <Logo theme="dark" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* StatusBadge */}
                         <div>
                             <h3 className="mb-4 text-lg font-medium">StatusBadge</h3>

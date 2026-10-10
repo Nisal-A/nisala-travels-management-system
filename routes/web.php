@@ -25,6 +25,10 @@ Route::get('/', function () {
     return Inertia::render('Public/Home');
 })->name('home');
 
+Route::get('/reset-password/{token}', function ($token) {
+    return Inertia::render('Auth/ResetPassword', ['token' => $token]);
+})->name('password.reset');
+
 Route::get('/tours', function () {
     return Inertia::render('Public/Tours/Index');
 })->name('tours.index');
@@ -106,6 +110,26 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Calendar
         Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
         Route::get('/admin/calendar/events', [CalendarController::class, 'events'])->name('calendar.events');
+
+        // Settings
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SettingsController::class, 'index'])->name('index');
+            Route::post('/general', [\App\Http\Controllers\SettingsController::class, 'updateGeneral'])->name('general.update');
+            Route::put('/appearance', [\App\Http\Controllers\SettingsController::class, 'updateAppearance'])->name('appearance.update');
+            Route::put('/localization', [\App\Http\Controllers\SettingsController::class, 'updateLocalization'])->name('localization.update');
+            Route::put('/notifications', [\App\Http\Controllers\SettingsController::class, 'updateNotifications'])->name('notifications.update');
+            Route::put('/security', [\App\Http\Controllers\SettingsController::class, 'updateSecurity'])->name('security.update');
+            Route::delete('/security/sessions', [\App\Http\Controllers\SettingsController::class, 'destroySessions'])->name('security.sessions.destroy');
+        });
+        
+        // My Profile
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
+            Route::patch('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+            Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('avatar.update');
+            Route::delete('/avatar', [\App\Http\Controllers\ProfileController::class, 'destroyAvatar'])->name('avatar.destroy');
+            Route::put('/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password.update');
+        });
     });
 
     // ------------------------------------------------------------------
@@ -127,18 +151,17 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Admin/Dashboard'))->name('dashboard');
         });
 
-        Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Settings/Index'))->name('index');
-            Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
-            Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
-        });
+
     });
 
     // ==============================
     // Super Admin + Manager
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
-        Route::resource('employees', EmployeeController::class);
+        Route::resource('employees', EmployeeController::class)->except(['create', 'edit']);
+        Route::patch('employees/{employee}/activate', [EmployeeController::class, 'activate'])->name('employees.activate');
+        Route::patch('employees/{employee}/deactivate', [EmployeeController::class, 'deactivate'])->name('employees.deactivate');
+        Route::post('employees/{employee}/reset-password', [EmployeeController::class, 'resetPassword'])->name('employees.reset-password');
     });
 
     // ==============================
@@ -179,7 +202,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
 
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
+            Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
         });
     });
 

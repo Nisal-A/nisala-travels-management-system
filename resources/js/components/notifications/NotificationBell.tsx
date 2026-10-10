@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Bell, Check, Calendar, CreditCard, FileText, UserPlus, Info } from 'lucide-react';
+import { Logo } from '@/Components/brand/Logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ export const getNotificationIcon = (type: string) => {
     if (type.includes('Payment')) return <CreditCard className="h-4 w-4 text-emerald-500" />;
     if (type.includes('Document')) return <FileText className="h-4 w-4 text-orange-500" />;
     if (type.includes('Inquiry')) return <UserPlus className="h-4 w-4 text-purple-500" />;
-    return <Info className="h-4 w-4 text-gray-500" />;
+    return <Logo variant="mark" size="sm" className="h-4 w-4" isDecorative />;
 };
 
 export const NotificationBell = ({ isCustomer = false }: { isCustomer?: boolean }) => {

@@ -28,7 +28,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
         e.preventDefault();
 
         if (isEditing && employee) {
-            put(route('employees.update', employee.id));
+            put(route('employees.update', { employee: employee.id }));
         } else {
             post(route('employees.store'));
         }
@@ -74,7 +74,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="role">Role *</Label>
-                            <Select value={data.role} onValueChange={(value) => setData('role', value)} required>
+                            <Select value={data.role} onValueChange={(value) => setData('role', value as string)} required>
                                 <SelectTrigger className={errors.role ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
@@ -91,7 +91,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="status">Account Status *</Label>
-                            <Select value={data.status} onValueChange={(value) => setData('status', value)} required>
+                            <Select value={data.status} onValueChange={(value) => setData('status', value as string)} required>
                                 <SelectTrigger className={errors.status ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>

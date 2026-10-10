@@ -3,13 +3,13 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MapPin, Calendar, Users, Phone, Mail, MessageCircle, Clock, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { company } from '@/config/company';
-import { WhatsAppButton } from '@/components/common/WhatsAppButton';
+import { MapPin, Phone, Mail, ChevronRight, CheckCircle2, AlertCircle, Compass, Calendar, ArrowRight } from 'lucide-react';
+import { site as company } from '@/content/site';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const formSchema = z.object({
     tripInterestType: z.enum(['tour', 'destination']),
@@ -56,7 +56,6 @@ export default function Contact() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
 
-    // Initialize form with sessionStorage or defaults
     const savedData = typeof window !== 'undefined' ? sessionStorage.getItem('contactFormData') : null;
     const defaultValues: Partial<FormInput> = savedData ? JSON.parse(savedData) : {
         tripInterestType: initialTourSlug ? 'tour' : 'destination',
@@ -69,7 +68,7 @@ export default function Contact() {
         form_start_time: Date.now()
     };
 
-    const { register, handleSubmit, control, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+    const { register, handleSubmit, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
         resolver: zodResolver(formSchema),
         defaultValues
     });
@@ -77,7 +76,6 @@ export default function Contact() {
     const formData = watch();
 
     useEffect(() => {
-        // Fetch tours for dropdown
         axios.get('/api/public/tours', { params: { per_page: 100 } }).then(res => {
             setTours(res.data.data);
             if (initialTourSlug) {
@@ -113,7 +111,6 @@ export default function Contact() {
     const onSubmit = async (data: FormData) => {
         setServerError(null);
 
-        // Format payload to match server expectations
         let fullMessage = "";
         if (data.tripTypeChips?.length) fullMessage += `Trip Types: ${data.tripTypeChips.join(', ')}\n`;
         fullMessage += `Flexible Dates: ${data.flexibleDates ? 'Yes' : 'No'}\n`;
@@ -132,7 +129,7 @@ export default function Contact() {
             number_of_travelers: data.adults + data.children,
             message: fullMessage,
             consent: data.consent,
-            website_field: data.website_field // honeypot
+            website_field: data.website_field
         };
 
         try {
@@ -162,29 +159,36 @@ export default function Contact() {
         return (
             <PublicLayout>
                 <Head title="Thank You | Nisala Travels" />
-                <div className="min-h-screen pt-32 pb-24 px-4 flex items-center justify-center bg-neutral-50">
-                    <div className="max-w-2xl w-full bg-white p-8 md:p-12 rounded-3xl shadow-xl text-center border border-neutral-100">
-                        <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
+                <div className="min-h-screen pt-32 pb-24 px-4 flex items-center justify-center bg-neutral-900">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="max-w-2xl w-full bg-white p-10 md:p-16 rounded-[2rem] shadow-2xl text-center relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                        
+                        <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8 relative z-10 shadow-sm border border-green-200">
                             <CheckCircle2 className="w-12 h-12" />
                         </div>
-                        <h1 className="text-4xl font-black text-neutral-900 mb-4">Thank You!</h1>
-                        <p className="text-xl text-neutral-600 mb-8 max-w-lg mx-auto">We've received your inquiry and our travel experts will contact you within 24 hours.</p>
+                        <h1 className="text-4xl md:text-5xl font-serif font-black text-neutral-900 mb-6 relative z-10">Journey Initiated.</h1>
+                        <p className="text-xl text-neutral-600 mb-10 max-w-lg mx-auto relative z-10 font-light">We've received your request. Our travel artisans are crafting your itinerary and will reach out shortly.</p>
 
-                        <div className="bg-neutral-50 rounded-2xl p-6 mb-8 text-left border border-neutral-100">
-                            <h3 className="font-bold text-neutral-900 mb-4">Inquiry Summary</h3>
-                            <ul className="space-y-3 text-neutral-600 text-sm">
-                                <li className="flex gap-2"><strong>Name:</strong> {formData.name}</li>
-                                <li className="flex gap-2"><strong>Email:</strong> {formData.email}</li>
-                                <li className="flex gap-2"><strong>Contact:</strong> {formData.phone} ({formData.preferredContactMethod})</li>
-                                <li className="flex gap-2"><strong>Travel:</strong> {formData.preferred_travel_month} for {formData.adults + formData.children} people</li>
+                        <div className="bg-neutral-50 rounded-2xl p-8 mb-10 text-left border border-neutral-100 relative z-10 shadow-inner">
+                            <h3 className="font-bold text-neutral-900 mb-6 uppercase tracking-widest text-xs">Request Summary</h3>
+                            <ul className="space-y-4 text-neutral-600">
+                                <li className="flex items-center gap-3"><span className="w-24 font-semibold text-neutral-900 text-sm">Traveler</span> {formData.name}</li>
+                                <li className="flex items-center gap-3"><span className="w-24 font-semibold text-neutral-900 text-sm">Contact</span> {formData.email}</li>
+                                <li className="flex items-center gap-3"><span className="w-24 font-semibold text-neutral-900 text-sm">Timeline</span> {formData.preferred_travel_month} for {formData.adults + formData.children} explorers</li>
                             </ul>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Button render={<Link href="/tours" />} size="lg" className="rounded-full px-8">Browse more tours</Button>
-                            <WhatsAppButton variant="button" label="Chat on WhatsApp" text="Hi, I just submitted an inquiry on your website!" />
+                        <div className="flex justify-center relative z-10">
+                            <Button render={<Link href="/tours" />} size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-lg">
+                                Discover More Escapes
+                            </Button>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </PublicLayout>
         );
@@ -194,237 +198,293 @@ export default function Contact() {
         <PublicLayout>
             <Head title="Contact Us | Nisala Travels" />
 
-            <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
-                <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-                <div className="container mx-auto text-center text-white relative z-10">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">Start Your Journey</h1>
-                    <p className="text-lg text-neutral-300">Tell us what you're looking for, and we'll craft the perfect itinerary.</p>
+            <div className="bg-neutral-900 pt-32 pb-24 px-4 relative overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img src="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=1200&auto=format&fit=crop" className="w-full h-full object-cover opacity-20 mix-blend-overlay" alt="" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent" />
+                </div>
+                <div className="container mx-auto text-center text-white relative z-10 pt-10">
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="text-5xl md:text-7xl font-serif font-bold mb-6 drop-shadow-xl"
+                    >
+                        Design Your Journey
+                    </motion.h1>
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="text-lg md:text-2xl text-white/80 max-w-2xl mx-auto font-light"
+                    >
+                        Connect with our travel artisans to weave the perfect itinerary tailored to your rhythm.
+                    </motion.p>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-12 md:py-16">
-                <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
+            <div className="container mx-auto px-4 py-16 md:py-24">
+                <div className="flex flex-col lg:flex-row gap-16">
                     {/* Form Column */}
                     <div className="flex-1 max-w-3xl">
-                        {/* Progress Indicator */}
-                        <div className="mb-10 flex items-center justify-between relative">
-                            <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-neutral-200 -z-10" />
-                            <div className="absolute left-0 top-1/2 h-0.5 bg-primary transition-all duration-300 -z-10" style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }} />
+                        {/* Elegant Progress Indicator */}
+                        <div className="mb-12 flex items-center justify-between relative px-2">
+                            <div className="absolute left-0 right-0 top-1/2 h-[2px] bg-neutral-200 -z-10 rounded-full" />
+                            <div className="absolute left-0 top-1/2 h-[2px] bg-primary transition-all duration-700 ease-in-out -z-10 rounded-full" style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }} />
 
                             {STEPS.map((step, index) => (
-                                <div key={step} className="flex flex-col items-center">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-colors ${currentStep >= index ? 'bg-primary text-white shadow-md' : 'bg-white text-neutral-400 border-2 border-neutral-200'}`}>
+                                <div key={step} className="flex flex-col items-center group">
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-3 transition-all duration-500 ${currentStep >= index ? 'bg-primary text-white shadow-[0_0_20px_rgba(201,162,39,0.4)] scale-110' : 'bg-white text-neutral-400 border-2 border-neutral-200'}`}>
                                         {currentStep > index ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
                                     </div>
-                                    <span className={`text-xs font-semibold hidden sm:block ${currentStep >= index ? 'text-neutral-900' : 'text-neutral-400'}`}>{step}</span>
+                                    <span className={`text-xs font-bold tracking-widest uppercase hidden sm:block transition-colors ${currentStep >= index ? 'text-neutral-900' : 'text-neutral-400'}`}>{step}</span>
                                 </div>
                             ))}
                         </div>
 
                         {serverError && (
-                            <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-800">
-                                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                                <p>{serverError}</p>
+                            <div className="mb-10 p-5 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-4 text-red-800 shadow-sm">
+                                <AlertCircle className="w-6 h-6 shrink-0 mt-0.5 text-red-500" />
+                                <p className="font-medium">{serverError}</p>
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 sm:p-10 rounded-3xl shadow-xl border border-neutral-100 relative">
-                            {/* Honeypot */}
+                        <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 sm:p-12 rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-neutral-100 relative overflow-hidden">
                             <input type="text" {...register('website_field')} tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
                             <input type="hidden" {...register('form_start_time')} />
 
-                            {/* Step 1: Trip Interest */}
-                            <div className={`${currentStep === 0 ? 'block' : 'hidden'} space-y-8 animate-in fade-in slide-in-from-right-4 duration-500`}>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-neutral-900 mb-2">What kind of trip are you looking for?</h2>
-                                    <p className="text-neutral-500 mb-6">Select a pre-designed package or tell us where you want to go.</p>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'tour' ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
-                                        <input type="radio" value="tour" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
-                                        <span className="font-bold">I know the tour package</span>
-                                    </label>
-                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'destination' ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
-                                        <input type="radio" value="destination" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
-                                        <span className="font-bold">I have a destination in mind</span>
-                                    </label>
-                                </div>
-
-                                {formData.tripInterestType === 'tour' && (
-                                    <div className="space-y-2 animate-in fade-in zoom-in-95">
-                                        <label className="block font-semibold text-neutral-700">Select Tour Package</label>
-                                        <select {...register('tour_package_id')} className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
-                                            <option value="">-- Choose a package --</option>
-                                            {tours.map(t => (
-                                                <option key={t.id} value={t.id}>{t.package_name} ({t.destination})</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-
-                                {formData.tripInterestType === 'destination' && (
-                                    <div className="space-y-2 animate-in fade-in zoom-in-95">
-                                        <label className="block font-semibold text-neutral-700">Destination Interest</label>
-                                        <Input {...register('destination_interest')} placeholder="e.g. Sri Lanka, Maldives, or specific cities..." className="h-12 rounded-xl" />
-                                    </div>
-                                )}
-                                {errors.destination_interest && <p className="text-red-500 text-sm">{errors.destination_interest.message}</p>}
-
-                                <div>
-                                    <label className="block font-semibold text-neutral-700 mb-3">Trip Style (Optional)</label>
-                                    <div className="flex flex-wrap gap-3">
-                                        {TRIP_TYPES.map(type => {
-                                            const isSelected = formData.tripTypeChips?.includes(type);
-                                            return (
-                                                <button
-                                                    key={type}
-                                                    type="button"
-                                                    onClick={() => toggleTripType(type)}
-                                                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${isSelected ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'}`}
-                                                >
-                                                    {type}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Step 2: Dates & Travelers */}
-                            <div className={`${currentStep === 1 ? 'block' : 'hidden'} space-y-8 animate-in fade-in slide-in-from-right-4 duration-500`}>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-neutral-900 mb-2">When and who is traveling?</h2>
-                                    <p className="text-neutral-500 mb-6">Let us know your availability and group size.</p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block font-semibold text-neutral-700 mb-2">Preferred Travel Month / Dates <span className="text-red-500">*</span></label>
-                                        <Input {...register('preferred_travel_month')} placeholder="e.g. November 2026 or Nov 10 - Nov 20" className="h-12 rounded-xl" />
-                                        {errors.preferred_travel_month && <p className="text-red-500 text-sm mt-1">{errors.preferred_travel_month.message}</p>}
-                                    </div>
-                                    <label className="flex items-center cursor-pointer">
-                                        <input type="checkbox" {...register('flexibleDates')} className="w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3" />
-                                        <span className="text-neutral-700">My dates are flexible</span>
-                                    </label>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center justify-between">
+                            <AnimatePresence mode="wait">
+                                {/* Step 1: Trip Interest */}
+                                {currentStep === 0 && (
+                                    <motion.div 
+                                        key="step1"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="space-y-10"
+                                    >
                                         <div>
-                                            <div className="font-bold text-neutral-900">Adults</div>
-                                            <div className="text-xs text-neutral-500">12+ years</div>
+                                            <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-3">Where to?</h2>
+                                            <p className="text-neutral-500 font-light text-lg">Choose a predefined package or dream up your own destination.</p>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <button type="button" onClick={() => setValue('adults', Math.max(1, formData.adults - 1))} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center font-bold text-neutral-600 hover:bg-neutral-100">-</button>
-                                            <span className="font-bold text-lg w-4 text-center">{formData.adults}</span>
-                                            <button type="button" onClick={() => setValue('adults', formData.adults + 1)} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center font-bold text-neutral-600 hover:bg-neutral-100">+</button>
-                                        </div>
-                                    </div>
-                                    <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-100 flex items-center justify-between">
-                                        <div>
-                                            <div className="font-bold text-neutral-900">Children</div>
-                                            <div className="text-xs text-neutral-500">Under 12 years</div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <button type="button" onClick={() => setValue('children', Math.max(0, formData.children - 1))} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center font-bold text-neutral-600 hover:bg-neutral-100">-</button>
-                                            <span className="font-bold text-lg w-4 text-center">{formData.children}</span>
-                                            <button type="button" onClick={() => setValue('children', formData.children + 1)} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center font-bold text-neutral-600 hover:bg-neutral-100">+</button>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div>
-                                    <label className="block font-semibold text-neutral-700 mb-2">Approximate Budget (Optional)</label>
-                                    <select {...register('budget')} className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
-                                        <option value="">Not sure yet</option>
-                                        <option value="Under $1,500 per person">Under $1,500 per person</option>
-                                        <option value="$1,500 - $3,000 per person">$1,500 - $3,000 per person</option>
-                                        <option value="$3,000 - $5,000 per person">$3,000 - $5,000 per person</option>
-                                        <option value="$5,000+ per person">$5,000+ per person</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Step 3: Contact Details */}
-                            <div className={`${currentStep === 2 ? 'block' : 'hidden'} space-y-6 animate-in fade-in slide-in-from-right-4 duration-500`}>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-neutral-900 mb-2">Your Contact Details</h2>
-                                    <p className="text-neutral-500 mb-6">How can we reach you with your custom itinerary?</p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block font-semibold text-neutral-700">Full Name <span className="text-red-500">*</span></label>
-                                    <Input {...register('name')} placeholder="John Doe" className="h-12 rounded-xl" />
-                                    {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="block font-semibold text-neutral-700">Email Address <span className="text-red-500">*</span></label>
-                                        <Input type="email" {...register('email')} placeholder="john@example.com" className="h-12 rounded-xl" />
-                                        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block font-semibold text-neutral-700">Phone Number <span className="text-red-500">*</span></label>
-                                        <Input type="tel" {...register('phone')} placeholder="+94 77 123 4567" className="h-12 rounded-xl" />
-                                        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block font-semibold text-neutral-700">Preferred Contact Method</label>
-                                    <div className="flex gap-4">
-                                        {['WhatsApp', 'Email', 'Phone'].map(method => (
-                                            <label key={method} className="flex items-center cursor-pointer">
-                                                <input type="radio" value={method} {...register('preferredContactMethod')} className="text-primary focus:ring-primary w-4 h-4 mr-2" />
-                                                <span className="text-neutral-700">{method}</span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <label className={`flex flex-col p-6 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${formData.tripInterestType === 'tour' ? 'border-primary bg-primary/5 shadow-md' : 'border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50'}`}>
+                                                <div className="flex items-center mb-2">
+                                                    <input type="radio" value="tour" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
+                                                    <span className="font-bold text-neutral-900 text-lg">Curated Package</span>
+                                                </div>
+                                                <span className="text-sm text-neutral-500 pl-8 font-light">I have a specific Nisala Travels tour in mind.</span>
                                             </label>
-                                        ))}
-                                    </div>
-                                </div>
+                                            <label className={`flex flex-col p-6 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${formData.tripInterestType === 'destination' ? 'border-primary bg-primary/5 shadow-md' : 'border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50'}`}>
+                                                <div className="flex items-center mb-2">
+                                                    <input type="radio" value="destination" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
+                                                    <span className="font-bold text-neutral-900 text-lg">Custom Destination</span>
+                                                </div>
+                                                <span className="text-sm text-neutral-500 pl-8 font-light">I want to explore a specific location my way.</span>
+                                            </label>
+                                        </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <label className="block font-semibold text-neutral-700">Additional Message</label>
-                                        <span className="text-xs text-neutral-400">{formData.message?.length || 0}/2000</span>
-                                    </div>
-                                    <textarea {...register('message')} rows={4} className="w-full rounded-xl border-neutral-300 focus:ring-primary focus:border-primary p-4 resize-none" placeholder="Any special requirements, dietary needs, or places you must see..."></textarea>
-                                </div>
+                                        {formData.tripInterestType === 'tour' && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3">
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Select Package</label>
+                                                <div className="relative">
+                                                    <Compass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                                                    <select {...register('tour_package_id')} className="w-full h-14 rounded-xl border-2 border-neutral-100 focus:ring-primary focus:border-primary bg-neutral-50 pl-12 pr-4 transition-colors font-medium">
+                                                        <option value="">-- Discover our collections --</option>
+                                                        {tours.map(t => (
+                                                            <option key={t.id} value={t.id}>{t.package_name} ({t.destination})</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </motion.div>
+                                        )}
 
-                                <div className="pt-4 border-t border-neutral-100">
-                                    <label className="flex items-start cursor-pointer group">
-                                        <input type="checkbox" {...register('consent')} className="mt-1 w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3 flex-shrink-0" />
-                                        <span className="text-sm text-neutral-600 leading-relaxed group-hover:text-neutral-900 transition-colors">
-                                            I agree to the <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and consent to Nisala Travels contacting me regarding this inquiry.
-                                        </span>
-                                    </label>
-                                    {errors.consent && <p className="text-red-500 text-sm mt-2 ml-8">{errors.consent.message}</p>}
-                                </div>
+                                        {formData.tripInterestType === 'destination' && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-3">
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Where do you want to go?</label>
+                                                <div className="relative">
+                                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                                                    <Input {...register('destination_interest')} placeholder="e.g. Kyoto, Japan or The Maldives..." className="h-14 rounded-xl border-2 border-neutral-100 bg-neutral-50 pl-12 transition-colors focus-visible:bg-white text-base" />
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                        {errors.destination_interest && <p className="text-red-500 text-sm font-medium">{errors.destination_interest.message}</p>}
 
-                                <div className="bg-neutral-50 p-4 rounded-xl text-sm text-neutral-600 mt-4 border border-neutral-200">
-                                    <strong>Summary:</strong> You are requesting a {formData.tripInterestType === 'tour' ? 'tour package' : 'custom trip'} for {formData.adults + formData.children} people in {formData.preferred_travel_month || '[Dates]'}.
-                                </div>
-                            </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-4">Pace & Style (Optional)</label>
+                                            <div className="flex flex-wrap gap-3">
+                                                {TRIP_TYPES.map(type => {
+                                                    const isSelected = formData.tripTypeChips?.includes(type);
+                                                    return (
+                                                        <button
+                                                            key={type}
+                                                            type="button"
+                                                            onClick={() => toggleTripType(type)}
+                                                            className={`px-5 py-2.5 rounded-full border-2 text-sm font-bold transition-all duration-300 ${isSelected ? 'bg-primary text-primary-foreground border-primary shadow-md' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'}`}
+                                                        >
+                                                            {type}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* Step 2: Dates & Travelers */}
+                                {currentStep === 1 && (
+                                    <motion.div 
+                                        key="step2"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="space-y-10"
+                                    >
+                                        <div>
+                                            <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-3">Timeline & Company</h2>
+                                            <p className="text-neutral-500 font-light text-lg">Help us understand when and with whom you'll be traveling.</p>
+                                        </div>
+
+                                        <div className="space-y-4 bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
+                                            <div>
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">Anticipated Travel Dates <span className="text-red-500">*</span></label>
+                                                <div className="relative">
+                                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                                                    <Input {...register('preferred_travel_month')} placeholder="e.g. Nov 2026 or Dec 15 - Dec 28" className="h-14 rounded-xl border-none shadow-sm pl-12 text-base font-medium" />
+                                                </div>
+                                                {errors.preferred_travel_month && <p className="text-red-500 text-sm mt-2 font-medium">{errors.preferred_travel_month.message}</p>}
+                                            </div>
+                                            <label className="flex items-center cursor-pointer pt-2 group">
+                                                <input type="checkbox" {...register('flexibleDates')} className="w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3" />
+                                                <span className="text-neutral-600 font-medium group-hover:text-neutral-900 transition-colors">My dates are flexible (± a few days)</span>
+                                            </label>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="bg-white p-6 rounded-2xl border-2 border-neutral-100 flex flex-col gap-4">
+                                                <div>
+                                                    <div className="font-bold text-neutral-900 text-lg">Adults</div>
+                                                    <div className="text-xs text-neutral-400 font-bold uppercase tracking-widest mt-1">12+ years</div>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-neutral-50 p-2 rounded-xl border border-neutral-200">
+                                                    <button type="button" onClick={() => setValue('adults', Math.max(1, formData.adults - 1))} className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center font-bold text-neutral-600 hover:text-primary transition-colors">-</button>
+                                                    <span className="font-black text-2xl text-neutral-900 w-12 text-center">{formData.adults}</span>
+                                                    <button type="button" onClick={() => setValue('adults', formData.adults + 1)} className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center font-bold text-neutral-600 hover:text-primary transition-colors">+</button>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-6 rounded-2xl border-2 border-neutral-100 flex flex-col gap-4">
+                                                <div>
+                                                    <div className="font-bold text-neutral-900 text-lg">Children</div>
+                                                    <div className="text-xs text-neutral-400 font-bold uppercase tracking-widest mt-1">Under 12</div>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-neutral-50 p-2 rounded-xl border border-neutral-200">
+                                                    <button type="button" onClick={() => setValue('children', Math.max(0, formData.children - 1))} className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center font-bold text-neutral-600 hover:text-primary transition-colors">-</button>
+                                                    <span className="font-black text-2xl text-neutral-900 w-12 text-center">{formData.children}</span>
+                                                    <button type="button" onClick={() => setValue('children', formData.children + 1)} className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center font-bold text-neutral-600 hover:text-primary transition-colors">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">Estimated Budget / Person (Optional)</label>
+                                            <select {...register('budget')} className="w-full h-14 rounded-xl border-2 border-neutral-100 focus:ring-primary focus:border-primary bg-neutral-50 px-4 transition-colors font-medium">
+                                                <option value="">Exploring options</option>
+                                                <option value="Under $1,500">Under $1,500</option>
+                                                <option value="$1,500 - $3,000">$1,500 - $3,000</option>
+                                                <option value="$3,000 - $5,000">$3,000 - $5,000</option>
+                                                <option value="$5,000+">$5,000+</option>
+                                            </select>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* Step 3: Contact Details */}
+                                {currentStep === 2 && (
+                                    <motion.div 
+                                        key="step3"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                        className="space-y-8"
+                                    >
+                                        <div>
+                                            <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-3">Final Details</h2>
+                                            <p className="text-neutral-500 font-light text-lg">How should our concierges reach you with your itinerary?</p>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Full Name <span className="text-red-500">*</span></label>
+                                            <Input {...register('name')} placeholder="Your legal name" className="h-14 rounded-xl border-2 border-neutral-100 bg-neutral-50 focus-visible:bg-white transition-colors text-base font-medium" />
+                                            {errors.name && <p className="text-red-500 text-sm font-medium">{errors.name.message}</p>}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="space-y-3">
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Email Address <span className="text-red-500">*</span></label>
+                                                <Input type="email" {...register('email')} placeholder="you@example.com" className="h-14 rounded-xl border-2 border-neutral-100 bg-neutral-50 focus-visible:bg-white transition-colors text-base font-medium" />
+                                                {errors.email && <p className="text-red-500 text-sm font-medium">{errors.email.message}</p>}
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Phone Number <span className="text-red-500">*</span></label>
+                                                <Input type="tel" {...register('phone')} placeholder="Include country code" className="h-14 rounded-xl border-2 border-neutral-100 bg-neutral-50 focus-visible:bg-white transition-colors text-base font-medium" />
+                                                {errors.phone && <p className="text-red-500 text-sm font-medium">{errors.phone.message}</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Preferred Contact Method</label>
+                                            <div className="flex flex-wrap gap-4">
+                                                {['WhatsApp', 'Email', 'Phone'].map(method => (
+                                                    <label key={method} className={`flex-1 flex items-center justify-center cursor-pointer p-4 rounded-xl border-2 transition-all font-bold ${formData.preferredContactMethod === method ? 'border-primary bg-primary/5 text-primary shadow-sm' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50 hover:border-neutral-200'}`}>
+                                                        <input type="radio" value={method} {...register('preferredContactMethod')} className="hidden" />
+                                                        {method}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-end">
+                                                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest">Additional Notes</label>
+                                                <span className="text-xs text-neutral-400 font-medium bg-neutral-100 px-2 py-1 rounded-md">{formData.message?.length || 0} / 2000</span>
+                                            </div>
+                                            <textarea {...register('message')} rows={4} className="w-full rounded-xl border-2 border-neutral-100 bg-neutral-50 focus:ring-primary focus:border-primary focus:bg-white p-4 resize-none transition-colors text-base" placeholder="Tell us about special occasions, dietary requirements, or specific landmarks you must see..."></textarea>
+                                        </div>
+
+                                        <div className="pt-6 border-t border-neutral-100">
+                                            <label className="flex items-start cursor-pointer group p-4 rounded-xl bg-neutral-50 border border-neutral-100 hover:border-primary/30 transition-colors">
+                                                <input type="checkbox" {...register('consent')} className="mt-1 w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-4 flex-shrink-0" />
+                                                <span className="text-sm text-neutral-600 leading-relaxed font-medium">
+                                                    I agree to the <Link href="/privacy" className="text-primary hover:underline font-bold">Privacy Policy</Link> and consent to Nisala Travels contacting me regarding this request.
+                                                </span>
+                                            </label>
+                                            {errors.consent && <p className="text-red-500 text-sm mt-2 ml-4 font-medium">{errors.consent.message}</p>}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
                             {/* Navigation */}
-                            <div className="mt-10 flex items-center justify-between pt-6 border-t border-neutral-100">
+                            <div className="mt-12 flex items-center justify-between pt-8 border-t border-neutral-100">
                                 {currentStep > 0 ? (
-                                    <Button type="button" variant="outline" size="lg" className="rounded-full px-8" onClick={handleBack}>
+                                    <button type="button" onClick={handleBack} className="text-neutral-500 hover:text-neutral-900 font-bold uppercase tracking-widest text-sm transition-colors">
                                         Back
-                                    </Button>
+                                    </button>
                                 ) : (
-                                    <div /> // Placeholder for flex spacing
+                                    <div />
                                 )}
 
                                 {currentStep < STEPS.length - 1 ? (
-                                    <Button type="button" size="lg" className="rounded-full px-8 shadow-md" onClick={handleNext}>
-                                        Continue <ChevronRight className="w-4 h-4 ml-2" />
+                                    <Button type="button" size="lg" className="rounded-full px-10 h-14 text-lg shadow-lg group" onClick={handleNext}>
+                                        Continue <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </Button>
                                 ) : (
-                                    <Button type="submit" size="lg" className="rounded-full px-10 shadow-lg font-bold" disabled={isSubmitting}>
-                                        {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
+                                    <Button type="submit" size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl font-bold bg-neutral-900 text-white hover:bg-neutral-800 hover:shadow-2xl hover:-translate-y-1 transition-all" disabled={isSubmitting}>
+                                        {isSubmitting ? 'Finalizing...' : 'Submit Request'}
                                     </Button>
                                 )}
                             </div>
@@ -432,57 +492,44 @@ export default function Contact() {
                     </div>
 
                     {/* Right Column: Contact Info */}
-                    <div className="lg:w-96 space-y-8">
-                        <div className="bg-white p-8 rounded-3xl shadow-xl border border-neutral-100 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><MapPin className="w-32 h-32 text-neutral-900" /></div>
+                    <div className="lg:w-[400px]">
+                        <div className="bg-neutral-900 text-white p-10 rounded-[2rem] shadow-2xl relative overflow-hidden sticky top-32">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            
+                            <h3 className="text-3xl font-serif font-bold mb-8 relative z-10">Reach Out</h3>
 
-                            <h3 className="text-2xl font-bold text-neutral-900 mb-6">Get in Touch</h3>
-
-                            <div className="space-y-6 relative z-10">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="w-5 h-5" /></div>
+                            <div className="space-y-8 relative z-10 mb-12">
+                                <div className="flex items-start gap-5">
+                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-primary shrink-0"><MapPin className="w-5 h-5" /></div>
                                     <div>
-                                        <h4 className="font-bold text-neutral-900 mb-1">Head Office</h4>
-                                        <p className="text-neutral-600 text-sm leading-relaxed">{company.address}</p>
+                                        <h4 className="font-bold text-white mb-2 uppercase tracking-widest text-xs">Headquarters</h4>
+                                        <p className="text-white/70 text-sm leading-relaxed">{company.address}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Phone className="w-5 h-5" /></div>
+                                <div className="flex items-start gap-5">
+                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-primary shrink-0"><Phone className="w-5 h-5" /></div>
                                     <div>
-                                        <h4 className="font-bold text-neutral-900 mb-1">Call Us</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`tel:${company.phone}`} className="hover:text-primary transition-colors">{company.phone}</a></p>
+                                        <h4 className="font-bold text-white mb-2 uppercase tracking-widest text-xs">Direct Line</h4>
+                                        <p className="text-white/70 text-lg"><a href={`tel:${company.phone}`} className="hover:text-primary transition-colors">{company.phone}</a></p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Mail className="w-5 h-5" /></div>
+                                <div className="flex items-start gap-5">
+                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-primary shrink-0"><Mail className="w-5 h-5" /></div>
                                     <div>
-                                        <h4 className="font-bold text-neutral-900 mb-1">Email</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`mailto:${company.email}`} className="hover:text-primary transition-colors">{company.email}</a></p>
+                                        <h4 className="font-bold text-white mb-2 uppercase tracking-widest text-xs">Email Concierge</h4>
+                                        <p className="text-white/70"><a href={`mailto:${company.email}`} className="hover:text-primary transition-colors">{company.email}</a></p>
                                     </div>
                                 </div>
                             </div>
 
-                            <hr className="my-8 border-neutral-100" />
-
-                            <div>
-                                <h4 className="font-bold text-neutral-900 mb-4">Business Hours</h4>
-                                <ul className="space-y-2 text-sm text-neutral-600">
-                                    <li className="flex justify-between"><span>Monday - Friday:</span> <span>9:00 AM - 6:00 PM</span></li>
-                                    <li className="flex justify-between"><span>Saturday:</span> <span>9:00 AM - 1:00 PM</span></li>
-                                    <li className="flex justify-between"><span>Sunday:</span> <span>Closed</span></li>
+                            <div className="relative z-10 bg-white/5 rounded-2xl p-6 border border-white/10">
+                                <h4 className="font-bold text-white mb-4 uppercase tracking-widest text-xs">Availability</h4>
+                                <ul className="space-y-3 text-sm text-white/70">
+                                    <li className="flex justify-between items-center"><span className="font-medium">Mon - Fri</span> <span>09:00 - 18:00</span></li>
+                                    <li className="flex justify-between items-center"><span className="font-medium">Saturday</span> <span>09:00 - 13:00</span></li>
+                                    <li className="flex justify-between items-center"><span className="font-medium">Sunday</span> <span>Closed</span></li>
                                 </ul>
-                                <p className="text-xs text-neutral-400 mt-4">* Times are in Sri Lanka Standard Time (GMT+5:30)</p>
-                            </div>
-                        </div>
-
-                        {/* Map Placeholder */}
-                        <div className="bg-neutral-200 rounded-3xl h-64 overflow-hidden relative shadow-inner border border-neutral-300 group">
-                            {/* In a real app, this would be an iframe or Google Map component */}
-                            <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" alt="Map Location" />
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg font-bold text-neutral-900 flex items-center gap-2">
-                                    <MapPin className="w-5 h-5 text-primary" /> View on Map
-                                </div>
+                                <p className="text-xs text-white/40 mt-5 pt-4 border-t border-white/10">GMT+5:30 (Sri Lanka Standard Time)</p>
                             </div>
                         </div>
                     </div>

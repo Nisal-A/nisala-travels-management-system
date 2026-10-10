@@ -99,19 +99,19 @@ const calendarStyles = `
     .rbc-calendar { font-family: inherit; }
     .rbc-event { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
     .rbc-event:focus { outline: 2px solid hsl(var(--ring)); outline-offset: 1px; }
-    .rbc-today { background-color: hsl(var(--primary) / 0.06) !important; }
+    .rbc-today { background-color: color-mix(in srgb, var(--color-primary) 6%, transparent) !important; }
     .rbc-off-range-bg { background-color: transparent; opacity: 0.4; }
     .rbc-month-view, .rbc-time-view, .rbc-agenda-view { border-color: hsl(var(--border)); border-radius: var(--radius); overflow: hidden; }
     .rbc-header { border-bottom: 1px solid hsl(var(--border)); padding: 10px 0; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; color: hsl(var(--muted-foreground)); }
     .rbc-month-row { border-top: 1px solid hsl(var(--border)); }
     .rbc-day-bg + .rbc-day-bg, .rbc-header + .rbc-header { border-left: 1px solid hsl(var(--border)); }
     .rbc-date-cell { font-size: 0.8rem; padding: 4px 8px; }
-    .rbc-date-cell.rbc-now { font-weight: 700; color: hsl(var(--primary)); }
+    .rbc-date-cell.rbc-now { font-weight: 700; color: var(--color-primary); }
     .rbc-agenda-view table.rbc-agenda-table { border: 0; }
     .rbc-agenda-view table.rbc-agenda-table thead > tr > th { padding: 12px 16px; border-bottom: 1px solid hsl(var(--border)); text-align: left; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; color: hsl(var(--muted-foreground)); }
     .rbc-agenda-view table.rbc-agenda-table tbody > tr > td { padding: 10px 16px; border-top: 1px solid hsl(var(--border) / 0.5); }
     .rbc-agenda-view table.rbc-agenda-table tbody > tr:hover > td { background-color: hsl(var(--muted) / 0.5); }
-    .rbc-show-more { color: hsl(var(--primary)); font-weight: 600; font-size: 0.7rem; }
+    .rbc-show-more { color: var(--color-primary); font-weight: 600; font-size: 0.7rem; }
     .rbc-overlay { border-radius: var(--radius); border: 1px solid hsl(var(--border)); background: hsl(var(--background)); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15); }
     .rbc-overlay-header { border-bottom: 1px solid hsl(var(--border)); padding: 8px 12px; font-weight: 600; }
 `;

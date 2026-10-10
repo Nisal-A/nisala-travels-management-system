@@ -2,7 +2,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import { useAuth } from '@/hooks/use-auth';
 import { getNavIcon } from '@/lib/nav-icons';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,7 +11,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     DropdownMenuSub,
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Globe, LogOut, Menu, PanelLeftClose, PanelLeft, Bell, UserCog, User as UserIcon, Moon, Sun, Laptop } from 'lucide-react';
+import { Logo } from '@/Components/brand/Logo';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -80,7 +80,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
             .slice(0, 2)
             .toUpperCase() ?? '?';
 
-    const roleBadge = user?.roles?.[0]?.replace('_', ' ') ?? 'user';
+    const roleBadge = user?.role_label ?? user?.roles?.[0]?.replace('_', ' ') ?? 'user';
 
     // -----------------------------------------------------------------
     // Sidebar Nav Section Renderer
@@ -149,19 +149,9 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
             <div className="flex h-full flex-col">
                 {/* Header */}
                 <div
-                    className={`flex h-16 shrink-0 items-center border-b border-border/50 ${isCollapsed ? 'justify-center px-2' : 'gap-3 px-4'}`}
+                    className={`flex h-16 shrink-0 items-center border-b border-border/50 ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}
                 >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/80 to-primary shadow-lg shadow-primary/20">
-                        <Globe className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    {!isCollapsed && (
-                        <div className="flex flex-col overflow-hidden">
-                            <span className="truncate text-sm font-bold tracking-tight text-foreground">
-                                Nisala Travels
-                            </span>
-                            <span className="truncate text-[0.65rem] text-muted-foreground">Management System</span>
-                        </div>
-                    )}
+                    <Logo variant={isCollapsed ? 'mark' : 'full'} size="md" isDecorative />
                 </div>
 
                 {/* Navigation */}
@@ -194,6 +184,7 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                     className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-muted ${isCollapsed ? 'justify-center' : ''}`}
                                 >
                                     <Avatar className="h-8 w-8 shrink-0">
+                                        <AvatarImage src={user?.avatar_url || ''} className="object-cover" />
                                         <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                                             {initials}
                                         </AvatarFallback>
@@ -211,31 +202,36 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                 </button>
                             }
                         />
-                        <DropdownMenuContent side="top" align="start" className="w-56">
-                            <DropdownMenuLabel className="font-normal">
+                        <DropdownMenuContent 
+                            side="right" 
+                            align="end" 
+                            sideOffset={16} 
+                            className="w-56 bg-slate-900 text-slate-100 border-slate-800 shadow-xl"
+                        >
+                            <div className="px-2 py-2 font-normal">
                                 <div className="flex flex-col space-y-1.5">
-                                    <p className="text-sm font-medium">{user?.name}</p>
-                                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                                    <Badge variant="outline" className="w-fit text-[0.65rem] capitalize">
+                                    <p className="text-sm font-medium text-slate-100">{user?.name}</p>
+                                    <p className="text-xs text-slate-400">{user?.email}</p>
+                                    <Badge variant="outline" className="w-fit text-[0.65rem] capitalize mt-1 border-slate-700 text-slate-300">
                                         {roleBadge}
                                     </Badge>
                                 </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
+                            </div>
+                            <DropdownMenuSeparator className="bg-slate-800" />
 
                             <DropdownMenuItem
                                 render={
-                                    <a href="#" className="w-full cursor-pointer flex items-center">
+                                    <Link href={route('profile.edit')} className="w-full cursor-pointer flex items-center hover:bg-slate-800 focus:bg-slate-800">
                                         <UserIcon className="mr-2 h-4 w-4" />
                                         My Profile
-                                    </a>
+                                    </Link>
                                 }
                             />
 
                             {hasRole('super_admin', 'manager') && (
                                 <DropdownMenuItem
                                     render={
-                                        <Link href={route('employees.index')} className="w-full cursor-pointer flex items-center">
+                                        <Link href={route('employees.index')} className="w-full cursor-pointer flex items-center hover:bg-slate-800 focus:bg-slate-800">
                                             <UserCog className="mr-2 h-4 w-4" />
                                             Employees
                                         </Link>
@@ -244,22 +240,22 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                             )}
 
                             <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="flex items-center">
+                                <DropdownMenuSubTrigger className="flex items-center hover:bg-slate-800 focus:bg-slate-800">
                                     <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                                     <Moon className="absolute h-4 w-4 mr-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                                     <span>Appearance</span>
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem onClick={() => setTheme('light')}>
+                                    <DropdownMenuSubContent className="bg-slate-900 text-slate-100 border-slate-800">
+                                        <DropdownMenuItem onClick={() => setTheme('light')} className="hover:bg-slate-800 focus:bg-slate-800">
                                             <Sun className="mr-2 h-4 w-4" />
                                             <span>Light</span>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTheme('dark')}>
+                                        <DropdownMenuItem onClick={() => setTheme('dark')} className="hover:bg-slate-800 focus:bg-slate-800">
                                             <Moon className="mr-2 h-4 w-4" />
                                             <span>Dark</span>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTheme('system')}>
+                                        <DropdownMenuItem onClick={() => setTheme('system')} className="hover:bg-slate-800 focus:bg-slate-800">
                                             <Laptop className="mr-2 h-4 w-4" />
                                             <span>System</span>
                                         </DropdownMenuItem>
@@ -267,14 +263,14 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                 </DropdownMenuPortal>
                             </DropdownMenuSub>
 
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator className="bg-slate-800" />
                             <DropdownMenuItem
                                 onClick={(e: React.MouseEvent) => {
                                     e.preventDefault();
                                     handleLogout(e as unknown as FormEvent);
                                 }}
                                 disabled={processing}
-                                className="text-destructive focus:text-destructive"
+                                className="text-red-400 focus:text-red-300 hover:bg-slate-800 focus:bg-slate-800"
                             >
                                 <LogOut className="mr-2 h-4 w-4" />
                                 {processing ? 'Signing out…' : 'Sign Out'}

@@ -20,9 +20,11 @@
 </head>
 <body>
     <div class="header">
-        <div class="company-name">{{ $company['name'] }}</div>
-        <div>{{ $company['address'] }}</div>
-        <div>Phone: {{ $company['phone'] }} | Email: {{ $company['email'] }}</div>
+        <img src="{{ public_path(config('branding.logos.mono_black', '/brand/logo-mono-black.svg')) }}" style="max-height: 50px; margin-bottom: 10px;">
+        <div class="company-name">{{ config('branding.company_name') }}</div>
+        <div>{{ config('branding.address') }}</div>
+        <div>Phone: {{ config('branding.phone') }} | Email: {{ config('branding.email') }}</div>
+        <div>Reg No: {{ config('branding.registration_number') }}</div>
     </div>
 
     <div class="title">Payment Receipt</div>
@@ -68,7 +70,13 @@
     </table>
 
     <div class="footer">
-        Thank you for choosing {{ $company['name'] }}. If you have any questions, please contact us.
+        Thank you for travelling with {{ config('branding.company_name') }}
+        <script type="text/php">
+            if (isset($pdf)) {
+                $font = $fontMetrics->get_font("Helvetica", "normal");
+                $pdf->page_text(270, 810, "Page {PAGE_NUM} of {PAGE_COUNT}", $font, 9, array(0.5, 0.5, 0.5));
+            }
+        </script>
     </div>
 </body>
 </html>

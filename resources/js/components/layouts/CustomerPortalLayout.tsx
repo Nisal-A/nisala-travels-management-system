@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { Logo } from '@/Components/brand/Logo';
 
 interface CustomerPortalLayoutProps {
     children: ReactNode;
@@ -62,17 +63,10 @@ export default function CustomerPortalLayout({ children, title }: CustomerPortal
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-8">
-                        <Link
-                            href={route('portal.dashboard')}
-                            className="flex items-center gap-2 transition-opacity hover:opacity-80"
-                        >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-                                <Globe className="h-5 w-5 text-primary-foreground" />
-                            </div>
-                            <span className="text-lg font-bold tracking-tight text-foreground hidden sm:inline-block">
-                                Nisala Travels
-                            </span>
-                        </Link>
+                        <div className="flex items-center">
+                            <Logo href={route('portal.dashboard')} variant="mark" size="md" className="sm:hidden" />
+                            <Logo href={route('portal.dashboard')} variant="full" size="md" className="hidden sm:inline-flex" />
+                        </div>
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-1">

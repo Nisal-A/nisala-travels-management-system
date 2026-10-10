@@ -86,7 +86,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">Nisala Travels</div>
+        <img src="{{ public_path(config('branding.logos.full', '/brand/logo-full.svg')) }}" style="max-height: 60px; margin-bottom: 15px;">
         <div class="title">Travel Itinerary</div>
     </div>
 
@@ -163,8 +163,14 @@
     @endif
 
     <div class="footer">
-        <p>Thank you for choosing Nisala Travels. We wish you a wonderful trip!</p>
-        <p>Contact us: support@nisalatravels.com | +94 11 234 5678</p>
+        <p>Thank you for travelling with {{ config('branding.company_name') }}</p>
+        <p>Contact us: {{ config('branding.email') }} | {{ config('branding.phone') }}</p>
+        <script type="text/php">
+            if (isset($pdf)) {
+                $font = $fontMetrics->get_font("Helvetica", "normal");
+                $pdf->page_text(270, 810, "Page {PAGE_NUM} of {PAGE_COUNT}", $font, 9, array(0.5, 0.5, 0.5));
+            }
+        </script>
     </div>
 </body>
 </html>

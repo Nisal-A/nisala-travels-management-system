@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Globe, LogIn, AlertCircle } from 'lucide-react';
 import { type FormEvent } from 'react';
+import { Logo } from '@/Components/brand/Logo';
 
 /**
  * Minimal Login Page — NT-004.1
@@ -33,10 +34,7 @@ export default function Login() {
             <main className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 flex flex-col items-center justify-center p-6">
                 {/* Logo / Branding */}
                 <div className="mb-8 flex flex-col items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center backdrop-blur-sm">
-                        <Globe className="h-8 w-8 text-primary" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Nisala Travels</h1>
+                    <Logo variant="full" size="xl" theme="dark" isDecorative />
                     <p className="text-sm text-muted-foreground">Management System</p>
                 </div>
 

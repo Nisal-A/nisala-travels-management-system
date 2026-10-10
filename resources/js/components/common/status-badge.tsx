@@ -4,11 +4,13 @@ import { CheckCircle, Clock, AlertCircle, XCircle, FileWarning, HelpCircle } fro
 type BookingStatus = 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
 type PaymentStatus = 'Pending' | 'Verified' | 'Completed' | 'Failed' | 'Unpaid' | 'Partial' | 'Paid' | 'Refunded';
 type DocumentStatus = 'Pending Review' | 'Verified' | 'Rejected' | 'Expired';
+type UserStatus = 'active' | 'inactive' | 'suspended';
 
 export type StatusBadgeProps = (
     | { type: 'booking'; status: BookingStatus }
     | { type: 'payment'; status: PaymentStatus }
     | { type: 'document'; status: DocumentStatus }
+    | { type: 'user'; status: UserStatus }
 ) & { className?: string };
 
 /**
@@ -79,6 +81,18 @@ export function StatusBadge({ type, status, className }: StatusBadgeProps) {
             case 'Expired':
                 colorClass = 'bg-muted/50 text-muted-foreground hover:bg-muted/80 border-muted';
                 Icon = FileWarning;
+                break;
+        }
+    } else if (type === 'user') {
+        switch (status) {
+            case 'active':
+                colorClass = 'bg-success/20 text-success hover:bg-success/30 border-success/50';
+                Icon = CheckCircle;
+                break;
+            case 'inactive':
+            case 'suspended':
+                colorClass = 'bg-muted text-muted-foreground hover:bg-muted/80 border-muted-foreground/20';
+                Icon = XCircle;
                 break;
         }
     }

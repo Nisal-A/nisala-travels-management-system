@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Globe, Plane, Users, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Logo } from '@/Components/brand/Logo';
 
 export default function Welcome() {
     return (
@@ -12,14 +13,8 @@ export default function Welcome() {
 
             <main className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 flex flex-col items-center justify-center p-6 gap-12">
                 {/* ─── Hero ─── */}
-                <div className="text-center max-w-2xl">
-                    <div className="mb-8 flex justify-center">
-                        <div className="h-20 w-20 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center backdrop-blur-sm">
-                            <Globe className="h-10 w-10 text-primary" />
-                        </div>
-                    </div>
-
-                    <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">Nisala Travels</h1>
+                <div className="text-center max-w-2xl flex flex-col items-center">
+                    <Logo variant="full" size="xl" theme="dark" isDecorative className="mb-8 h-20 w-auto" />
                     <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                         Centralized travel agency management system — customers, bookings, tours, and more.
                     </p>

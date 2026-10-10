@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="public/brand/logo-full.svg" alt="Nisala Travels" width="240" />
+</div>
+
 # Nisala Travels Management System
 
 Centralized travel agency management system for Nisala Travels — customer management, document handling, tour packages, bookings, payments, and business operations.

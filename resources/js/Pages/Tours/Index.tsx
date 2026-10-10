@@ -97,7 +97,7 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to archive this tour package?')) {
-            router.delete(route('tours.destroy', id), {
+            router.delete(route('tours.destroy', { tour: id }), {
                 preserveScroll: true,
             });
         }
@@ -144,8 +144,9 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     <Select
                         value={destinationFilter}
                         onValueChange={(v) => {
-                            setDestinationFilter(v);
-                            applyFilters({ destination: v });
+                            const val = v as string;
+                            setDestinationFilter(val);
+                            applyFilters({ destination: val });
                         }}
                     >
                         <SelectTrigger className="w-full sm:w-[200px] bg-background">
@@ -164,8 +165,9 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     <Select
                         value={statusFilter}
                         onValueChange={(v) => {
-                            setStatusFilter(v);
-                            applyFilters({ status: v });
+                            const val = v as string;
+                            setStatusFilter(val);
+                            applyFilters({ status: val });
                         }}
                     >
                         <SelectTrigger className="w-full sm:w-[150px] bg-background">

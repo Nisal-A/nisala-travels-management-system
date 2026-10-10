@@ -12,9 +12,15 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    phone?: string | null;
+    avatar_url?: string | null;
     status: string;
     roles: UserRole[];
+    role?: string;
+    role_label?: string;
     permissions: string[];
+    created_at?: string;
+    updated_at?: string;
 }
 
 /** A single navigation item shared from the backend */
@@ -233,5 +239,6 @@ export interface CustomerDocument {
     file_size: number;
     status: string;
     expiry_date?: string;
+    created_at?: string;
     document_type?: DocumentType;
 }

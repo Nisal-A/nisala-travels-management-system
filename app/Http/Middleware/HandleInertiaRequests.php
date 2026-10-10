@@ -37,8 +37,11 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
+                    'phone' => $request->user()->phone,
+                    'avatar_url' => $request->user()->avatar_url,
                     'status' => $request->user()->status,
                     'roles' => $request->user()->getRoleNames(),
+                    'role_label' => $request->user()->getRoleNames()->first() ? str_replace('_', ' ', $request->user()->getRoleNames()->first()) : 'User',
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                 ] : null,
                 'unreadNotificationsCount' => fn () => $request->user() 

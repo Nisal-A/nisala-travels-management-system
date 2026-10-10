@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import CustomerPortalLayout from '@/components/layouts/CustomerPortalLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { getNotificationIcon, NotificationData } from '@/components/notifications/NotificationBell';
@@ -128,15 +128,17 @@ export default function PortalNotifications({ notifications, filter, group }: Pr
                                             
                                             <div className="flex items-center gap-3">
                                                 {data.url && (
-                                                    <Button variant="secondary" size="sm" asChild className="h-8 text-xs">
-                                                        <a href={data.url} onClick={(e) => {
+                                                    <a 
+                                                        href={data.url} 
+                                                        className={buttonVariants({ variant: 'secondary', size: 'sm', className: 'h-8 text-xs' })}
+                                                        onClick={(e) => {
                                                             if (isUnread) {
                                                                 markAsRead(notification.id);
                                                             }
-                                                        }}>
-                                                            View Details
-                                                        </a>
-                                                    </Button>
+                                                        }}
+                                                    >
+                                                        View Details
+                                                    </a>
                                                 )}
                                                 
                                                 {isUnread && (
@@ -164,20 +166,28 @@ export default function PortalNotifications({ notifications, filter, group }: Pr
                 {notifications.last_page > 1 && (
                     <div className="flex justify-center gap-2">
                         {notifications.links.map((link, i) => (
-                            <Button 
-                                key={i}
-                                variant={link.active ? 'default' : 'outline'}
-                                size="sm"
-                                disabled={!link.url}
-                                asChild={!!link.url}
-                                className={link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''}
-                            >
-                                {link.url ? (
-                                    <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
-                                ) : (
+                            link.url ? (
+                                <Link 
+                                    key={i}
+                                    href={link.url}
+                                    className={buttonVariants({
+                                        variant: link.active ? 'default' : 'outline',
+                                        size: 'sm',
+                                        className: link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''
+                                    })}
+                                    dangerouslySetInnerHTML={{ __html: link.label }} 
+                                />
+                            ) : (
+                                <Button 
+                                    key={i}
+                                    variant={link.active ? 'default' : 'outline'}
+                                    size="sm"
+                                    disabled
+                                    className={link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''}
+                                >
                                     <span dangerouslySetInnerHTML={{ __html: link.label }} />
-                                )}
-                            </Button>
+                                </Button>
+                            )
                         ))}
                     </div>
                 )}
