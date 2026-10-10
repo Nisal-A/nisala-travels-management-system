@@ -11,8 +11,10 @@
     --gradient-premium: linear-gradient(135deg, #052351 0%, #026E9F 55%, #0184BA 100%);
     --gradient-gold: linear-gradient(90deg, #FEC822 0%, #FE950B 100%);
 
-    --background: 0.97 0.01 90; /* Soft sand */
-    --foreground: 0.25 0.02 260; /* Charcoal text */
+    --background: 0.97 0.01 90;
+    /* Soft sand */
+    --foreground: 0.25 0.02 260;
+    /* Charcoal text */
     --card: 1 0 0;
     --card-foreground: 0.25 0.02 260;
     --popover: 1 0 0;
@@ -101,7 +103,8 @@
 }
 
 .dark {
-    --background: 0.15 0.01 260; /* Deep dark background */
+    --background: 0.15 0.01 260;
+    /* Deep dark background */
     --foreground: 0.97 0.01 90;
     --card: 0.2 0.02 260;
     --card-foreground: 0.97 0.01 90;
@@ -109,7 +112,8 @@
     --popover-foreground: 0.97 0.01 90;
 
     /* Brand Palette - Primary */
-    --primary: 0.82 0.15 70; /* Invert primary/accent for dark mode optionally, or keep primary */
+    --primary: 0.82 0.15 70;
+    /* Invert primary/accent for dark mode optionally, or keep primary */
     --primary-foreground: 0.2 0 0;
 
     /* Brand Palette - Accent */

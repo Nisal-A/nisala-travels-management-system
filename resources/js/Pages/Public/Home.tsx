@@ -10,7 +10,7 @@ import {
     MapPin, Compass, Shield, Heart, Phone, Stethoscope, UtensilsCrossed,
     Palmtree, Clock, ArrowRight, Star, ChevronDown
 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
 import * as Accordion from '@radix-ui/react-accordion';
 
@@ -24,19 +24,68 @@ import { WhyChooseUsSection } from '@/components/public/WhyChooseUsSection';
 import { TestimonialsSection } from '@/components/public/TestimonialsSection';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers & Constants
 // ---------------------------------------------------------------------------
 
 function formatLKR(value: number): string {
     return value.toLocaleString('en-LK');
 }
 
+const heroSlides = [
+    {
+        id: 1,
+        image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2070&auto=format&fit=crop',
+        headline: "Experience Sri Lanka's",
+        highlight: "Untamed Nature",
+        description: "Discover remarkable landscapes, wildlife and unforgettable journeys with Nisala Travels.",
+    },
+    {
+        id: 2,
+        image: 'https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?q=80&w=2070&auto=format&fit=crop',
+        headline: "Discover Your",
+        highlight: "Perfect Escape",
+        description: "Relax on pristine tropical beaches and swim in turquoise oceans crafted just for you.",
+    },
+    {
+        id: 3,
+        image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2070&auto=format&fit=crop',
+        headline: "Explore Culture and",
+        highlight: "Heritage",
+        description: "Step back in time and uncover ancient monuments, rich traditions, and historic landmarks.",
+    },
+    {
+        id: 4,
+        image: 'https://images.unsplash.com/photo-1620608516768-45a44018863f?q=80&w=2070&auto=format&fit=crop',
+        headline: "Find Your Next",
+        highlight: "Adventure",
+        description: "Trek through lush tea plantations, misty mountains, and breathtaking waterfalls.",
+    },
+    {
+        id: 5,
+        image: 'https://images.unsplash.com/photo-1528181304811-dd1ba3f0a3cc?q=80&w=2070&auto=format&fit=crop',
+        headline: "Your Next Journey",
+        highlight: "Starts Here",
+        description: "Explore our premium international tours to captivating destinations beyond Sri Lanka.",
+    },
+];
 
 // ---------------------------------------------------------------------------
 // COMPONENT
 // ---------------------------------------------------------------------------
 export default function Home() {
     const shouldReduceMotion = useReducedMotion();
+
+    // Hero Slider State
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [isHeroHovered, setIsHeroHovered] = useState(false);
+
+    useEffect(() => {
+        if (isHeroHovered || shouldReduceMotion) return;
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [isHeroHovered, shouldReduceMotion]);
 
     // Featured tours — client-side from static content
     const featuredTours = useMemo(() => tours.filter((t) => t.isFeatured), []);
@@ -108,64 +157,96 @@ export default function Home() {
             {/* ================================================================
                 1. HERO
             ================================================================ */}
-            <section className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-brand-navy flex items-center">
-                {/* Background Image */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2070&auto=format&fit=crop"
-                        alt="Sri Lankan Elephant in the wild"
-                        fetchPriority="high"
-                        loading="eager"
-                        className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
-                            }`}
-                    />
-                </div>
+            <section 
+                className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-brand-navy flex items-center"
+                onMouseEnter={() => setIsHeroHovered(true)}
+                onMouseLeave={() => setIsHeroHovered(false)}
+            >
+                {/* Background Image Slider */}
+                <AnimatePresence>
+                    <motion.div
+                        key={currentSlide}
+                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 z-0"
+                    >
+                        <img
+                            src={heroSlides[currentSlide].image}
+                            alt={heroSlides[currentSlide].highlight}
+                            fetchPriority={currentSlide === 0 ? "high" : "auto"}
+                            loading={currentSlide === 0 ? "eager" : "lazy"}
+                            className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''}`}
+                        />
+                    </motion.div>
+                </AnimatePresence>
 
                 {/* Subtle Navy Overlay for Readability */}
                 <div className="absolute inset-0 z-[1] bg-brand-navy/40 md:bg-gradient-to-r md:from-brand-navy/80 md:via-brand-navy/40 md:to-transparent" />
 
                 {/* Content */}
                 <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-0">
-                    <motion.div
-                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="max-w-2xl pt-16 md:pt-0"
-                    >
-                        {/* Gold Accent Line */}
-                        <div className="w-16 h-1.5 bg-brand-gold mb-8 rounded-full" />
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentSlide}
+                            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -15 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="max-w-2xl pt-16 md:pt-0"
+                        >
+                            {/* Gold Accent Line */}
+                            <div className="w-16 h-1.5 bg-brand-gold mb-8 rounded-full" />
 
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
-                            Experience Sri Lanka's<br />
-                            <span className="text-brand-gold">Untamed Nature</span>
-                        </h1>
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6 min-h-[120px] md:min-h-[160px]">
+                                {heroSlides[currentSlide].headline}<br />
+                                <span className="text-brand-gold">{heroSlides[currentSlide].highlight}</span>
+                            </h1>
 
-                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
-                            Discover remarkable landscapes, wildlife and unforgettable journeys with Nisala Travels.
-                        </p>
+                            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl min-h-[60px] md:min-h-[84px]">
+                                {heroSlides[currentSlide].description}
+                            </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button
-                                render={<Link href="/our-tours" />}
-                                size="public-lg"
-                                variant="public-accent"
-                                className="w-full sm:w-auto shadow-lg shadow-brand-gold/20"
-                            >
-                                View Tour Packages
-                            </Button>
-                            <Button
-                                render={<Link href="/contact" />}
-                                size="public-lg"
-                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 font-medium"
-                            >
-                                Plan My Holiday
-                            </Button>
-                        </div>
-                    </motion.div>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
+                                    render={<Link href="/our-tours" />}
+                                    size="public-lg"
+                                    variant="public-accent"
+                                    className="w-full sm:w-auto shadow-lg shadow-brand-gold/20"
+                                >
+                                    View Tour Packages
+                                </Button>
+                                <Button
+                                    render={<Link href="/contact" />}
+                                    size="public-lg"
+                                    className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 font-medium"
+                                >
+                                    Plan My Holiday
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+                
+                {/* Slider Indicators */}
+                <div className="absolute bottom-16 md:bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+                    {heroSlides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            aria-label={`Go to slide ${index + 1}`}
+                            className={`transition-all duration-300 rounded-full ${
+                                currentSlide === index 
+                                    ? 'w-10 h-2.5 bg-brand-gold shadow-[0_0_8px_rgba(254,200,34,0.6)]' 
+                                    : 'w-2.5 h-2.5 bg-transparent border border-white hover:bg-white/50'
+                            }`}
+                        />
+                    ))}
                 </div>
                 
                 {/* Scroll Indicator */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center animate-bounce">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center animate-bounce">
                     <span className="text-white/70 text-xs uppercase tracking-widest mb-2 font-medium">Scroll down</span>
                     <ChevronDown className="w-5 h-5 text-brand-gold" />
                 </div>
