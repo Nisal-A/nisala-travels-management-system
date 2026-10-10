@@ -7,7 +7,7 @@
     --brand-orange: #FE950B;
     --brand-white: #FFFFFF;
 
-    --gradient-navbar: linear-gradient(90deg, #052351 0%, #026E9F 60%, #0184BA 100%);
+    --gradient-navbar: linear-gradient(to bottom left, #052351 0%, #026E9F 55%, #0184BA 100%);
     --gradient-premium: linear-gradient(135deg, #052351 0%, #026E9F 55%, #0184BA 100%);
     --gradient-gold: linear-gradient(90deg, #FEC822 0%, #FE950B 100%);
 

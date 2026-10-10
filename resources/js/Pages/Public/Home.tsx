@@ -112,8 +112,8 @@ export default function Home() {
                 {/* Background Image */}
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="/images/hero/hero-poster.jpg"
-                        alt="Beautiful tropical landscape at sunset"
+                        src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2070&auto=format&fit=crop"
+                        alt="Sri Lankan Elephant in the wild"
                         fetchPriority="high"
                         loading="eager"
                         className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
@@ -121,11 +121,11 @@ export default function Home() {
                     />
                 </div>
 
-                {/* Navy Overlay for Readability */}
-                <div className="absolute inset-0 z-[1] bg-brand-navy/70 md:bg-gradient-to-r md:from-brand-navy/95 md:via-brand-navy/70 md:to-transparent" />
+                {/* Subtle Navy Overlay for Readability */}
+                <div className="absolute inset-0 z-[1] bg-brand-navy/40 md:bg-gradient-to-r md:from-brand-navy/80 md:via-brand-navy/40 md:to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-0">
                     <motion.div
                         initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -136,14 +136,12 @@ export default function Home() {
                         <div className="w-16 h-1.5 bg-brand-gold mb-8 rounded-full" />
 
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
-                            Discover New Places.<br />
-                            Create New Stories.
+                            Experience Sri Lanka's<br />
+                            <span className="text-brand-gold">Untamed Nature</span>
                         </h1>
 
                         <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
-                            Experience meticulously crafted journeys tailored to your preferences.
-                            From relaxing getaways to cultural explorations, we handle every detail
-                            so you can immerse yourself in the moment.
+                            Discover remarkable landscapes, wildlife and unforgettable journeys with Nisala Travels.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
@@ -153,17 +151,23 @@ export default function Home() {
                                 variant="public-accent"
                                 className="w-full sm:w-auto shadow-lg shadow-brand-gold/20"
                             >
-                                Explore Tour Packages
+                                View Tour Packages
                             </Button>
                             <Button
                                 render={<Link href="/contact" />}
                                 size="public-lg"
-                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20"
+                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 font-medium"
                             >
-                                Plan Your Journey
+                                Plan My Holiday
                             </Button>
                         </div>
                     </motion.div>
+                </div>
+                
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center animate-bounce">
+                    <span className="text-white/70 text-xs uppercase tracking-widest mb-2 font-medium">Scroll down</span>
+                    <ChevronDown className="w-5 h-5 text-brand-gold" />
                 </div>
             </section>
 

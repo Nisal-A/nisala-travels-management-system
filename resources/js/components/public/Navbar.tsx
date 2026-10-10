@@ -96,9 +96,11 @@ export function Navbar() {
         { name: 'Contact Us', href: '/contact' },
     ];
 
+    const isHomePage = url === '/' || url.startsWith('/?');
+
     return (
         <>
-            <header className={`sticky top-0 z-50 bg-gradient-navbar transition-all duration-300 ${scrolled ? 'shadow-sm py-2' : 'py-4'}`}>
+            <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${!isHomePage || scrolled ? 'bg-gradient-navbar shadow-sm py-2' : 'bg-transparent py-4'}`}>
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex items-center justify-between">
                     <Link href="/" className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md" aria-label="Nisala Travels Home">
                         <img
