@@ -92,7 +92,7 @@ export function Navbar() {
                 { name: 'Interactive Tour Finder', href: '/interactive-tours' },
             ]
         },
-        { name: 'About Us', href: '/about' },
+        { name: 'About Us', href: '/#about-us' },
         { name: 'Contact Us', href: '/contact' },
     ];
 

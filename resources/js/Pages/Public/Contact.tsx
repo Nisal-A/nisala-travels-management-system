@@ -1,6 +1,6 @@
 import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect } from 'react';
-import {  Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,11 +209,11 @@ export default function Contact() {
         <PublicLayout>
             <SEOHead title="Contact Us" description="Get in touch with Nisala Travels to plan your next dream vacation to Thailand, India or beyond." url="/contact" />
 
-            <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
+            <div className="bg-brand-navy pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                 <div className="container mx-auto text-center text-white relative z-10">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">Start Your Journey</h1>
-                    <p className="text-lg text-neutral-300">Tell us what you're looking for, and we'll craft the perfect itinerary.</p>
+                    <p className="text-lg text-white/80">Tell us what you're looking for, and we'll craft the perfect itinerary.</p>
                 </div>
             </div>
 
@@ -224,11 +224,11 @@ export default function Contact() {
                         {/* Progress Indicator */}
                         <div className="mb-10 flex items-center justify-between relative">
                             <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-neutral-200 -z-10" />
-                            <div className="absolute left-0 top-1/2 h-0.5 bg-primary transition-all duration-300 -z-10" style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }} />
+                            <div className="absolute left-0 top-1/2 h-0.5 bg-brand-navy transition-all duration-300 -z-10" style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }} />
 
                             {STEPS.map((step, index) => (
                                 <div key={step} className="flex flex-col items-center">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-colors ${currentStep >= index ? 'bg-primary text-white shadow-md' : 'bg-white text-neutral-400 border-2 border-neutral-200'}`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-colors ${currentStep >= index ? 'bg-brand-navy text-white shadow-md' : 'bg-white text-neutral-400 border-2 border-neutral-200'}`}>
                                         {currentStep > index ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
                                     </div>
                                     <span className={`text-xs font-semibold hidden sm:block ${currentStep >= index ? 'text-neutral-900' : 'text-neutral-400'}`}>{step}</span>
@@ -256,12 +256,12 @@ export default function Contact() {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'tour' ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
-                                        <input type="radio" value="tour" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
+                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'tour' ? 'border-brand-navy bg-brand-navy/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
+                                        <input type="radio" value="tour" {...register('tripInterestType')} className="text-brand-navy focus:ring-brand-navy w-5 h-5 mr-3" />
                                         <span className="font-bold">I know the tour package</span>
                                     </label>
-                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'destination' ? 'border-primary bg-primary/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
-                                        <input type="radio" value="destination" {...register('tripInterestType')} className="text-primary focus:ring-primary w-5 h-5 mr-3" />
+                                    <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-colors ${formData.tripInterestType === 'destination' ? 'border-brand-navy bg-brand-navy/5' : 'border-neutral-200 hover:border-neutral-300'}`}>
+                                        <input type="radio" value="destination" {...register('tripInterestType')} className="text-brand-navy focus:ring-brand-navy w-5 h-5 mr-3" />
                                         <span className="font-bold">I have a destination in mind</span>
                                     </label>
                                 </div>
@@ -269,7 +269,7 @@ export default function Contact() {
                                 {formData.tripInterestType === 'tour' && (
                                     <div className="space-y-2 animate-in fade-in zoom-in-95">
                                         <label htmlFor="tour_package_id" className="block font-semibold text-neutral-700">Select Tour Package</label>
-                                        <select id="tour_package_id" {...register('tour_package_id')} aria-invalid={!!errors.tour_package_id} aria-describedby="tour_package_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
+                                        <select id="tour_package_id" {...register('tour_package_id')} aria-invalid={!!errors.tour_package_id} aria-describedby="tour_package_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-brand-navy focus:border-brand-navy bg-white px-4">
                                             <option value="">-- Choose a package --</option>
                                             {tours.map(t => (
                                                 <option key={t.id} value={t.id}>{t.package_name} ({t.destination})</option>
@@ -282,7 +282,7 @@ export default function Contact() {
                                 {formData.tripInterestType === 'destination' && (
                                     <div className="space-y-2 animate-in fade-in zoom-in-95">
                                         <label htmlFor="destination_interest" className="block font-semibold text-neutral-700">Destination Interest</label>
-                                        <select id="destination_interest" {...register('destination_interest')} aria-invalid={!!errors.destination_interest} aria-describedby="destination_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
+                                        <select id="destination_interest" {...register('destination_interest')} aria-invalid={!!errors.destination_interest} aria-describedby="destination_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-brand-navy focus:border-brand-navy bg-white px-4">
                                             <option value="">-- Choose a destination --</option>
                                             {destinations.map(d => (
                                                 <option key={d} value={d}>{d}</option>
@@ -302,7 +302,7 @@ export default function Contact() {
                                                     key={type}
                                                     type="button"
                                                     onClick={() => toggleTripType(type)}
-                                                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${isSelected ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'}`}
+                                                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${isSelected ? 'bg-brand-navy text-white border-brand-navy shadow-md' : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'}`}
                                                 >
                                                     {type}
                                                 </button>
@@ -326,7 +326,7 @@ export default function Contact() {
                                         {errors.preferred_travel_month && <p id="travel_month_error" className="text-red-500 text-sm mt-1">{errors.preferred_travel_month.message}</p>}
                                     </div>
                                     <label className="flex items-center cursor-pointer">
-                                        <input type="checkbox" {...register('flexibleDates')} className="w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3" />
+                                        <input type="checkbox" {...register('flexibleDates')} className="w-5 h-5 rounded text-brand-navy focus:ring-brand-navy border-neutral-300 mr-3" />
                                         <span className="text-neutral-700">My dates are flexible</span>
                                     </label>
                                 </div>
@@ -358,7 +358,7 @@ export default function Contact() {
 
                                 <div>
                                     <label className="block font-semibold text-neutral-700 mb-2">Approximate Budget (Optional)</label>
-                                    <select {...register('budget')} className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
+                                    <select {...register('budget')} className="w-full h-12 rounded-xl border-neutral-300 focus:ring-brand-navy focus:border-brand-navy bg-white px-4">
                                         <option value="">Not sure yet</option>
                                         <option value="Under $1,500 per person">Under $1,500 per person</option>
                                         <option value="$1,500 - $3,000 per person">$1,500 - $3,000 per person</option>
@@ -399,7 +399,7 @@ export default function Contact() {
                                     <div className="flex gap-4">
                                         {['WhatsApp', 'Email', 'Phone'].map(method => (
                                             <label key={method} className="flex items-center cursor-pointer">
-                                                <input type="radio" value={method} {...register('preferredContactMethod')} className="text-primary focus:ring-primary w-4 h-4 mr-2" />
+                                                <input type="radio" value={method} {...register('preferredContactMethod')} className="text-brand-navy focus:ring-brand-navy w-4 h-4 mr-2" />
                                                 <span className="text-neutral-700">{method}</span>
                                             </label>
                                         ))}
@@ -411,15 +411,15 @@ export default function Contact() {
                                         <label htmlFor="message" className="block font-semibold text-neutral-700">Additional Message</label>
                                         <span className="text-xs text-neutral-400">{formData.message?.length || 0}/2000</span>
                                     </div>
-                                    <textarea id="message" {...register('message')} rows={4} className="w-full rounded-xl border-neutral-300 focus:ring-primary focus:border-primary p-4 resize-none" placeholder="Any special requirements, dietary needs, or places you must see..." aria-invalid={!!errors.message} aria-describedby={errors.message ? "message_error" : undefined}></textarea>
+                                    <textarea id="message" {...register('message')} rows={4} className="w-full rounded-xl border-neutral-300 focus:ring-brand-navy focus:border-brand-navy p-4 resize-none" placeholder="Any special requirements, dietary needs, or places you must see..." aria-invalid={!!errors.message} aria-describedby={errors.message ? "message_error" : undefined}></textarea>
                                     {errors.message && <p id="message_error" className="text-red-500 text-sm">{errors.message.message}</p>}
                                 </div>
 
                                 <div className="pt-4 border-t border-neutral-100">
                                     <label htmlFor="consent" className="flex items-start cursor-pointer group">
-                                        <input id="consent" type="checkbox" {...register('consent')} aria-invalid={!!errors.consent} aria-describedby="consent_error" className="mt-1 w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3 flex-shrink-0" />
+                                        <input id="consent" type="checkbox" {...register('consent')} aria-invalid={!!errors.consent} aria-describedby="consent_error" className="mt-1 w-5 h-5 rounded text-brand-navy focus:ring-brand-navy border-neutral-300 mr-3 flex-shrink-0" />
                                         <span className="text-sm text-neutral-600 leading-relaxed group-hover:text-neutral-900 transition-colors">
-                                            I agree to the <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and consent to Nisala Travels contacting me regarding this inquiry.
+                                            I agree to the <Link href="/privacy" className="text-brand-navy hover:underline">Privacy Policy</Link> and consent to Nisala Travels contacting me regarding this inquiry.
                                         </span>
                                     </label>
                                     {errors.consent && <p id="consent_error" className="text-red-500 text-sm mt-2 ml-8">{errors.consent.message}</p>}
@@ -462,24 +462,24 @@ export default function Contact() {
 
                             <div className="space-y-6 relative z-10">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><MapPin className="w-5 h-5" /></div>
+                                    <div className="w-10 h-10 rounded-full bg-brand-navy/10 flex items-center justify-center text-brand-navy shrink-0"><MapPin className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Head Office</h4>
                                         <p className="text-neutral-600 text-sm leading-relaxed">{company.address}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Phone className="w-5 h-5" /></div>
+                                    <div className="w-10 h-10 rounded-full bg-brand-navy/10 flex items-center justify-center text-brand-navy shrink-0"><Phone className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Call Us</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`tel:${company.phone}`} className="hover:text-primary transition-colors">{company.phone}</a></p>
+                                        <p className="text-neutral-600 text-sm"><a href={`tel:${company.phone}`} className="hover:text-brand-navy transition-colors">{company.phone}</a></p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0"><Mail className="w-5 h-5" /></div>
+                                    <div className="w-10 h-10 rounded-full bg-brand-navy/10 flex items-center justify-center text-brand-navy shrink-0"><Mail className="w-5 h-5" /></div>
                                     <div>
                                         <h4 className="font-bold text-neutral-900 mb-1">Email</h4>
-                                        <p className="text-neutral-600 text-sm"><a href={`mailto:${company.email}`} className="hover:text-primary transition-colors">{company.email}</a></p>
+                                        <p className="text-neutral-600 text-sm"><a href={`mailto:${company.email}`} className="hover:text-brand-navy transition-colors">{company.email}</a></p>
                                     </div>
                                 </div>
                             </div>
@@ -503,7 +503,7 @@ export default function Contact() {
                             <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" alt="Map Location" />
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg font-bold text-neutral-900 flex items-center gap-2">
-                                    <MapPin className="w-5 h-5 text-primary" /> View on Map
+                                    <MapPin className="w-5 h-5 text-brand-navy" /> View on Map
                                 </div>
                             </div>
                         </div>

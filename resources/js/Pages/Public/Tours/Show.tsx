@@ -75,7 +75,7 @@ export default function TourDetail({ slug }: { slug: string }) {
         return (
             <PublicLayout>
                 <div className="min-h-screen pt-24 pb-16 px-4 flex flex-col items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                    <div className="w-12 h-12 border-4 border-brand-navy border-t-transparent rounded-full animate-spin mb-4" />
                     <p className="text-neutral-500 font-medium">Loading tour details...</p>
                 </div>
             </PublicLayout>
@@ -119,9 +119,9 @@ export default function TourDetail({ slug }: { slug: string }) {
             {/* Breadcrumbs */}
             <div className="bg-neutral-50 pt-24 pb-4 px-4 border-b border-neutral-200">
                 <div className="container mx-auto flex items-center gap-2 text-sm text-neutral-500 font-medium">
-                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/" className="hover:text-brand-navy transition-colors">Home</Link>
                     <ChevronRight className="w-3.5 h-3.5" />
-                    <Link href="/tours" className="hover:text-primary transition-colors">Tours</Link>
+                    <Link href="/tours" className="hover:text-brand-navy transition-colors">Tours</Link>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <span className="text-neutral-900 truncate">{tour.package_name}</span>
                 </div>
@@ -133,7 +133,7 @@ export default function TourDetail({ slug }: { slug: string }) {
                     <Reveal>
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                             <div className="flex-1">
-                                <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm mb-4">
+                                <div className="inline-flex items-center gap-1.5 bg-brand-navy/10 text-brand-navy font-bold px-3 py-1 rounded-full text-sm mb-4">
                                     <MapPin className="w-4 h-4" /> {tour.destination}
                                 </div>
                                 <h1 className="text-3xl md:text-5xl font-black tracking-tight text-neutral-900 leading-tight">{tour.package_name}</h1>
@@ -178,14 +178,14 @@ export default function TourDetail({ slug }: { slug: string }) {
                         <Reveal>
                             <div className="flex flex-wrap gap-4 mb-10 pb-10 border-b border-neutral-200">
                                 <div className="flex items-center gap-3 bg-neutral-50 px-5 py-3 rounded-2xl border border-neutral-100">
-                                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Clock className="w-5 h-5" /></div>
+                                    <div className="w-10 h-10 bg-brand-navy/10 rounded-full flex items-center justify-center text-brand-navy"><Clock className="w-5 h-5" /></div>
                                     <div>
                                         <div className="text-xs text-neutral-500 font-semibold">DURATION</div>
                                         <div className="font-bold text-neutral-900">{tour.duration_days} Days</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 bg-neutral-50 px-5 py-3 rounded-2xl border border-neutral-100">
-                                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Users className="w-5 h-5" /></div>
+                                    <div className="w-10 h-10 bg-brand-navy/10 rounded-full flex items-center justify-center text-brand-navy"><Users className="w-5 h-5" /></div>
                                     <div>
                                         <div className="text-xs text-neutral-500 font-semibold">TOUR TYPE</div>
                                         <div className="font-bold text-neutral-900">Private / Tailored</div>
@@ -219,7 +219,7 @@ export default function TourDetail({ slug }: { slug: string }) {
                                         <Accordion.Header>
                                             <Accordion.Trigger className="flex justify-between items-center w-full p-6 text-left group hover:bg-neutral-50 transition-colors">
                                                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
-                                                    <span className="text-primary font-black text-lg min-w-[80px]">{item.day}</span>
+                                                    <span className="text-brand-navy font-black text-lg min-w-[80px]">{item.day}</span>
                                                     <span className="font-bold text-neutral-900 text-lg">{item.title}</span>
                                                 </div>
                                                 <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center group-hover:bg-neutral-200 transition-colors shrink-0">
@@ -277,14 +277,14 @@ export default function TourDetail({ slug }: { slug: string }) {
                                     <label className="block text-sm font-bold text-neutral-900 mb-2">Preferred Travel Date</label>
                                     <div className="relative">
                                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                                        <input type="date" className="w-full pl-12 h-14 border-2 border-neutral-100 rounded-xl focus:ring-primary focus:border-primary text-base transition-colors" />
+                                        <input type="date" className="w-full pl-12 h-14 border-2 border-neutral-100 rounded-xl focus:ring-brand-navy focus:border-brand-navy text-base transition-colors" />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-neutral-900 mb-2">Number of Travelers</label>
                                     <div className="relative">
                                         <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                                        <select className="w-full pl-12 h-14 border-2 border-neutral-100 rounded-xl focus:ring-primary focus:border-primary text-base bg-white transition-colors appearance-none outline-none">
+                                        <select className="w-full pl-12 h-14 border-2 border-neutral-100 rounded-xl focus:ring-brand-navy focus:border-brand-navy text-base bg-white transition-colors appearance-none outline-none">
                                             {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} {n===1?'Person':'People'}</option>)}
                                         </select>
                                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none" />
@@ -324,7 +324,7 @@ export default function TourDetail({ slug }: { slug: string }) {
                                                     <img src={t.hero_image || 'https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800&auto=format&fit=crop'} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
                                                 </div>
                                                 <div className="p-6 flex flex-col flex-grow">
-                                                    <h3 className="font-bold text-lg mb-2 line-clamp-2 text-white group-hover:text-primary transition-colors">{t.package_name}</h3>
+                                                    <h3 className="font-bold text-lg mb-2 line-clamp-2 text-white group-hover:text-brand-navy transition-colors">{t.package_name}</h3>
                                                     <p className="text-sm text-neutral-400 mb-6 flex-grow">{t.duration_days} Days</p>
                                                     <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
                                                         <span className="text-sm text-neutral-400 block">From</span>

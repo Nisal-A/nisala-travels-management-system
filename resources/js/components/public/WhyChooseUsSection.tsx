@@ -40,8 +40,8 @@ export function WhyChooseUsSection() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <Reveal>
-                        <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">The Nisala Difference</span>
-                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">
+                        <span className="inline-block bg-brand-gold text-brand-navy text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">The Nisala Difference</span>
+                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-navy mb-6">
                             Why Choose Us
                         </h2>
                         {/* [DRAFT: needs owner approval] */}
@@ -55,10 +55,10 @@ export function WhyChooseUsSection() {
                     {features.map((feature, idx) => (
                         <Reveal key={feature.title} delay={idx * 0.1}>
                             <div className="p-8 rounded-2xl bg-neutral-50 border border-neutral-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group h-full flex flex-col">
-                                <div className="w-14 h-14 rounded-full bg-primary/5 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                                <div className="w-14 h-14 rounded-full bg-brand-navy/5 text-brand-navy flex items-center justify-center mb-6 group-hover:bg-brand-navy group-hover:text-white transition-colors duration-300">
                                     <feature.icon className="w-6 h-6" />
                                 </div>
-                                <h3 className="text-xl font-bold text-primary mb-3 font-serif">
+                                <h3 className="text-xl font-bold text-brand-navy mb-3 font-serif">
                                     {feature.title}
                                 </h3>
                                 <p className="text-neutral-600 leading-relaxed text-sm">

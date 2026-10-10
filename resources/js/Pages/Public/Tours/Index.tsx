@@ -27,6 +27,7 @@ export default function ToursIndex() {
     
     const [filters, setFilters] = useState({
         destination: queryParams.get('destination') || '',
+        level: queryParams.get('level') || '',
         duration: queryParams.get('duration_range') || '',
         price_min: queryParams.get('price_min') || '',
         price_max: queryParams.get('price_max') || '',
@@ -144,7 +145,7 @@ export default function ToursIndex() {
         <PublicLayout>
             <SEOHead title="Tour Packages" description="Browse and filter our premium tour packages to find your perfect getaway. Explore our hand-picked selections." url="/our-tours" />
             
-            <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
+            <div className="bg-brand-navy pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                 <div className="container mx-auto text-center text-white relative z-10">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">Explore Our Tours</h1>
@@ -172,7 +173,7 @@ export default function ToursIndex() {
                         <div>
                             <h3 className="font-semibold mb-3 text-neutral-900">Destination</h3>
                             <select 
-                                className="w-full border-neutral-200 rounded-lg h-11 px-3 bg-white focus:ring-primary focus:border-primary"
+                                className="w-full border-neutral-200 rounded-lg h-11 px-3 bg-white focus:ring-brand-navy focus:border-brand-navy"
                                 value={filters.destination}
                                 onChange={(e) => setFilter('destination', e.target.value)}
                             >
@@ -186,7 +187,7 @@ export default function ToursIndex() {
                         <div>
                             <h3 className="font-semibold mb-3 text-neutral-900">Level</h3>
                             <select 
-                                className="w-full border-neutral-200 rounded-lg h-11 px-3 bg-white focus:ring-primary focus:border-primary"
+                                className="w-full border-neutral-200 rounded-lg h-11 px-3 bg-white focus:ring-brand-navy focus:border-brand-navy"
                                 value={filters.level || ''}
                                 onChange={(e) => setFilter('level', e.target.value)}
                             >
@@ -206,7 +207,7 @@ export default function ToursIndex() {
                                             name="duration" 
                                             checked={filters.duration === dur} 
                                             onChange={() => setFilter('duration', dur)} 
-                                            className="w-4 h-4 text-primary border-neutral-300 focus:ring-primary"
+                                            className="w-4 h-4 text-brand-navy border-neutral-300 focus:ring-brand-navy"
                                         />
                                         <span className="text-neutral-600 group-hover:text-neutral-900">{dur === '' ? 'Any Duration' : `${dur} Days`}</span>
                                     </label>
@@ -217,7 +218,7 @@ export default function ToursIndex() {
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <h3 className="font-semibold text-neutral-900">Max Price</h3>
-                                <span className="text-sm font-bold text-primary">${priceMax}</span>
+                                <span className="text-sm font-bold text-brand-navy">${priceMax}</span>
                             </div>
                             <input 
                                 type="range" 
@@ -226,7 +227,7 @@ export default function ToursIndex() {
                                 step="100" 
                                 value={priceMax} 
                                 onChange={handlePriceChange} 
-                                className="w-full accent-primary h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
+                                className="w-full accent-brand-navy h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
                             />
                         </div>
                     </div>
@@ -243,7 +244,7 @@ export default function ToursIndex() {
                         <div className="flex items-center gap-2">
                             <Button variant="outline" className="md:hidden rounded-full" onClick={() => setShowMobileFilters(true)}>
                                 <Filter className="w-4 h-4 mr-2" />
-                                Filters {activeFilterCount > 0 && <span className="ml-1 bg-primary text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{activeFilterCount}</span>}
+                                Filters {activeFilterCount > 0 && <span className="ml-1 bg-brand-navy text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{activeFilterCount}</span>}
                             </Button>
                             <p className="text-neutral-600 hidden md:block">
                                 {loading ? 'Searching...' : `Found ${tours.length} ${tours.length === 1 ? 'tour' : 'tours'}`}
@@ -253,7 +254,7 @@ export default function ToursIndex() {
                         <div className="flex items-center gap-2 self-end sm:self-auto">
                             <span className="text-sm text-neutral-500 font-medium hidden sm:inline">Sort by:</span>
                             <select 
-                                className="border-neutral-200 rounded-lg h-10 px-3 text-sm bg-white focus:ring-primary focus:border-primary"
+                                className="border-neutral-200 rounded-lg h-10 px-3 text-sm bg-white focus:ring-brand-navy focus:border-brand-navy"
                                 value={filters.sort}
                                 onChange={(e) => setFilter('sort', e.target.value)}
                             >
@@ -279,7 +280,7 @@ export default function ToursIndex() {
                                     </span>
                                 );
                             })}
-                            <button onClick={clearAllFilters} className="text-sm text-primary font-medium hover:underline ml-2">Clear all</button>
+                            <button onClick={clearAllFilters} className="text-sm text-brand-navy font-medium hover:underline ml-2">Clear all</button>
                         </div>
                     )}
 
