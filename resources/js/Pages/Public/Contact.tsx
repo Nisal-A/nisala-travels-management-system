@@ -1,5 +1,6 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import {  Link, usePage } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { MapPin, Calendar, Users, Phone, Mail, MessageCircle, Clock, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { company } from '@/config/company';
+import { site as company } from '@/content/site';
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 import axios from 'axios';
 
@@ -53,6 +54,7 @@ export default function Contact() {
 
     const [currentStep, setCurrentStep] = useState(0);
     const [tours, setTours] = useState<any[]>([]);
+    const [destinations, setDestinations] = useState<any[]>([]);
     const [isSuccess, setIsSuccess] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
 
@@ -69,7 +71,7 @@ export default function Contact() {
         form_start_time: Date.now()
     };
 
-    const { register, handleSubmit, control, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
+    const { register, handleSubmit, setError, control, watch, setValue, trigger, formState: { errors, isSubmitting } } = useForm<FormInput, unknown, FormData>({
         resolver: zodResolver(formSchema),
         defaultValues
     });
@@ -77,7 +79,7 @@ export default function Contact() {
     const formData = watch();
 
     useEffect(() => {
-        // Fetch tours for dropdown
+        // Fetch tours and destinations for dropdown
         axios.get('/api/public/tours', { params: { per_page: 100 } }).then(res => {
             setTours(res.data.data);
             if (initialTourSlug) {
@@ -87,6 +89,9 @@ export default function Contact() {
                     setValue('tripInterestType', 'tour');
                 }
             }
+        });
+        axios.get('/api/public/destinations').then(res => {
+            setDestinations(res.data.data || res.data); // handles both paginated and direct array formats
         });
     }, [initialTourSlug, setValue]);
 
@@ -136,13 +141,23 @@ export default function Contact() {
         };
 
         try {
-            await axios.post('/api/public/inquiries', payload);
+            await axios.post('/inquiries', payload);
             setIsSuccess(true);
             sessionStorage.removeItem('contactFormData');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error: any) {
             if (error.response?.status === 429) {
                 setServerError("Too many inquiries from this email address. Please try again later.");
+            } else if (error.response?.status === 422 && error.response?.data?.errors) {
+                const serverErrors = error.response.data.errors;
+                Object.keys(serverErrors).forEach((field) => {
+                    // @ts-ignore
+                    setError(field as keyof FormInput, {
+                        type: 'server',
+                        message: serverErrors[field][0],
+                    });
+                });
+                setServerError("Please correct the errors in the form.");
             } else {
                 setServerError(error.response?.data?.message || "An error occurred while submitting your inquiry. Please try again.");
             }
@@ -161,7 +176,7 @@ export default function Contact() {
     if (isSuccess) {
         return (
             <PublicLayout>
-                <Head title="Thank You | Nisala Travels" />
+                <SEOHead title="Thank You" description="Thank you for inquiring with Nisala Travels. We will get back to you soon." url="/contact" />
                 <div className="min-h-screen pt-32 pb-24 px-4 flex items-center justify-center bg-neutral-50">
                     <div className="max-w-2xl w-full bg-white p-8 md:p-12 rounded-3xl shadow-xl text-center border border-neutral-100">
                         <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8">
@@ -192,7 +207,7 @@ export default function Contact() {
 
     return (
         <PublicLayout>
-            <Head title="Contact Us | Nisala Travels" />
+            <SEOHead title="Contact Us" description="Get in touch with Nisala Travels to plan your next dream vacation to Thailand, India or beyond." url="/contact" />
 
             <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
@@ -253,23 +268,29 @@ export default function Contact() {
 
                                 {formData.tripInterestType === 'tour' && (
                                     <div className="space-y-2 animate-in fade-in zoom-in-95">
-                                        <label className="block font-semibold text-neutral-700">Select Tour Package</label>
-                                        <select {...register('tour_package_id')} className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
+                                        <label htmlFor="tour_package_id" className="block font-semibold text-neutral-700">Select Tour Package</label>
+                                        <select id="tour_package_id" {...register('tour_package_id')} aria-invalid={!!errors.tour_package_id} aria-describedby="tour_package_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
                                             <option value="">-- Choose a package --</option>
                                             {tours.map(t => (
                                                 <option key={t.id} value={t.id}>{t.package_name} ({t.destination})</option>
                                             ))}
                                         </select>
+                                        {errors.tour_package_id && <p id="tour_package_error" className="text-red-500 text-sm">{errors.tour_package_id.message}</p>}
                                     </div>
                                 )}
 
                                 {formData.tripInterestType === 'destination' && (
                                     <div className="space-y-2 animate-in fade-in zoom-in-95">
-                                        <label className="block font-semibold text-neutral-700">Destination Interest</label>
-                                        <Input {...register('destination_interest')} placeholder="e.g. Sri Lanka, Maldives, or specific cities..." className="h-12 rounded-xl" />
+                                        <label htmlFor="destination_interest" className="block font-semibold text-neutral-700">Destination Interest</label>
+                                        <select id="destination_interest" {...register('destination_interest')} aria-invalid={!!errors.destination_interest} aria-describedby="destination_error" className="w-full h-12 rounded-xl border-neutral-300 focus:ring-primary focus:border-primary bg-white px-4">
+                                            <option value="">-- Choose a destination --</option>
+                                            {destinations.map(d => (
+                                                <option key={d} value={d}>{d}</option>
+                                            ))}
+                                        </select>
+                                        {errors.destination_interest && <p id="destination_error" className="text-red-500 text-sm">{errors.destination_interest.message}</p>}
                                     </div>
                                 )}
-                                {errors.destination_interest && <p className="text-red-500 text-sm">{errors.destination_interest.message}</p>}
 
                                 <div>
                                     <label className="block font-semibold text-neutral-700 mb-3">Trip Style (Optional)</label>
@@ -300,9 +321,9 @@ export default function Contact() {
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block font-semibold text-neutral-700 mb-2">Preferred Travel Month / Dates <span className="text-red-500">*</span></label>
-                                        <Input {...register('preferred_travel_month')} placeholder="e.g. November 2026 or Nov 10 - Nov 20" className="h-12 rounded-xl" />
-                                        {errors.preferred_travel_month && <p className="text-red-500 text-sm mt-1">{errors.preferred_travel_month.message}</p>}
+                                        <label htmlFor="preferred_travel_month" className="block font-semibold text-neutral-700 mb-2">Preferred Travel Month / Dates <span className="text-red-500">*</span></label>
+                                        <Input id="preferred_travel_month" {...register('preferred_travel_month')} placeholder="e.g. November 2026 or Nov 10 - Nov 20" className="h-12 rounded-xl" aria-invalid={!!errors.preferred_travel_month} aria-describedby="travel_month_error" />
+                                        {errors.preferred_travel_month && <p id="travel_month_error" className="text-red-500 text-sm mt-1">{errors.preferred_travel_month.message}</p>}
                                     </div>
                                     <label className="flex items-center cursor-pointer">
                                         <input type="checkbox" {...register('flexibleDates')} className="w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3" />
@@ -355,21 +376,21 @@ export default function Contact() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block font-semibold text-neutral-700">Full Name <span className="text-red-500">*</span></label>
-                                    <Input {...register('name')} placeholder="John Doe" className="h-12 rounded-xl" />
-                                    {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                                    <label htmlFor="name" className="block font-semibold text-neutral-700">Full Name <span className="text-red-500">*</span></label>
+                                    <Input id="name" {...register('name')} placeholder="John Doe" className="h-12 rounded-xl" aria-invalid={!!errors.name} aria-describedby="name_error" />
+                                    {errors.name && <p id="name_error" className="text-red-500 text-sm">{errors.name.message}</p>}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="block font-semibold text-neutral-700">Email Address <span className="text-red-500">*</span></label>
-                                        <Input type="email" {...register('email')} placeholder="john@example.com" className="h-12 rounded-xl" />
-                                        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+                                        <label htmlFor="email" className="block font-semibold text-neutral-700">Email Address <span className="text-red-500">*</span></label>
+                                        <Input id="email" type="email" {...register('email')} placeholder="john@example.com" className="h-12 rounded-xl" aria-invalid={!!errors.email} aria-describedby="email_error" />
+                                        {errors.email && <p id="email_error" className="text-red-500 text-sm">{errors.email.message}</p>}
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="block font-semibold text-neutral-700">Phone Number <span className="text-red-500">*</span></label>
-                                        <Input type="tel" {...register('phone')} placeholder="+94 77 123 4567" className="h-12 rounded-xl" />
-                                        {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+                                        <label htmlFor="phone" className="block font-semibold text-neutral-700">Phone Number <span className="text-red-500">*</span></label>
+                                        <Input id="phone" type="tel" {...register('phone')} placeholder="+94 77 123 4567" className="h-12 rounded-xl" aria-invalid={!!errors.phone} aria-describedby="phone_error" />
+                                        {errors.phone && <p id="phone_error" className="text-red-500 text-sm">{errors.phone.message}</p>}
                                     </div>
                                 </div>
 
@@ -387,20 +408,21 @@ export default function Contact() {
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
-                                        <label className="block font-semibold text-neutral-700">Additional Message</label>
+                                        <label htmlFor="message" className="block font-semibold text-neutral-700">Additional Message</label>
                                         <span className="text-xs text-neutral-400">{formData.message?.length || 0}/2000</span>
                                     </div>
-                                    <textarea {...register('message')} rows={4} className="w-full rounded-xl border-neutral-300 focus:ring-primary focus:border-primary p-4 resize-none" placeholder="Any special requirements, dietary needs, or places you must see..."></textarea>
+                                    <textarea id="message" {...register('message')} rows={4} className="w-full rounded-xl border-neutral-300 focus:ring-primary focus:border-primary p-4 resize-none" placeholder="Any special requirements, dietary needs, or places you must see..." aria-invalid={!!errors.message} aria-describedby={errors.message ? "message_error" : undefined}></textarea>
+                                    {errors.message && <p id="message_error" className="text-red-500 text-sm">{errors.message.message}</p>}
                                 </div>
 
                                 <div className="pt-4 border-t border-neutral-100">
-                                    <label className="flex items-start cursor-pointer group">
-                                        <input type="checkbox" {...register('consent')} className="mt-1 w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3 flex-shrink-0" />
+                                    <label htmlFor="consent" className="flex items-start cursor-pointer group">
+                                        <input id="consent" type="checkbox" {...register('consent')} aria-invalid={!!errors.consent} aria-describedby="consent_error" className="mt-1 w-5 h-5 rounded text-primary focus:ring-primary border-neutral-300 mr-3 flex-shrink-0" />
                                         <span className="text-sm text-neutral-600 leading-relaxed group-hover:text-neutral-900 transition-colors">
                                             I agree to the <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> and consent to Nisala Travels contacting me regarding this inquiry.
                                         </span>
                                     </label>
-                                    {errors.consent && <p className="text-red-500 text-sm mt-2 ml-8">{errors.consent.message}</p>}
+                                    {errors.consent && <p id="consent_error" className="text-red-500 text-sm mt-2 ml-8">{errors.consent.message}</p>}
                                 </div>
 
                                 <div className="bg-neutral-50 p-4 rounded-xl text-sm text-neutral-600 mt-4 border border-neutral-200">

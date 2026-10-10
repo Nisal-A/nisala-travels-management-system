@@ -21,6 +21,9 @@ class PublicTourController extends Controller
         if ($request->filled('destination')) {
             $query->whereHas('destination', fn ($q) => $q->where('country', $request->destination)->orWhere('city_region', $request->destination)->orWhere('id', $request->destination));
         }
+        if ($request->filled('level')) {
+            $query->where('package_name', 'like', '%'.$request->level.'%');
+        }
         if ($request->filled('duration_min')) {
             $query->where('duration_days', '>=', $request->duration_min);
         }

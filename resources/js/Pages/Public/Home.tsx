@@ -1,255 +1,430 @@
-import { useState, useEffect } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { SEOHead } from '@/components/public/SEOHead';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import {  Link } from '@inertiajs/react';
+import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
+import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, MapPin, Calendar, Star, Clock, Heart, Shield, ArrowRight } from 'lucide-react';
-import axios from 'axios';
-
-// Embla carousel for featured tours
+import {
+    MapPin, Compass, Shield, Heart, Phone, Stethoscope, UtensilsCrossed,
+    Palmtree, Clock, ArrowRight, Star, ChevronDown
+} from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
-
-// Radix Accordion for FAQ
 import * as Accordion from '@radix-ui/react-accordion';
-import { ChevronDown } from 'lucide-react';
 
+import { tours, type TourPackage } from '@/content/tours';
+import { testimonials } from '@/content/testimonials';
+import { faqs } from '@/content/faqs';
+import { site } from '@/content/site';
+import { DestinationCard } from '@/components/public/DestinationCard';
+import { AboutSection } from '@/components/public/AboutSection';
+import { WhyChooseUsSection } from '@/components/public/WhyChooseUsSection';
+import { TestimonialsSection } from '@/components/public/TestimonialsSection';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatLKR(value: number): string {
+    return value.toLocaleString('en-LK');
+}
+
+
+// ---------------------------------------------------------------------------
+// COMPONENT
+// ---------------------------------------------------------------------------
 export default function Home() {
-    const [destination, setDestination] = useState('');
-    const [month, setMonth] = useState('');
+    const shouldReduceMotion = useReducedMotion();
 
-    const [featuredTours, setFeaturedTours] = useState<any[]>([]);
-    const [loadingTours, setLoadingTours] = useState(true);
-    const [emblaRef] = useEmblaCarousel({ loop: false, align: 'start' });
+    // Featured tours — client-side from static content
+    const featuredTours = useMemo(() => tours.filter((t) => t.isFeatured), []);
+
+    // Embla
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        loop: false,
+        align: 'start',
+        slidesToScroll: 1,
+        containScroll: 'trimSnaps',
+    });
+    const [canScrollPrev, setCanScrollPrev] = useState(false);
+    const [canScrollNext, setCanScrollNext] = useState(false);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setCanScrollPrev(emblaApi.canScrollPrev());
+        setCanScrollNext(emblaApi.canScrollNext());
+    }, [emblaApi]);
 
     useEffect(() => {
-        axios.get('/api/public/tours/featured')
-            .then(res => {
-                setFeaturedTours(res.data.data);
-                setLoadingTours(false);
-            })
-            .catch(() => setLoadingTours(false));
-    }, []);
+        if (!emblaApi) return;
+        onSelect();
+        emblaApi.on('select', onSelect);
+        emblaApi.on('reInit', onSelect);
+    }, [emblaApi, onSelect]);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.get('/tours', { destination, month });
-    };
+    // Fetch destinations
+    const [destinations, setDestinations] = useState<any[]>([]);
+    const [loadingDestinations, setLoadingDestinations] = useState(true);
+
+    useEffect(() => {
+        axios.get('/api/public/destinations').then(res => {
+            if (res.data.length > 0) {
+                const uniqueCountries = Array.from(new Set(res.data.map((d: any) => d.country))).filter(Boolean) as string[];
+                const mapped = uniqueCountries.map(country => {
+                    const dest = res.data.find((d: any) => d.country === country);
+                    return {
+                        name: country,
+                        description: dest.description || undefined,
+                        image: undefined, // No image column in DB schema
+                        href: `/our-tours?destination=${encodeURIComponent(country)}`
+                    };
+                });
+                setDestinations(mapped);
+            } else {
+                setDestinations([
+                    {
+                        name: 'Thailand',
+                        description: 'Escape in Style',
+                        image: '/images/thailand/phuket.jpg',
+                        href: '/our-tours?destination=Thailand'
+                    },
+                    {
+                        name: 'India',
+                        description: 'Journeys Made Comfortable',
+                        image: '/images/india/taj-mahal.jpg',
+                        href: '/our-tours?destination=India'
+                    }
+                ]);
+            }
+        }).catch(console.error).finally(() => setLoadingDestinations(false));
+    }, []);
 
     return (
         <PublicLayout>
-            <Head title="Premium Travel & Tour Packages | Nisala Travels" />
+            <SEOHead title="Premium Travel & Tour Packages to Thailand & India" description="Creating unforgettable travel experiences tailored to your dreams. We handle the details, you enjoy the journey." url="/" image="/images/hero/hero-poster.jpg" />
 
-            {/* 1. HERO SECTION */}
-            <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
+            {/* ================================================================
+                1. HERO
+            ================================================================ */}
+            <section className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-primary flex items-center">
+                {/* Background Image */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-neutral-900/40 z-10" />
                     <img
-                        src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop"
-                        alt="Beautiful travel destination"
-                        className="w-full h-full object-cover"
+                        src="/images/hero/hero-poster.jpg"
+                        alt="Beautiful tropical landscape at sunset"
+                        fetchPriority="high"
                         loading="eager"
+                        className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
+                            }`}
                     />
                 </div>
 
-                <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-                    <Reveal delay={0.2}>
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
-                            Discover the World <br /> With Confidence
-                        </h1>
-                    </Reveal>
-                    <Reveal delay={0.4}>
-                        <p className="text-lg md:text-xl text-neutral-200 mb-10 max-w-2xl mx-auto font-medium shadow-sm">
-                            Tailored itineraries, premium experiences, and memories that last a lifetime.
-                        </p>
-                    </Reveal>
+                {/* Navy Overlay for Readability */}
+                <div className="absolute inset-0 z-[1] bg-primary/70 md:bg-gradient-to-r md:from-primary/95 md:via-primary/70 md:to-transparent" />
 
-                    <Reveal delay={0.6}>
-                        <div className="max-w-4xl mx-auto bg-white p-3 rounded-2xl md:rounded-full shadow-2xl">
-                            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-3">
-                                <div className="flex-1 relative">
-                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                                    <Input
-                                        type="text"
-                                        placeholder="Where do you want to go?"
-                                        className="w-full pl-12 h-14 border-0 bg-neutral-50 rounded-xl md:rounded-l-full md:rounded-r-none text-lg focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-white transition-colors"
-                                        value={destination}
-                                        onChange={(e) => setDestination(e.target.value)}
-                                    />
-                                </div>
-                                <div className="w-px bg-neutral-200 hidden md:block my-2" />
-                                <div className="flex-1 relative">
-                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
-                                    <select
-                                        className="w-full pl-12 h-14 border-0 bg-neutral-50 rounded-xl md:rounded-none text-lg text-neutral-600 focus:ring-1 focus:ring-primary focus:bg-white transition-colors appearance-none outline-none"
-                                        value={month}
-                                        onChange={(e) => setMonth(e.target.value)}
-                                    >
-                                        <option value="">Any month</option>
-                                        <option value="January">January</option>
-                                        <option value="February">February</option>
-                                        <option value="March">March</option>
-                                        <option value="April">April</option>
-                                        <option value="May">May</option>
-                                        <option value="June">June</option>
-                                        <option value="July">July</option>
-                                        <option value="August">August</option>
-                                        <option value="September">September</option>
-                                        <option value="October">October</option>
-                                        <option value="November">November</option>
-                                        <option value="December">December</option>
-                                    </select>
-                                </div>
-                                <Button type="submit" size="lg" className="h-14 md:w-40 rounded-xl md:rounded-r-full md:rounded-l-none text-lg font-semibold gap-2">
-                                    <Search className="w-5 h-5" />
-                                    Search
-                                </Button>
-                            </form>
+                {/* Content */}
+                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="max-w-2xl pt-16 md:pt-0"
+                    >
+                        {/* Gold Accent Line */}
+                        <div className="w-16 h-1.5 bg-accent mb-8 rounded-full" />
+
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
+                            Discover New Places.<br />
+                            Create New Stories.
+                        </h1>
+
+                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
+                            Experience meticulously crafted journeys tailored to your preferences.
+                            From relaxing getaways to cultural explorations, we handle every detail
+                            so you can immerse yourself in the moment.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                render={<Link href="/our-tours" />}
+                                size="public-lg"
+                                variant="public-accent"
+                                className="w-full sm:w-auto shadow-lg shadow-accent/20"
+                            >
+                                Explore Tour Packages
+                            </Button>
+                            <Button
+                                render={<Link href="/contact" />}
+                                size="public-lg"
+                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20"
+                            >
+                                Plan Your Journey
+                            </Button>
                         </div>
-                    </Reveal>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* 2. FEATURED TOURS CAROUSEL */}
-            <section className="py-24 bg-neutral-50">
+            {/* ================================================================
+                2. DESTINATIONS GRID
+            ================================================================ */}
+            <section className="py-24 md:py-32 bg-white">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
-                        <div className="flex justify-between items-end mb-12">
+                        <div className="text-center mb-16">
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Explore the world</span>
+                            <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary">Popular Destinations</h2>
+                        </div>
+                    </Reveal>
+
+                    {loadingDestinations ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {[1, 2].map(i => (
+                                <div key={i} className="animate-pulse bg-neutral-200 aspect-[4/5] sm:aspect-square md:aspect-[3/4] rounded-2xl" />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-center">
+                            {destinations.map((dest, idx) => (
+                                <Reveal key={dest.name} delay={idx * 100}>
+                                    <DestinationCard
+                                        name={dest.name}
+                                        description={dest.description}
+                                        image={dest.image}
+                                        href={dest.href}
+                                    />
+                                </Reveal>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* ================================================================
+                3. FEATURED TOURS CAROUSEL
+            ================================================================ */}
+            <section className="py-24 md:py-32 bg-background">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <Reveal>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
                             <div>
-                                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-4">Featured Tours</h2>
-                                <p className="text-lg text-neutral-600">Handpicked packages for your next adventure.</p>
+                                <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Handpicked packages</span>
+                                <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Featured Tours</h2>
                             </div>
-                            <Link href="/tours" className="hidden md:flex items-center text-primary font-medium hover:underline gap-1">
+                            <Link href="/our-tours" className="hidden sm:flex items-center text-sm text-primary font-semibold hover:text-accent gap-1.5 transition-colors">
                                 View all tours <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
                     </Reveal>
 
-                    <Reveal delay={0.2}>
-                        <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
-                            <div className="flex gap-6 pb-8" style={{ backfaceVisibility: 'hidden', touchAction: 'pan-y' }}>
-                                {loadingTours ? (
-                                    // Skeletons
-                                    Array.from({ length: 4 }).map((_, i) => (
-                                        <div key={i} className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.333%] lg:flex-[0_0_25%] min-w-0">
-                                            <div className="bg-white rounded-2xl h-96 animate-pulse p-4 flex flex-col justify-end border border-neutral-100">
-                                                <div className="h-4 bg-neutral-200 rounded w-1/3 mb-2" />
-                                                <div className="h-6 bg-neutral-200 rounded w-3/4 mb-4" />
-                                                <div className="h-4 bg-neutral-200 rounded w-1/2" />
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : featuredTours.length > 0 ? (
-                                    featuredTours.map((tour) => (
-                                        <div key={tour.id} className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.333%] lg:flex-[0_0_25%] min-w-0 group">
-                                            <Link href={`/tours/${tour.slug || tour.id}`} className="block h-full">
-                                                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-neutral-100 relative group-hover:-translate-y-1">
-                                                    <div className="absolute top-4 left-4 z-10">
-                                                        <span className="bg-white/90 backdrop-blur-sm text-neutral-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                    <Reveal delay={0.15}>
+                        <div className="relative">
+                            <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
+                                <div className="flex gap-6" style={{ touchAction: 'pan-y' }}>
+                                    {featuredTours.map((tour) => (
+                                        <div key={tour.slug} className="flex-[0_0_85%] sm:flex-[0_0_48%] lg:flex-[0_0_31.5%] min-w-0 group">
+                                            <Link href={`/our-tours/${tour.slug}`} className="block h-full">
+                                                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-neutral-200/60 group-hover:-translate-y-1">
+                                                    {/* Image */}
+                                                    <div className="h-56 overflow-hidden bg-neutral-100 relative">
+                                                        <div
+                                                            className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                                            style={{ backgroundImage: `url('${tour.galleryImages[0] ?? ''}')` }}
+                                                            role="img"
+                                                            aria-label={tour.title}
+                                                        />
+                                                        {/* Destination badge */}
+                                                        <span className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${tour.destination === 'Thailand'
+                                                            ? 'bg-thailand/90 text-white'
+                                                            : 'bg-india/90 text-white'
+                                                            }`}>
                                                             {tour.destination}
                                                         </span>
+                                                        {/* Audience tag */}
+                                                        <span className="absolute top-3 right-3 text-[11px] font-medium bg-white/90 backdrop-blur-sm text-neutral-700 px-2.5 py-1 rounded-full">
+                                                            {tour.audienceTag}
+                                                        </span>
                                                     </div>
-                                                    <div className="h-56 overflow-hidden bg-neutral-200 relative">
-                                                        <img
-                                                            src={tour.hero_image || `https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800&auto=format&fit=crop&random=${tour.id}`}
-                                                            alt={tour.package_name}
-                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                            loading="lazy"
-                                                        />
-                                                    </div>
-                                                    <div className="p-6 flex-grow flex flex-col">
-                                                        <h3 className="text-xl font-bold text-neutral-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">{tour.package_name}</h3>
-                                                        <div className="flex items-center gap-4 text-sm text-neutral-500 mb-6 mt-auto">
-                                                            <div className="flex items-center gap-1">
-                                                                <Clock className="w-4 h-4" /> {tour.duration_days} Days
-                                                            </div>
+                                                    {/* Content */}
+                                                    <div className="p-5 flex-grow flex flex-col">
+                                                        <h3 className="text-lg font-bold text-foreground mb-1.5 line-clamp-2 group-hover:text-primary transition-colors font-serif">
+                                                            {tour.title}
+                                                        </h3>
+                                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{tour.shortDescription}</p>
+                                                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-5 mt-auto">
+                                                            <span className="flex items-center gap-1">
+                                                                <Clock className="w-3.5 h-3.5" /> {tour.durationNights}N / {tour.durationDays}D
+                                                            </span>
+                                                            {tour.tags.slice(0, 2).map((tag) => (
+                                                                <span key={tag} className="bg-secondary px-2 py-0.5 rounded-full">{tag}</span>
+                                                            ))}
                                                         </div>
                                                         <div className="flex items-center justify-between pt-4 border-t border-neutral-100">
                                                             <div>
-                                                                <span className="text-xs text-neutral-500 block">From</span>
-                                                                <span className="text-lg font-bold text-neutral-900">{tour.currency} {tour.price_from?.toLocaleString()}</span>
+                                                                <span className="text-[11px] text-muted-foreground block uppercase tracking-wider">From</span>
+                                                                <span className="text-lg font-bold text-foreground">LKR {formatLKR(tour.priceFrom)}</span>
                                                             </div>
-                                                            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                                                <ArrowRight className="w-5 h-5" />
+                                                            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                                                                <ArrowRight className="w-4 h-4" />
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </Link>
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="w-full text-center py-12 text-neutral-500">
-                                        No featured tours available at the moment.
-                                    </div>
-                                )}
+                                    ))}
+                                </div>
                             </div>
+                            {/* Carousel Arrows */}
+                            {emblaApi && (
+                                <div className="flex gap-2 mt-6 justify-center sm:justify-end">
+                                    <button
+                                        onClick={() => emblaApi.scrollPrev()}
+                                        disabled={!canScrollPrev}
+                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        aria-label="Previous tours"
+                                    >
+                                        <ArrowRight className="w-4 h-4 rotate-180" />
+                                    </button>
+                                    <button
+                                        onClick={() => emblaApi.scrollNext()}
+                                        disabled={!canScrollNext}
+                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        aria-label="Next tours"
+                                    >
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </Reveal>
-                </div>
-            </section>
 
-            {/* 3. POPULAR DESTINATIONS */}
-            <section className="py-24 bg-white">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <Reveal>
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-4">Popular Destinations</h2>
-                            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">Explore our most sought-after locations for your next holiday.</p>
-                        </div>
-                    </Reveal>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            { name: 'Sri Lanka', image: 'https://images.unsplash.com/photo-1588258524340-410a51c41b80?q=80&w=600&auto=format&fit=crop' },
-                            { name: 'Maldives', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?q=80&w=600&auto=format&fit=crop' },
-                            { name: 'Dubai', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=600&auto=format&fit=crop' },
-                            { name: 'Singapore', image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=600&auto=format&fit=crop' }
-                        ].map((dest, i) => (
-                            <Reveal key={dest.name} delay={i * 0.1}>
-                                <Link href={`/tours?destination=${dest.name}`} className="group block relative h-80 rounded-2xl overflow-hidden shadow-md">
-                                    <div className="absolute inset-0 bg-neutral-900/30 group-hover:bg-neutral-900/20 transition-colors z-10" />
-                                    <img src={dest.image} alt={dest.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                    <div className="absolute inset-0 z-20 flex flex-col justify-end p-6">
-                                        <h3 className="text-2xl font-bold text-white mb-1 group-hover:translate-x-2 transition-transform">{dest.name}</h3>
-                                        <span className="text-white/90 text-sm font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all">
-                                            Explore Tours <ArrowRight className="w-4 h-4" />
-                                        </span>
-                                    </div>
-                                </Link>
-                            </Reveal>
-                        ))}
+                    {/* Mobile "View all" link */}
+                    <div className="sm:hidden mt-8 text-center">
+                        <Link href="/our-tours" className="text-sm text-primary font-semibold">View all tours &rarr;</Link>
                     </div>
                 </div>
             </section>
 
-            {/* 4. WHY CHOOSE US */}
-            <section className="py-24 bg-neutral-950 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3" />
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* ================================================================
+                3.5 ABOUT US
+            ================================================================ */}
+            <AboutSection />
+
+            {/* ================================================================
+                4. WHY CHOOSE US
+            ================================================================ */}
+            <WhyChooseUsSection />
+
+            {/* ================================================================
+                5. SENIOR CARE PROMISE (India)
+            ================================================================ */}
+            <section className="py-20 md:py-28 bg-background overflow-hidden">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                        <Reveal>
+                            <div>
+                                <span className="inline-flex items-center gap-2 text-india text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                                    <Heart className="w-4 h-4" /> India tours
+                                </span>
+                                <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground mb-6">
+                                    Our Senior Care Promise
+                                </h2>
+                                <p className="text-base text-muted-foreground leading-relaxed mb-8">
+                                    We understand that travel in the elder years requires extra care, patience, and attention. Every India itinerary
+                                    is designed with your comfort as the top priority.
+                                </p>
+                                <ul className="space-y-4">
+                                    {[
+                                        'Dedicated Sinhala/Tamil-speaking tour escort on every trip',
+                                        'Slow, comfortable pace — no rushing between destinations',
+                                        'Wheelchair-friendly hotels and assisted temple visits',
+                                        'Vegetarian and Sri Lankan-style meals throughout',
+                                        'Medical support and emergency assistance on standby',
+                                        'Senior-friendly ground transport with regular rest stops',
+                                    ].map((item) => (
+                                        <li key={item} className="flex items-start gap-3 text-sm text-foreground">
+                                            <div className="w-5 h-5 rounded-full bg-india/15 text-india flex items-center justify-center shrink-0 mt-0.5">
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="mt-8">
+                                    <Button
+                                        render={<Link href="/our-tours?destination=India" />}
+                                        className="rounded-full px-6 bg-india text-white hover:bg-india/90 h-11"
+                                    >
+                                        Browse India Tours
+                                    </Button>
+                                </div>
+                            </div>
+                        </Reveal>
+                        <Reveal delay={0.2}>
+                            <div className="relative">
+                                <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-neutral-100">
+                                    {/* TODO: Replace with real photo of seniors at Bodhgaya temple */}
+                                    <div
+                                        className="w-full h-full bg-cover bg-center"
+                                        style={{ backgroundImage: `url('/images/india/bodhgaya.jpg')` }}
+                                        role="img"
+                                        aria-label="Senior pilgrims at Bodhgaya temple in India"
+                                    />
+                                </div>
+                                {/* Floating stat card */}
+                                <div className="absolute -bottom-4 -left-4 md:-bottom-6 md:-left-6 bg-white rounded-2xl p-5 shadow-xl border border-neutral-100">
+                                    <span className="text-3xl font-bold text-india block">100%</span>
+                                    <span className="text-xs text-muted-foreground">Assisted Travel</span>
+                                </div>
+                            </div>
+                        </Reveal>
+                    </div>
+                </div>
+            </section>
+
+            {/* ================================================================
+                6. THAILAND EXPERIENCES — Bento Grid
+            ================================================================ */}
+            <section className="py-20 md:py-28 bg-white">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Why Travel With Us</h2>
-                            <p className="text-lg text-neutral-400 max-w-2xl mx-auto">We don't just book trips, we design unforgettable experiences tailored to your exact needs.</p>
+                        <div className="mb-12">
+                            <span className="inline-flex items-center gap-2 text-thailand text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                                <Palmtree className="w-4 h-4" /> Thailand
+                            </span>
+                            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground mb-3">Experiences Awaiting You</h2>
+                            <p className="text-base text-muted-foreground max-w-lg">
+                                From tranquil spas to street food adventures — every day in Thailand is a new story.
+                            </p>
                         </div>
                     </Reveal>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[180px] md:auto-rows-[200px]">
                         {[
-                            { icon: <MapPin className="w-8 h-8 text-primary" />, title: 'Local Expertise', desc: 'Deep knowledge of destinations to uncover hidden gems and authentic experiences.' },
-                            { icon: <Star className="w-8 h-8 text-primary" />, title: 'Tailored Itineraries', desc: 'Every trip is customized to fit your personal style, pace, and preferences.' },
-                            { icon: <Shield className="w-8 h-8 text-primary" />, title: 'Transparent Pricing', desc: 'No hidden fees. You get premium service with clear, upfront costs.' },
-                            { icon: <Heart className="w-8 h-8 text-primary" />, title: '24/7 Support', desc: 'We are with you every step of the way, providing assistance whenever you need it.' }
-                        ].map((feature, i) => (
-                            <Reveal key={feature.title} delay={i * 0.1}>
-                                <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 p-8 rounded-2xl hover:bg-neutral-800 transition-colors">
-                                    <div className="w-16 h-16 rounded-2xl bg-neutral-950 flex items-center justify-center mb-6 shadow-inner">
-                                        {feature.icon}
+                            { title: 'Island Hopping', image: '/images/thailand/island-hopping.jpg', span: 'md:col-span-2 md:row-span-2' },
+                            { title: 'Spa & Wellness', image: '/images/thailand/spa.jpg', span: '' },
+                            { title: 'Street Food', image: '/images/thailand/food.jpg', span: '' },
+                            { title: 'Rooftop Dining', image: '/images/thailand/rooftop.jpg', span: '' },
+                            { title: 'Temples & Culture', image: '/images/thailand/chiangmai.jpg', span: '' },
+                            { title: 'Beaches', image: '/images/thailand/krabi.jpg', span: 'col-span-2' },
+                        ].map((exp, i) => (
+                            <Reveal key={exp.title} delay={i * 0.06}>
+                                <div className={`relative rounded-2xl overflow-hidden group cursor-pointer h-full ${exp.span}`}>
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                                        style={{ backgroundImage: `url('${exp.image}')` }}
+                                        role="img"
+                                        aria-label={exp.title}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                                        <h3 className="text-white text-sm md:text-base font-bold">{exp.title}</h3>
                                     </div>
-                                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                                    <p className="text-neutral-400 leading-relaxed text-sm">
-                                        {feature.desc}
-                                    </p>
                                 </div>
                             </Reveal>
                         ))}
@@ -257,116 +432,116 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* 5. HOW IT WORKS */}
-            <section className="py-24 bg-white">
+            {/* ================================================================
+                7. HOW IT WORKS — 3 Steps
+            ================================================================ */}
+            <section className="py-20 md:py-28 bg-background">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
-                        <div className="text-center mb-20">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-4">How It Works</h2>
-                            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">Your dream holiday is just three simple steps away.</p>
+                        <div className="text-center mb-16">
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Simple process</span>
+                            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Three Steps to Your Journey</h2>
                         </div>
                     </Reveal>
 
-                    <div className="flex flex-col md:flex-row justify-center gap-12 relative">
-                        <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-neutral-100 z-0" />
+                    <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-12 relative max-w-4xl mx-auto">
+                        {/* Connector line */}
+                        <div className="hidden md:block absolute top-10 left-[15%] right-[15%] h-px bg-neutral-200 z-0" />
+
                         {[
-                            { step: '01', title: 'Tell Us', desc: 'Share your dreams, dates, and preferences through our simple form.' },
-                            { step: '02', title: 'We Plan', desc: 'Our experts craft a personalized itinerary tailored exactly to your needs.' },
-                            { step: '03', title: 'You Travel', desc: 'Pack your bags and enjoy a seamless, unforgettable holiday experience.' }
+                            { step: '01', title: 'Tell Us Your Dream Trip', desc: 'Share your preferred destination, dates, pace, and any special requirements through our enquiry form.' },
+                            { step: '02', title: 'We Design It For You', desc: 'Our experts craft a personalised itinerary with handpicked hotels, experiences, and local insights.' },
+                            { step: '03', title: 'You Travel With Confidence', desc: 'Enjoy a seamless, worry-free journey with 24/7 support and every detail taken care of.' },
                         ].map((item, i) => (
-                            <Reveal key={item.step} delay={i * 0.2} className="flex-1 relative z-10 text-center">
-                                <div className="w-24 h-24 mx-auto bg-white border-8 border-neutral-50 rounded-full flex items-center justify-center shadow-lg mb-8">
-                                    <span className="text-2xl font-black text-primary">{item.step}</span>
+                            <Reveal key={item.step} delay={i * 0.15} className="flex-1 relative z-10 text-center">
+                                <div className="w-20 h-20 mx-auto bg-white border-4 border-background rounded-full flex items-center justify-center shadow-lg mb-6 ring-4 ring-accent/10">
+                                    <span className="text-xl font-bold text-primary font-serif">{item.step}</span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-neutral-900 mb-3">{item.title}</h3>
-                                <p className="text-neutral-600 px-4">{item.desc}</p>
+                                <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed px-2">{item.desc}</p>
                             </Reveal>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* 6. TESTIMONIALS */}
-            <section className="py-24 bg-neutral-50 overflow-hidden">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            {/* ================================================================
+                8. TESTIMONIALS
+            ================================================================ */}
+            <TestimonialsSection />
+
+            {/* ================================================================
+                9. FAQ
+            ================================================================ */}
+            <section className="py-20 md:py-28 bg-background">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
                     <Reveal>
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-4">What Our Travelers Say</h2>
+                        <div className="text-center mb-12">
+                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Got questions?</span>
+                            <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Frequently Asked Questions</h2>
                         </div>
                     </Reveal>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            { name: "Sarah Jenkins", trip: "Maldives Honeymoon", text: "Absolutely flawless execution. Everything from the transfers to the resort was perfect. Nisala Travels made our honeymoon truly magical." },
-                            { name: "Michael Chang", trip: "Sri Lanka Explorer", text: "The local guides were incredible and the itinerary was perfectly paced. I saw parts of the country I would never have found on my own." },
-                            { name: "Emma Thompson", trip: "Dubai City Break", text: "Highly professional service. They handled a last-minute flight change seamlessly. I'll definitely be booking my next trip with them." }
-                        ].map((review, i) => (
-                            <Reveal key={i} delay={i * 0.1}>
-                                <div className="bg-white p-8 rounded-3xl shadow-sm border border-neutral-100 h-full flex flex-col relative">
-                                    <div className="flex text-amber-400 mb-6">
-                                        {[1, 2, 3, 4, 5].map(star => <Star key={star} className="w-5 h-5 fill-current" />)}
-                                    </div>
-                                    <p className="text-neutral-700 leading-relaxed italic mb-8 flex-grow">"{review.text}"</p>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
-                                            {review.name.charAt(0)}
+                    <Reveal delay={0.1}>
+                        <Accordion.Root type="single" collapsible className="w-full space-y-3">
+                            {faqs.map((faq, i) => (
+                                <Accordion.Item
+                                    key={i}
+                                    value={`faq-${i}`}
+                                    className="border border-neutral-200/60 rounded-xl overflow-hidden bg-white"
+                                >
+                                    <Accordion.Header>
+                                        <Accordion.Trigger className="flex justify-between items-center w-full p-5 md:p-6 font-semibold text-left text-foreground hover:text-primary transition-colors group text-sm md:text-base min-h-[48px]">
+                                            {faq.question}
+                                            <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform duration-300 shrink-0 ml-4" />
+                                        </Accordion.Trigger>
+                                    </Accordion.Header>
+                                    <Accordion.Content className="overflow-hidden text-muted-foreground data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp">
+                                        <div className="px-5 md:px-6 pb-5 md:pb-6 leading-relaxed text-sm">
+                                            {faq.answer}
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-neutral-900">{review.name}</h4>
-                                            <span className="text-xs text-neutral-500">{review.trip}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Reveal>
-                        ))}
-                    </div>
+                                    </Accordion.Content>
+                                </Accordion.Item>
+                            ))}
+                        </Accordion.Root>
+                    </Reveal>
                 </div>
             </section>
 
-            {/* 7. FAQ */}
-            <section className="py-24 bg-white max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <Reveal>
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-4">Frequently Asked Questions</h2>
-                    </div>
-                </Reveal>
-
-                <Reveal delay={0.2}>
-                    <Accordion.Root type="single" collapsible className="w-full space-y-4">
-                        {[
-                            { q: 'Do you provide visa assistance?', a: 'Yes, we provide comprehensive guidance and assistance for visa applications to all our featured destinations.' },
-                            { q: 'Can I customize a pre-packaged tour?', a: 'Absolutely. All our itineraries serve as inspiration and can be completely tailored to match your specific interests, dates, and budget.' },
-                            { q: 'What payment methods do you accept?', a: 'We accept major credit cards (Visa, Mastercard, Amex), bank transfers, and secure online payment gateways. Payment plans are also available for bookings made well in advance.' },
-                            { q: 'What is your cancellation policy?', a: 'Our cancellation policy varies depending on the specific package and suppliers involved. Detailed terms will be provided with your personalized itinerary proposal.' },
-                        ].map((faq, i) => (
-                            <Accordion.Item key={i} value={`item-${i}`} className="border border-neutral-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                                <Accordion.Header>
-                                    <Accordion.Trigger className="flex justify-between items-center w-full p-6 font-semibold text-left text-neutral-900 hover:text-primary transition-colors group">
-                                        {faq.q}
-                                        <ChevronDown className="w-5 h-5 text-neutral-400 group-data-[state=open]:rotate-180 transition-transform duration-300" />
-                                    </Accordion.Trigger>
-                                </Accordion.Header>
-                                <Accordion.Content className="overflow-hidden text-neutral-600 data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp">
-                                    <div className="p-6 pt-0 leading-relaxed text-sm">
-                                        {faq.a}
-                                    </div>
-                                </Accordion.Content>
-                            </Accordion.Item>
-                        ))}
-                    </Accordion.Root>
-                </Reveal>
-            </section>
-
-            {/* 8. CTA BAND */}
-            <section className="py-24 bg-primary relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay" />
+            {/* ================================================================
+                10. FINAL CTA BAND
+            ================================================================ */}
+            <section className="relative py-24 md:py-32 overflow-hidden">
+                {/* Background */}
+                <div className="absolute inset-0">
+                    <div
+                        className="w-full h-full bg-cover bg-center"
+                        style={{ backgroundImage: `url('/images/thailand/samui.jpg')` }}
+                    />
+                    <div className="absolute inset-0 bg-[#0b1a3d]/80" />
+                </div>
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                     <Reveal>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to plan your trip?</h2>
-                        <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">Let our experts craft the perfect holiday experience for you. Get in touch today for a free consultation.</p>
-                        <Button render={<Link href="/contact" />} size="lg" variant="secondary" className="h-14 px-10 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all">
-                            Enquire Now
-                        </Button>
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white mb-5 tracking-tight">
+                            Ready to plan your journey?
+                        </h2>
+                        <p className="text-base md:text-lg text-white/70 mb-10 max-w-xl mx-auto">
+                            Tell us your dream trip and let our team design the perfect experience for you. Free consultation, no obligations.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Button
+                                render={<Link href="/contact" />}
+                                size="lg"
+                                className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shadow-xl hover:shadow-2xl transition-all"
+                            >
+                                Plan My Trip
+                            </Button>
+                            <WhatsAppButton
+                                variant="button"
+                                label="Chat on WhatsApp"
+                                text="Hi! I'm interested in planning a trip with Nisala Travels."
+                            />
+                        </div>
                     </Reveal>
                 </div>
             </section>

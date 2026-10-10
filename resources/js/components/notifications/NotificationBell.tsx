@@ -189,13 +189,20 @@ export const NotificationBell = ({ isCustomer = false }: { isCustomer?: boolean 
                     )}
                 </ScrollArea>
 
-                <div className="p-2 border-t text-center">
+                <div className="p-2 border-t flex flex-col gap-1">
                     <Link
                         href={notificationsUrl}
                         onClick={() => setIsOpen(false)}
                         className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full text-xs text-gray-500" })}
                     >
                         View all notifications
+                    </Link>
+                    <Link
+                        href={isCustomer ? '/portal/settings/notifications' : '/settings/notifications'}
+                        onClick={() => setIsOpen(false)}
+                        className={buttonVariants({ variant: "ghost", size: "sm", className: "w-full text-xs text-gray-500" })}
+                    >
+                        Notification Settings
                     </Link>
                 </div>
             </PopoverContent>

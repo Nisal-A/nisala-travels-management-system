@@ -25,15 +25,24 @@ Route::get('/', function () {
     return Inertia::render('Public/Home');
 })->name('home');
 
-Route::get('/tours', function () {
-    return Inertia::render('Public/Tours/Index');
-})->name('tours.index');
+Route::get('/our-destinations', function () {
+    return Inertia::render('Public/Destinations/Index');
+})->name('public.destinations.index');
 
-Route::get('/tours/{slug}', function ($slug) {
+Route::get('/our-tours', function () {
+    return Inertia::render('Public/Tours/Index');
+})->name('public.tours.index');
+
+Route::get('/interactive-tours', function () {
+    return Inertia::render('Public/Tours/Interactive');
+})->name('tours.interactive');
+
+Route::get('/our-tours/{slug}', function ($slug) {
     return Inertia::render('Public/Tours/Show', ['slug' => $slug]);
-})->name('tours.show');
+})->name('public.tours.show');
 
 Route::get('/contact', function () {
+    session()->put('form_start_time', time());
     return Inertia::render('Public/Contact');
 })->name('contact');
 
@@ -129,6 +138,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', fn () => Inertia::render('Settings/Index'))->name('index');
+            Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
+            Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });
     });
 
@@ -204,6 +215,11 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::patch('/{id}/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('markAsRead');
             Route::post('/mark-all-as-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('markAllAsRead');
             Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
+            Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });
 
         Route::get('/payments', [App\Http\Controllers\Portal\PaymentController::class, 'index'])->name('payments.index');

@@ -38,6 +38,7 @@
     34 => 'Spatie\\Permission\\PermissionServiceProvider',
     35 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
     36 => 'App\\Providers\\AppServiceProvider',
+    37 => 'App\\Providers\\MessagingServiceProvider',
   ),
   'eager' => 
   array (
@@ -63,6 +64,7 @@
     19 => 'Spatie\\Permission\\PermissionServiceProvider',
     20 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
     21 => 'App\\Providers\\AppServiceProvider',
+    22 => 'App\\Providers\\MessagingServiceProvider',
   ),
   'deferred' => 
   array (

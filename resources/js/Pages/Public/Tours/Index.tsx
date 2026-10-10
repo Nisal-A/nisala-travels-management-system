@@ -1,11 +1,13 @@
+import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useCallback } from 'react';
-import { Head, Link, usePage, router } from '@inertiajs/react';
+import {  Link, usePage, router } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Reveal } from '@/components/common/Reveal';
-import { Search, Filter, X, Clock, ArrowRight, Frown } from 'lucide-react';
+import { Search, Filter, X, ArrowRight, Frown } from 'lucide-react';
 import axios from 'axios';
+import { TourPackageCard, TourPackageCardSkeleton } from '@/components/public/TourPackageCard';
 
 function debounce<TArgs extends unknown[]>(func: (...args: TArgs) => void, wait: number) {
     let timeout: ReturnType<typeof setTimeout>;
@@ -33,6 +35,7 @@ export default function ToursIndex() {
     });
 
     const [tours, setTours] = useState<any[]>([]);
+    const [destinations, setDestinations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [page, setPage] = useState(1);
@@ -80,7 +83,7 @@ export default function ToursIndex() {
     };
 
     const clearAllFilters = () => {
-        const newFilters = { destination: '', duration: '', price_min: '', price_max: '', search: '', sort: 'recommended' };
+        const newFilters = { destination: '', level: '', duration: '', price_min: '', price_max: '', search: '', sort: 'recommended' };
         setFilters(newFilters);
         setSearchValue('');
         setPriceMax('10000');
@@ -94,6 +97,7 @@ export default function ToursIndex() {
         try {
             const params: any = { page: currentPage };
             if (currentFilters.destination) params.destination = currentFilters.destination;
+            if (currentFilters.level) params.level = currentFilters.level;
             if (currentFilters.search) params.search = currentFilters.search;
             if (currentFilters.price_min) params.price_min = currentFilters.price_min;
             if (currentFilters.price_max) params.price_max = currentFilters.price_max;
@@ -119,6 +123,7 @@ export default function ToursIndex() {
 
     useEffect(() => {
         fetchTours(filters, 1);
+        axios.get('/api/public/destinations').then(res => setDestinations(res.data)).catch(console.error);
     }, []); // Only initial fetch, subsequent handled by updateUrl
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +142,7 @@ export default function ToursIndex() {
 
     return (
         <PublicLayout>
-            <Head title="Tour Packages | Nisala Travels" />
+            <SEOHead title="Tour Packages" description="Browse and filter our premium tour packages to find your perfect getaway. Explore our hand-picked selections." url="/our-tours" />
             
             <div className="bg-neutral-900 pt-32 pb-16 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
@@ -172,10 +177,22 @@ export default function ToursIndex() {
                                 onChange={(e) => setFilter('destination', e.target.value)}
                             >
                                 <option value="">All Destinations</option>
-                                <option value="Sri Lanka">Sri Lanka</option>
-                                <option value="Maldives">Maldives</option>
-                                <option value="Dubai">Dubai</option>
-                                <option value="Singapore">Singapore</option>
+                                {Array.from(new Set(destinations.map(d => d.country))).filter(Boolean).map(country => (
+                                    <option key={country} value={country}>{country}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <h3 className="font-semibold mb-3 text-neutral-900">Level</h3>
+                            <select 
+                                className="w-full border-neutral-200 rounded-lg h-11 px-3 bg-white focus:ring-primary focus:border-primary"
+                                value={filters.level || ''}
+                                onChange={(e) => setFilter('level', e.target.value)}
+                            >
+                                <option value="">All Levels</option>
+                                <option value="Luxury">Luxury</option>
+                                <option value="Semi Luxury">Semi Luxury</option>
                             </select>
                         </div>
 
@@ -270,10 +287,7 @@ export default function ToursIndex() {
                     {loading && page === 1 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="bg-white rounded-2xl h-[400px] animate-pulse border border-neutral-100 p-4 flex flex-col justify-end">
-                                    <div className="h-4 bg-neutral-200 rounded w-1/3 mb-2" />
-                                    <div className="h-6 bg-neutral-200 rounded w-3/4 mb-4" />
-                                </div>
+                                <TourPackageCardSkeleton key={i} />
                             ))}
                         </div>
                     ) : error ? (
@@ -297,45 +311,15 @@ export default function ToursIndex() {
                     ) : (
                         <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {tours.map(tour => (
-                                    <Reveal key={tour.id}>
-                                        <Link href={`/tours/${tour.slug || tour.id}`} className="group block h-full">
-                                            <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-neutral-100 relative group-hover:-translate-y-1">
-                                                <div className="absolute top-4 left-4 z-10">
-                                                    <span className="bg-white/95 backdrop-blur-sm text-neutral-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                                                        {tour.destination}
-                                                    </span>
-                                                </div>
-                                                <div className="h-56 overflow-hidden bg-neutral-200 relative">
-                                                    <img 
-                                                        src={tour.hero_image || `https://images.unsplash.com/photo-1527631746610-bca00a040d60?q=80&w=800&auto=format&fit=crop&random=${tour.id}`} 
-                                                        alt={tour.package_name}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                        loading="lazy"
-                                                    />
-                                                </div>
-                                                <div className="p-6 flex-grow flex flex-col">
-                                                    <h3 className="text-xl font-bold text-neutral-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">{tour.package_name}</h3>
-                                                    <p className="text-neutral-500 text-sm line-clamp-2 mb-4 leading-relaxed">{tour.short_description}</p>
-                                                    
-                                                    <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 mb-6 mt-auto bg-neutral-50 w-fit px-3 py-1.5 rounded-lg border border-neutral-100">
-                                                        <Clock className="w-4 h-4 text-primary" /> {tour.duration_days} Days
-                                                    </div>
-                                                    
-                                                    <div className="flex items-center justify-between pt-5 border-t border-neutral-100">
-                                                        <div>
-                                                            <span className="text-xs text-neutral-500 font-medium block mb-0.5">From per person</span>
-                                                            <span className="text-xl font-black text-neutral-900">{tour.currency} {tour.price_from?.toLocaleString()}</span>
-                                                        </div>
-                                                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                                            <ArrowRight className="w-5 h-5" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    </Reveal>
-                                ))}
+                                {tours.map(tour => {
+                                    // Derive level from package name as a fallback for display since schema lacks it
+                                    let level = undefined;
+                                    const lowerName = tour.package_name?.toLowerCase() || '';
+                                    if (lowerName.includes('semi luxury')) level = 'Semi Luxury';
+                                    else if (lowerName.includes('luxury')) level = 'Luxury';
+                                    
+                                    return <TourPackageCard key={tour.id} tour={tour} level={level} />;
+                                })}
                             </div>
                             
                             {hasMore && (

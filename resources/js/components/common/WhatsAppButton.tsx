@@ -1,5 +1,5 @@
 import { MessageCircle } from 'lucide-react';
-import { company } from '@/config/company';
+import { site as company } from '@/content/site';
 
 interface WhatsAppButtonProps {
     text?: string;

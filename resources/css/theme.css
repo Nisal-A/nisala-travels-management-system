@@ -1,24 +1,42 @@
 :root {
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
+    /* Nisala Travels Official Brand Colors */
+    --brand-navy: #052351;
+    --brand-teal: #026E9F;
+    --brand-blue: #0184BA;
+    --brand-gold: #FEC822;
+    --brand-orange: #FE950B;
+    --brand-white: #FFFFFF;
 
-    /* Brand Palette - Primary */
-    --primary: oklch(0.5 0.2 260);
-    /* Blue-ish */
-    --primary-foreground: oklch(0.98 0 0);
+    --gradient-navbar: linear-gradient(90deg, #052351 0%, #026E9F 60%, #0184BA 100%);
+    --gradient-premium: linear-gradient(135deg, #052351 0%, #026E9F 55%, #0184BA 100%);
+    --gradient-gold: linear-gradient(90deg, #FEC822 0%, #FE950B 100%);
 
-    /* Brand Palette - Accent */
-    --accent: oklch(0.96 0.02 260);
-    --accent-foreground: oklch(0.2 0.05 260);
+    --background: 0.97 0.01 90; /* Soft sand */
+    --foreground: 0.25 0.02 260; /* Charcoal text */
+    --card: 1 0 0;
+    --card-foreground: 0.25 0.02 260;
+    --popover: 1 0 0;
+    --popover-foreground: 0.25 0.02 260;
+
+    /* Brand Palette - Primary: Deep Ocean Navy */
+    --primary: 0.35 0.07 250;
+    --primary-foreground: 0.98 0 0;
+
+    /* Brand Palette - Accent: Warm Gold / Amber */
+    --accent: 0.82 0.15 70;
+    --accent-foreground: 0.2 0 0;
+
+    /* Thailand Teal Accent */
+    --thailand: 0.6 0.1 200;
+    --thailand-foreground: 1 0 0;
+
+    /* India Saffron Accent */
+    --india: 0.65 0.15 45;
+    --india-foreground: 1 0 0;
 
     /* Brand Palette - Secondary */
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
+    --secondary: 0.95 0.02 260;
+    --secondary-foreground: 0.25 0.02 260;
 
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
@@ -83,25 +101,33 @@
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
+    --background: 0.15 0.01 260; /* Deep dark background */
+    --foreground: 0.97 0.01 90;
+    --card: 0.2 0.02 260;
+    --card-foreground: 0.97 0.01 90;
+    --popover: 0.2 0.02 260;
+    --popover-foreground: 0.97 0.01 90;
 
     /* Brand Palette - Primary */
-    --primary: oklch(0.6 0.2 260);
-    --primary-foreground: oklch(0.98 0 0);
+    --primary: 0.82 0.15 70; /* Invert primary/accent for dark mode optionally, or keep primary */
+    --primary-foreground: 0.2 0 0;
 
     /* Brand Palette - Accent */
-    --accent: oklch(0.2 0.05 260);
-    --accent-foreground: oklch(0.98 0.01 260);
+    --accent: 0.35 0.07 250;
+    --accent-foreground: 0.98 0 0;
 
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
+    /* Thailand Teal Accent */
+    --thailand: 0.6 0.1 200;
+    --thailand-foreground: 1 0 0;
+
+    /* India Saffron Accent */
+    --india: 0.65 0.15 45;
+    --india-foreground: 1 0 0;
+
+    --secondary: 0.25 0.02 260;
+    --secondary-foreground: 0.97 0.01 90;
+    --muted: 0.25 0.02 260;
+    --muted-foreground: 0.7 0.02 260;
     --destructive: oklch(0.704 0.191 22.216);
     --destructive-foreground: oklch(0.145 0 0);
     --border: oklch(1 0 0 / 10%);

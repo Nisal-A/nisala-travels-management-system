@@ -72,6 +72,18 @@ const config = {
           DEFAULT: "oklch(var(--info) / <alpha-value>)",
           foreground: "oklch(var(--info-foreground) / <alpha-value>)",
         },
+        thailand: {
+          DEFAULT: "oklch(var(--thailand) / <alpha-value>)",
+          foreground: "oklch(var(--thailand-foreground) / <alpha-value>)",
+        },
+        india: {
+          DEFAULT: "oklch(var(--india) / <alpha-value>)",
+          foreground: "oklch(var(--india-foreground) / <alpha-value>)",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        serif: ["var(--font-serif)"],
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
