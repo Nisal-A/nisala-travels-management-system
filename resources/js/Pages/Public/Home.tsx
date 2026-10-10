@@ -1,13 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
 import { WhatsAppButton } from '@/components/common/WhatsAppButton';
 import { Button } from '@/components/ui/button';
 import {
-    Search, MapPin, Calendar, Star, Clock, ArrowRight, ChevronDown,
-    Users, Compass, Shield, Heart, Phone, Stethoscope, UtensilsCrossed,
-    Footprints, Palmtree, Waves, Camera, Landmark,
+    MapPin, Compass, Shield, Heart, Phone, Stethoscope, UtensilsCrossed,
+    Palmtree, Clock, ArrowRight, Star, ChevronDown
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -26,31 +25,12 @@ function formatLKR(value: number): string {
     return value.toLocaleString('en-LK');
 }
 
-const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-// ---------------------------------------------------------------------------
-// TRUST STATS  — SAMPLE: replace with real
-// ---------------------------------------------------------------------------
-const trustStats = [
-    { label: 'Years Experience', value: '12+' },
-    { label: 'Happy Travellers', value: '5 000+' },
-    { label: 'Tour Packages', value: '50+' },
-    { label: 'Support', value: '24 / 7' },
-];
 
 // ---------------------------------------------------------------------------
 // COMPONENT
 // ---------------------------------------------------------------------------
 export default function Home() {
     const shouldReduceMotion = useReducedMotion();
-
-    // Hero search state
-    const [destination, setDestination] = useState('');
-    const [month, setMonth] = useState('');
-    const [travelerType, setTravelerType] = useState('');
 
     // Featured tours — client-side from static content
     const featuredTours = useMemo(() => tours.filter((t) => t.isFeatured), []);
@@ -78,184 +58,71 @@ export default function Home() {
         emblaApi.on('reInit', onSelect);
     }, [emblaApi, onSelect]);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const params: Record<string, string> = {};
-        if (destination) params.destination = destination;
-        if (month) params.month = month;
-        if (travelerType) params.type = travelerType;
-        router.get('/tours', params);
-    };
-
-    // Stagger variants for hero text
-    const headlineWords = ['Travel', 'beautifully.', 'Return', 'inspired.'];
-
     return (
         <PublicLayout>
             <Head title="Premium Travel & Tour Packages to Thailand & India | Nisala Travels" />
 
             {/* ================================================================
-                1. HERO — Full Viewport, Cinematic
+                1. HERO
             ================================================================ */}
-            <section className="relative min-h-svh flex flex-col items-center justify-center overflow-hidden">
-                {/* Background Image with Ken Burns */}
+            <section className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-primary flex items-center">
+                {/* Background Image */}
                 <div className="absolute inset-0 z-0">
-                    {/* TODO: Replace with <video> when hero.mp4/hero.webm are ready
-                         <video autoPlay muted loop playsInline preload="metadata"
-                                poster="/images/hero/hero-poster.jpg"
-                                className="w-full h-full object-cover">
-                            <source src="/images/hero/hero.webm" type="video/webm" />
-                            <source src="/images/hero/hero.mp4" type="video/mp4" />
-                         </video>
-                    */}
-                    <picture>
-                        <source srcSet="/images/hero/hero-poster.webp" type="image/webp" />
-                        <img
-                            src="/images/hero/hero-poster.jpg"
-                            alt="Beautiful Thai island at golden hour"
-                            fetchPriority="high"
-                            decoding="async"
-                            className={`w-full h-full object-cover ${
-                                !shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
-                            }`}
-                        />
-                    </picture>
+                    <img
+                        src="/images/hero/hero-poster.jpg"
+                        alt="Beautiful tropical landscape at sunset"
+                        fetchPriority="high"
+                        loading="eager"
+                        className={`w-full h-full object-cover ${
+                            !shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
+                        }`}
+                    />
                 </div>
 
-                {/* Layered gradient overlay — bottom-heavy for text readability */}
-                <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#0b1a3d]/60 via-[#0b1a3d]/30 to-[#0b1a3d]/80" />
-                {/* Subtle radial vignette */}
-                <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(11,26,61,0.3)_100%)]" />
+                {/* Navy Overlay for Readability */}
+                <div className="absolute inset-0 z-[1] bg-primary/70 md:bg-gradient-to-r md:from-primary/95 md:via-primary/70 md:to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center flex-1 pt-24 pb-32">
-                    {/* Eyebrow */}
-                    <Reveal delay={0.1} distance={12}>
-                        <p className="text-sm md:text-base font-medium tracking-[0.2em] uppercase text-white/70 mb-6">
-                            Thailand &amp; India, expertly crafted
-                        </p>
-                    </Reveal>
-
-                    {/* Headline — staggered word reveal */}
-                    <div className="mb-6">
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold text-white tracking-tight leading-[1.08]">
-                            {headlineWords.map((word, i) => (
-                                <motion.span
-                                    key={word}
-                                    className="inline-block mr-[0.25em]"
-                                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 24 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{
-                                        duration: 0.7,
-                                        delay: 0.3 + i * 0.12,
-                                        ease: [0.25, 0.1, 0.25, 1],
-                                    }}
-                                >
-                                    {word}
-                                </motion.span>
-                            ))}
+                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+                    <motion.div
+                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="max-w-2xl pt-16 md:pt-0"
+                    >
+                        {/* Gold Accent Line */}
+                        <div className="w-16 h-1.5 bg-accent mb-8 rounded-full" />
+                        
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
+                            Discover New Places.<br />
+                            Create New Stories.
                         </h1>
-                    </div>
-
-                    {/* Subheadline */}
-                    <Reveal delay={0.7} distance={12}>
-                        <p className="text-base sm:text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-                            Handcrafted journeys to Thailand&apos;s vibrant shores and India&apos;s spiritual heartlands — designed around you.
+                        
+                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
+                            Experience meticulously crafted journeys tailored to your preferences. 
+                            From relaxing getaways to cultural explorations, we handle every detail 
+                            so you can immerse yourself in the moment.
                         </p>
-                    </Reveal>
-
-                    {/* Two audience buttons */}
-                    <Reveal delay={0.85} distance={12}>
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10">
+                        
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <Button
-                                render={<Link href="/tours?destination=Thailand" />}
-                                size="lg"
-                                className="h-12 sm:h-14 px-8 rounded-full text-base sm:text-lg font-semibold bg-thailand text-white hover:bg-thailand/90 shadow-lg shadow-thailand/20 transition-all"
+                                render={<Link href="/tours" />}
+                                size="public-lg"
+                                variant="public-accent"
+                                className="w-full sm:w-auto shadow-lg shadow-accent/20"
                             >
-                                Explore Thailand
+                                Explore Tour Packages
                             </Button>
                             <Button
-                                render={<Link href="/tours?destination=India" />}
-                                size="lg"
-                                className="h-12 sm:h-14 px-8 rounded-full text-base sm:text-lg font-semibold bg-india text-white hover:bg-india/90 shadow-lg shadow-india/20 transition-all"
+                                render={<Link href="/contact" />}
+                                size="public-lg"
+                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20"
                             >
-                                Explore India
+                                Plan Your Journey
                             </Button>
                         </div>
-                    </Reveal>
-
-                    {/* Glassmorphism Search Bar */}
-                    <Reveal delay={1.0} distance={12}>
-                        <div className="w-full max-w-3xl mx-auto">
-                            <form
-                                onSubmit={handleSearch}
-                                className="flex flex-col md:flex-row gap-2 md:gap-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl md:rounded-full p-2 md:p-1.5 shadow-2xl"
-                            >
-                                <div className="flex-1 relative">
-                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 w-4 h-4" />
-                                    <select
-                                        className="w-full pl-11 pr-4 h-12 bg-transparent text-white text-sm rounded-xl md:rounded-l-full md:rounded-r-none border-0 outline-none appearance-none cursor-pointer [&>option]:text-neutral-900"
-                                        value={destination}
-                                        onChange={(e) => setDestination(e.target.value)}
-                                        aria-label="Destination"
-                                    >
-                                        <option value="">Any Destination</option>
-                                        <option value="Thailand">Thailand</option>
-                                        <option value="India">India</option>
-                                    </select>
-                                </div>
-                                <div className="w-px bg-white/15 hidden md:block my-2" />
-                                <div className="flex-1 relative">
-                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 w-4 h-4" />
-                                    <select
-                                        className="w-full pl-11 pr-4 h-12 bg-transparent text-white text-sm rounded-xl md:rounded-none border-0 outline-none appearance-none cursor-pointer [&>option]:text-neutral-900"
-                                        value={month}
-                                        onChange={(e) => setMonth(e.target.value)}
-                                        aria-label="Travel month"
-                                    >
-                                        <option value="">Any Month</option>
-                                        {MONTHS.map((m) => (
-                                            <option key={m} value={m}>{m}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <Button
-                                    type="submit"
-                                    size="lg"
-                                    className="h-12 md:w-36 rounded-xl md:rounded-full text-sm font-semibold bg-accent text-accent-foreground hover:bg-accent/90 gap-2 shadow-lg"
-                                >
-                                    <Search className="w-4 h-4" />
-                                    Search
-                                </Button>
-                            </form>
-                        </div>
-                    </Reveal>
+                    </motion.div>
                 </div>
-
-                {/* Trust Strip */}
-                <div className="absolute bottom-0 left-0 right-0 z-10">
-                    <div className="bg-white/5 backdrop-blur-sm border-t border-white/10">
-                        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 md:gap-x-16">
-                                {trustStats.map((stat) => (
-                                    <div key={stat.label} className="text-center">
-                                        <span className="block text-lg md:text-xl font-bold text-white">{stat.value}</span>
-                                        <span className="block text-[11px] md:text-xs text-white/60 uppercase tracking-wider">{stat.label}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Scroll Indicator */}
-                <motion.div
-                    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10"
-                    animate={shouldReduceMotion ? {} : { y: [0, 8, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                    <ChevronDown className="w-6 h-6 text-white/40" />
-                </motion.div>
             </section>
 
             {/* ================================================================
