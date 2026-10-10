@@ -19,7 +19,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         "public-primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
         "public-secondary": "border-2 border-thailand text-thailand bg-transparent hover:bg-thailand hover:text-thailand-foreground",
-        "public-accent": "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm",
+        "public-accent": "bg-gradient-gold text-brand-navy font-bold hover:opacity-90 shadow-md",
       },
       size: {
         default:

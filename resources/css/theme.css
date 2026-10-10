@@ -1,4 +1,16 @@
 :root {
+    /* Nisala Travels Official Brand Colors */
+    --brand-navy: #052351;
+    --brand-teal: #026E9F;
+    --brand-blue: #0184BA;
+    --brand-gold: #FEC822;
+    --brand-orange: #FE950B;
+    --brand-white: #FFFFFF;
+
+    --gradient-navbar: linear-gradient(90deg, #052351 0%, #026E9F 60%, #0184BA 100%);
+    --gradient-premium: linear-gradient(135deg, #052351 0%, #026E9F 55%, #0184BA 100%);
+    --gradient-gold: linear-gradient(90deg, #FEC822 0%, #FE950B 100%);
+
     --background: 0.97 0.01 90; /* Soft sand */
     --foreground: 0.25 0.02 260; /* Charcoal text */
     --card: 1 0 0;
