@@ -6,7 +6,9 @@ interface RevealProps {
     width?: 'fit-content' | '100%';
     delay?: number;
     className?: string;
-    /** Distance in px to fade-up from. Default 20. */
+    /** Direction of motion. Default 'up'. */
+    direction?: 'up' | 'down' | 'left' | 'right';
+    /** Distance in px to fade in from. Default 20. */
     distance?: number;
 }
 
@@ -15,6 +17,7 @@ export function Reveal({
     width = '100%',
     delay = 0,
     className = '',
+    direction = 'up',
     distance = 20,
 }: RevealProps) {
     const shouldReduceMotion = useReducedMotion();
@@ -27,13 +30,29 @@ export function Reveal({
         );
     }
 
+    const getInitialOffset = () => {
+        switch (direction) {
+            case 'down':
+                return { x: 0, y: -distance };
+            case 'left':
+                return { x: distance, y: 0 };
+            case 'right':
+                return { x: -distance, y: 0 };
+            case 'up':
+            default:
+                return { x: 0, y: distance };
+        }
+    };
+
+    const offset = getInitialOffset();
+
     return (
         <motion.div
             style={{ width }}
             className={className}
             variants={{
-                hidden: { opacity: 0, y: distance },
-                visible: { opacity: 1, y: 0 },
+                hidden: { opacity: 0, x: offset.x, y: offset.y },
+                visible: { opacity: 1, x: 0, y: 0 },
             }}
             initial="hidden"
             whileInView="visible"

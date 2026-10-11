@@ -1,6 +1,6 @@
 import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import {  Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
@@ -157,7 +157,7 @@ export default function Home() {
             {/* ================================================================
                 1. HERO
             ================================================================ */}
-            <section 
+            <section
                 className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-brand-navy flex items-center"
                 onMouseEnter={() => setIsHeroHovered(true)}
                 onMouseLeave={() => setIsHeroHovered(false)}
@@ -186,7 +186,7 @@ export default function Home() {
                 <div className="absolute inset-0 z-[1] bg-brand-navy/40 md:bg-gradient-to-r md:from-brand-navy/80 md:via-brand-navy/40 md:to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-0">
+                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 mt-10 sm:mt-16 md:mt-0">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentSlide}
@@ -194,17 +194,17 @@ export default function Home() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -15 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="max-w-2xl pt-16 md:pt-0"
+                            className="max-w-2xl pt-6 sm:pt-10 md:pt-0"
                         >
                             {/* Gold Accent Line */}
-                            <div className="w-16 h-1.5 bg-brand-gold mb-8 rounded-full" />
+                            <div className="w-16 h-1.5 bg-brand-gold mb-6 md:mb-8 rounded-full" />
 
-                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6 min-h-[120px] md:min-h-[160px]">
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-4 md:mb-6 min-h-[100px] md:min-h-[160px]">
                                 {heroSlides[currentSlide].headline}<br />
                                 <span className="text-brand-gold">{heroSlides[currentSlide].highlight}</span>
                             </h1>
 
-                            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl min-h-[60px] md:min-h-[84px]">
+                            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 md:mb-10 leading-relaxed max-w-xl min-h-[50px] md:min-h-[84px]">
                                 {heroSlides[currentSlide].description}
                             </p>
 
@@ -228,23 +228,22 @@ export default function Home() {
                         </motion.div>
                     </AnimatePresence>
                 </div>
-                
+
                 {/* Slider Indicators */}
-                <div className="absolute bottom-16 md:bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+                <div className="absolute bottom-6 sm:bottom-12 md:bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
                     {heroSlides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentSlide(index)}
                             aria-label={`Go to slide ${index + 1}`}
-                            className={`transition-all duration-300 rounded-full ${
-                                currentSlide === index 
-                                    ? 'w-10 h-2.5 bg-brand-gold shadow-[0_0_8px_rgba(254,200,34,0.6)]' 
-                                    : 'w-2.5 h-2.5 bg-transparent border border-white hover:bg-white/50'
-                            }`}
+                            className={`transition-all duration-300 rounded-full ${currentSlide === index
+                                ? 'w-10 h-2.5 bg-brand-gold shadow-[0_0_8px_rgba(254,200,34,0.6)]'
+                                : 'w-2.5 h-2.5 bg-transparent border border-white hover:bg-white/50'
+                                }`}
                         />
                     ))}
                 </div>
-                
+
                 {/* Scroll Indicator */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center animate-bounce">
                     <span className="text-white/70 text-xs uppercase tracking-widest mb-2 font-medium">Scroll down</span>

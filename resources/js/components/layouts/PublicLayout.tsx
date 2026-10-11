@@ -21,8 +21,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
             requestAnimationFrame(() => {
                 const element = document.querySelector(hash);
                 if (element) {
-                    // Account for sticky navbar (approx 100px)
-                    const headerOffset = 100;
+                    // Account for sticky navbar (approx 80px)
+                    const headerOffset = 85;
                     const elementPosition = element.getBoundingClientRect().top;
                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                     
