@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { site as company } from '@/content/site';
@@ -12,6 +12,28 @@ interface PublicLayoutProps {
 export default function PublicLayout({ children }: PublicLayoutProps) {
     const { url } = usePage();
     const shouldReduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        // Handle hash scrolling for SPA navigation
+        const hash = window.location.hash;
+        if (hash) {
+            // Use requestAnimationFrame to ensure DOM is ready
+            requestAnimationFrame(() => {
+                const element = document.querySelector(hash);
+                if (element) {
+                    // Account for sticky navbar (approx 80px)
+                    const headerOffset = 85;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        }
+    }, [url]);
 
     const organizationJsonLd = {
         "@context": "https://schema.org",

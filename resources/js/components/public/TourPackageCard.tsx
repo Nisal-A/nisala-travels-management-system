@@ -27,13 +27,13 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
             <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-neutral-100 relative group-hover:-translate-y-1">
                 {level && (
                     <div className="absolute top-4 left-4 z-10">
-                        <span className="bg-accent/90 backdrop-blur-sm text-accent-foreground text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm tracking-widest uppercase">
+                        <span className="bg-brand-gold/90 backdrop-blur-sm text-brand-navy text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm tracking-widest uppercase">
                             {level}
                         </span>
                     </div>
                 )}
                 
-                <Link href={linkHref} className="block h-56 overflow-hidden bg-neutral-200 relative aspect-[4/3] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                <Link href={linkHref} className="block h-56 overflow-hidden bg-neutral-200 relative aspect-[4/3] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2">
                     {tour.hero_image ? (
                         <img 
                             src={tour.hero_image} 
@@ -48,7 +48,7 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
                     )}
                     {tour.destination && (
                         <div className="absolute bottom-4 left-4 z-10">
-                            <span className="bg-white/95 backdrop-blur-sm text-primary text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                            <span className="bg-white/95 backdrop-blur-sm text-brand-navy text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                                 {tour.destination}
                             </span>
                         </div>
@@ -56,8 +56,8 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
                 </Link>
                 
                 <div className="p-6 flex-grow flex flex-col">
-                    <Link href={linkHref} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md">
-                        <h3 className="text-xl font-serif font-bold text-primary mb-2 line-clamp-2 transition-colors">
+                    <Link href={linkHref} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2 rounded-md">
+                        <h3 className="text-xl font-serif font-bold text-brand-navy mb-2 line-clamp-2 transition-colors">
                             {tour.package_name}
                         </h3>
                     </Link>
@@ -75,7 +75,7 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
                     <div className="flex flex-wrap gap-2 mb-6 mt-auto">
                         {tour.duration_days ? (
                             <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-600 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100">
-                                <Clock className="w-4 h-4 text-primary" /> {tour.duration_days} Days
+                                <Clock className="w-4 h-4 text-brand-navy" /> {tour.duration_days} Days
                             </div>
                         ) : (
                             <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-400 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100 italic">
@@ -89,7 +89,7 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
                             {formattedPrice ? (
                                 <>
                                     <span className="text-xs text-neutral-500 font-medium block mb-0.5">From per person</span>
-                                    <span className="text-xl font-black text-primary">{formattedPrice}</span>
+                                    <span className="text-xl font-black text-brand-navy">{formattedPrice}</span>
                                 </>
                             ) : (
                                 <span className="text-sm font-medium text-neutral-400 italic">
@@ -102,7 +102,7 @@ export function TourPackageCard({ tour, level }: TourPackageCardProps) {
                                 render={<Link href={linkHref} />}
                                 variant="public-accent"
                                 size="public-sm"
-                                className="rounded-full px-4 h-10 shadow-accent/20"
+                                className="rounded-full px-4 h-10 shadow-brand-gold/20"
                             >
                                 Explore <ArrowRight className="w-4 h-4 ml-1" />
                             </Button>

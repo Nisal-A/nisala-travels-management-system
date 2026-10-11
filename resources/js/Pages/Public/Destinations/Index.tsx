@@ -47,7 +47,7 @@ export default function DestinationsIndex() {
         <PublicLayout>
             <SEOHead title="Destinations" description="Explore our curated destinations across Asia including Thailand and India. Discover where your next journey will take you." url="/our-destinations" />
             
-            <div className="pt-32 pb-16 bg-neutral-900 text-center px-4">
+            <div className="pt-32 pb-16 bg-brand-navy text-center px-4">
                 <div className="container mx-auto max-w-4xl">
                     <Reveal>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white mb-6">

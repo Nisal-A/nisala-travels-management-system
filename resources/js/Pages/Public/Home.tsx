@@ -1,6 +1,6 @@
 import { SEOHead } from '@/components/public/SEOHead';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import {  Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import { Reveal } from '@/components/common/Reveal';
@@ -10,7 +10,7 @@ import {
     MapPin, Compass, Shield, Heart, Phone, Stethoscope, UtensilsCrossed,
     Palmtree, Clock, ArrowRight, Star, ChevronDown
 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import useEmblaCarousel from 'embla-carousel-react';
 import * as Accordion from '@radix-ui/react-accordion';
 
@@ -24,19 +24,68 @@ import { WhyChooseUsSection } from '@/components/public/WhyChooseUsSection';
 import { TestimonialsSection } from '@/components/public/TestimonialsSection';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers & Constants
 // ---------------------------------------------------------------------------
 
 function formatLKR(value: number): string {
     return value.toLocaleString('en-LK');
 }
 
+const heroSlides = [
+    {
+        id: 1,
+        image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2070&auto=format&fit=crop',
+        headline: "Experience Sri Lanka's",
+        highlight: "Untamed Nature",
+        description: "Discover remarkable landscapes, wildlife and unforgettable journeys with Nisala Travels.",
+    },
+    {
+        id: 2,
+        image: 'https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?q=80&w=2070&auto=format&fit=crop',
+        headline: "Discover Your",
+        highlight: "Perfect Escape",
+        description: "Relax on pristine tropical beaches and swim in turquoise oceans crafted just for you.",
+    },
+    {
+        id: 3,
+        image: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=2070&auto=format&fit=crop',
+        headline: "Explore Culture and",
+        highlight: "Heritage",
+        description: "Step back in time and uncover ancient monuments, rich traditions, and historic landmarks.",
+    },
+    {
+        id: 4,
+        image: 'https://images.unsplash.com/photo-1620608516768-45a44018863f?q=80&w=2070&auto=format&fit=crop',
+        headline: "Find Your Next",
+        highlight: "Adventure",
+        description: "Trek through lush tea plantations, misty mountains, and breathtaking waterfalls.",
+    },
+    {
+        id: 5,
+        image: 'https://images.unsplash.com/photo-1528181304811-dd1ba3f0a3cc?q=80&w=2070&auto=format&fit=crop',
+        headline: "Your Next Journey",
+        highlight: "Starts Here",
+        description: "Explore our premium international tours to captivating destinations beyond Sri Lanka.",
+    },
+];
 
 // ---------------------------------------------------------------------------
 // COMPONENT
 // ---------------------------------------------------------------------------
 export default function Home() {
     const shouldReduceMotion = useReducedMotion();
+
+    // Hero Slider State
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [isHeroHovered, setIsHeroHovered] = useState(false);
+
+    useEffect(() => {
+        if (isHeroHovered || shouldReduceMotion) return;
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [isHeroHovered, shouldReduceMotion]);
 
     // Featured tours — client-side from static content
     const featuredTours = useMemo(() => tours.filter((t) => t.isFeatured), []);
@@ -108,62 +157,97 @@ export default function Home() {
             {/* ================================================================
                 1. HERO
             ================================================================ */}
-            <section className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-primary flex items-center">
-                {/* Background Image */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/images/hero/hero-poster.jpg"
-                        alt="Beautiful tropical landscape at sunset"
-                        fetchPriority="high"
-                        loading="eager"
-                        className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''
-                            }`}
-                    />
-                </div>
+            <section
+                className="relative w-full h-[600px] md:h-[80vh] min-h-[500px] overflow-hidden bg-brand-navy flex items-center"
+                onMouseEnter={() => setIsHeroHovered(true)}
+                onMouseLeave={() => setIsHeroHovered(false)}
+            >
+                {/* Background Image Slider */}
+                <AnimatePresence>
+                    <motion.div
+                        key={currentSlide}
+                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 z-0"
+                    >
+                        <img
+                            src={heroSlides[currentSlide].image}
+                            alt={heroSlides[currentSlide].highlight}
+                            fetchPriority={currentSlide === 0 ? "high" : "auto"}
+                            loading={currentSlide === 0 ? "eager" : "lazy"}
+                            className={`w-full h-full object-cover ${!shouldReduceMotion ? 'animate-[kenburns_25s_ease-in-out_infinite_alternate]' : ''}`}
+                        />
+                    </motion.div>
+                </AnimatePresence>
 
-                {/* Navy Overlay for Readability */}
-                <div className="absolute inset-0 z-[1] bg-primary/70 md:bg-gradient-to-r md:from-primary/95 md:via-primary/70 md:to-transparent" />
+                {/* Subtle Navy Overlay for Readability */}
+                <div className="absolute inset-0 z-[1] bg-brand-navy/40 md:bg-gradient-to-r md:from-brand-navy/80 md:via-brand-navy/40 md:to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-                    <motion.div
-                        initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="max-w-2xl pt-16 md:pt-0"
-                    >
-                        {/* Gold Accent Line */}
-                        <div className="w-16 h-1.5 bg-accent mb-8 rounded-full" />
+                <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 mt-10 sm:mt-16 md:mt-0">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentSlide}
+                            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -15 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="max-w-2xl pt-6 sm:pt-10 md:pt-0"
+                        >
+                            {/* Gold Accent Line */}
+                            <div className="w-16 h-1.5 bg-brand-gold mb-6 md:mb-8 rounded-full" />
 
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-6">
-                            Discover New Places.<br />
-                            Create New Stories.
-                        </h1>
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] mb-4 md:mb-6 min-h-[100px] md:min-h-[160px]">
+                                {heroSlides[currentSlide].headline}<br />
+                                <span className="text-brand-gold">{heroSlides[currentSlide].highlight}</span>
+                            </h1>
 
-                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-xl">
-                            Experience meticulously crafted journeys tailored to your preferences.
-                            From relaxing getaways to cultural explorations, we handle every detail
-                            so you can immerse yourself in the moment.
-                        </p>
+                            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 md:mb-10 leading-relaxed max-w-xl min-h-[50px] md:min-h-[84px]">
+                                {heroSlides[currentSlide].description}
+                            </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Button
-                                render={<Link href="/our-tours" />}
-                                size="public-lg"
-                                variant="public-accent"
-                                className="w-full sm:w-auto shadow-lg shadow-accent/20"
-                            >
-                                Explore Tour Packages
-                            </Button>
-                            <Button
-                                render={<Link href="/contact" />}
-                                size="public-lg"
-                                className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20"
-                            >
-                                Plan Your Journey
-                            </Button>
-                        </div>
-                    </motion.div>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
+                                    render={<Link href="/our-tours" />}
+                                    size="public-lg"
+                                    variant="public-accent"
+                                    className="w-full sm:w-auto shadow-lg shadow-brand-gold/20"
+                                >
+                                    View Tour Packages
+                                </Button>
+                                <Button
+                                    render={<Link href="/contact" />}
+                                    size="public-lg"
+                                    className="w-full sm:w-auto bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 font-medium"
+                                >
+                                    Plan My Holiday
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
+                {/* Slider Indicators */}
+                <div className="absolute bottom-6 sm:bottom-12 md:bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+                    {heroSlides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            aria-label={`Go to slide ${index + 1}`}
+                            className={`transition-all duration-300 rounded-full ${currentSlide === index
+                                ? 'w-10 h-2.5 bg-brand-gold shadow-[0_0_8px_rgba(254,200,34,0.6)]'
+                                : 'w-2.5 h-2.5 bg-transparent border border-white hover:bg-white/50'
+                                }`}
+                        />
+                    ))}
+                </div>
+
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 hidden md:flex flex-col items-center animate-bounce">
+                    <span className="text-white/70 text-xs uppercase tracking-widest mb-2 font-medium">Scroll down</span>
+                    <ChevronDown className="w-5 h-5 text-brand-gold" />
                 </div>
             </section>
 
@@ -174,8 +258,8 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <div className="text-center mb-16">
-                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Explore the world</span>
-                            <h2 className="text-3xl md:text-5xl font-serif font-bold text-primary">Popular Destinations</h2>
+                            <span className="inline-block bg-brand-gold text-brand-navy text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Explore the world</span>
+                            <h2 className="text-3xl md:text-5xl font-serif font-bold text-brand-navy">Popular Destinations</h2>
                         </div>
                     </Reveal>
 
@@ -210,10 +294,10 @@ export default function Home() {
                     <Reveal>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
                             <div>
-                                <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Handpicked packages</span>
+                                <span className="inline-block bg-brand-gold text-brand-navy text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Handpicked packages</span>
                                 <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Featured Tours</h2>
                             </div>
-                            <Link href="/our-tours" className="hidden sm:flex items-center text-sm text-primary font-semibold hover:text-accent gap-1.5 transition-colors">
+                            <Link href="/our-tours" className="hidden sm:flex items-center text-sm text-brand-navy font-semibold hover:text-brand-gold gap-1.5 transition-colors">
                                 View all tours <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -237,8 +321,8 @@ export default function Home() {
                                                         />
                                                         {/* Destination badge */}
                                                         <span className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${tour.destination === 'Thailand'
-                                                            ? 'bg-thailand/90 text-white'
-                                                            : 'bg-india/90 text-white'
+                                                            ? 'bg-brand-teal/90 text-white'
+                                                            : 'bg-brand-orange/90 text-white'
                                                             }`}>
                                                             {tour.destination}
                                                         </span>
@@ -249,7 +333,7 @@ export default function Home() {
                                                     </div>
                                                     {/* Content */}
                                                     <div className="p-5 flex-grow flex flex-col">
-                                                        <h3 className="text-lg font-bold text-foreground mb-1.5 line-clamp-2 group-hover:text-primary transition-colors font-serif">
+                                                        <h3 className="text-lg font-bold text-foreground mb-1.5 line-clamp-2 group-hover:text-brand-navy transition-colors font-serif">
                                                             {tour.title}
                                                         </h3>
                                                         <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{tour.shortDescription}</p>
@@ -266,7 +350,7 @@ export default function Home() {
                                                                 <span className="text-[11px] text-muted-foreground block uppercase tracking-wider">From</span>
                                                                 <span className="text-lg font-bold text-foreground">LKR {formatLKR(tour.priceFrom)}</span>
                                                             </div>
-                                                            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                                                            <div className="w-9 h-9 rounded-full bg-brand-navy/10 text-brand-navy flex items-center justify-center group-hover:bg-brand-gold group-hover:text-brand-navy transition-colors">
                                                                 <ArrowRight className="w-4 h-4" />
                                                             </div>
                                                         </div>
@@ -283,7 +367,7 @@ export default function Home() {
                                     <button
                                         onClick={() => emblaApi.scrollPrev()}
                                         disabled={!canScrollPrev}
-                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-brand-navy hover:text-white hover:border-brand-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                         aria-label="Previous tours"
                                     >
                                         <ArrowRight className="w-4 h-4 rotate-180" />
@@ -291,7 +375,7 @@ export default function Home() {
                                     <button
                                         onClick={() => emblaApi.scrollNext()}
                                         disabled={!canScrollNext}
-                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-primary hover:text-white hover:border-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="w-10 h-10 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-brand-navy hover:text-white hover:border-brand-navy disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                         aria-label="Next tours"
                                     >
                                         <ArrowRight className="w-4 h-4" />
@@ -303,7 +387,7 @@ export default function Home() {
 
                     {/* Mobile "View all" link */}
                     <div className="sm:hidden mt-8 text-center">
-                        <Link href="/our-tours" className="text-sm text-primary font-semibold">View all tours &rarr;</Link>
+                        <Link href="/our-tours" className="text-sm text-brand-navy font-semibold">View all tours &rarr;</Link>
                     </div>
                 </div>
             </section>
@@ -326,7 +410,7 @@ export default function Home() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                         <Reveal>
                             <div>
-                                <span className="inline-flex items-center gap-2 text-india text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                                <span className="inline-flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-[0.2em] mb-4">
                                     <Heart className="w-4 h-4" /> India tours
                                 </span>
                                 <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground mb-6">
@@ -346,7 +430,7 @@ export default function Home() {
                                         'Senior-friendly ground transport with regular rest stops',
                                     ].map((item) => (
                                         <li key={item} className="flex items-start gap-3 text-sm text-foreground">
-                                            <div className="w-5 h-5 rounded-full bg-india/15 text-india flex items-center justify-center shrink-0 mt-0.5">
+                                            <div className="w-5 h-5 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center shrink-0 mt-0.5">
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                                 </svg>
@@ -358,7 +442,7 @@ export default function Home() {
                                 <div className="mt-8">
                                     <Button
                                         render={<Link href="/our-tours?destination=India" />}
-                                        className="rounded-full px-6 bg-india text-white hover:bg-india/90 h-11"
+                                        className="rounded-full px-6 bg-brand-orange text-white hover:bg-brand-orange/90 h-11"
                                     >
                                         Browse India Tours
                                     </Button>
@@ -378,7 +462,7 @@ export default function Home() {
                                 </div>
                                 {/* Floating stat card */}
                                 <div className="absolute -bottom-4 -left-4 md:-bottom-6 md:-left-6 bg-white rounded-2xl p-5 shadow-xl border border-neutral-100">
-                                    <span className="text-3xl font-bold text-india block">100%</span>
+                                    <span className="text-3xl font-bold text-brand-orange block">100%</span>
                                     <span className="text-xs text-muted-foreground">Assisted Travel</span>
                                 </div>
                             </div>
@@ -394,7 +478,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <div className="mb-12">
-                            <span className="inline-flex items-center gap-2 text-thailand text-xs font-bold uppercase tracking-[0.2em] mb-3">
+                            <span className="inline-flex items-center gap-2 text-brand-teal text-xs font-bold uppercase tracking-[0.2em] mb-3">
                                 <Palmtree className="w-4 h-4" /> Thailand
                             </span>
                             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground mb-3">Experiences Awaiting You</h2>
@@ -439,7 +523,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <Reveal>
                         <div className="text-center mb-16">
-                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Simple process</span>
+                            <span className="inline-block bg-brand-gold text-brand-navy text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Simple process</span>
                             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Three Steps to Your Journey</h2>
                         </div>
                     </Reveal>
@@ -454,8 +538,8 @@ export default function Home() {
                             { step: '03', title: 'You Travel With Confidence', desc: 'Enjoy a seamless, worry-free journey with 24/7 support and every detail taken care of.' },
                         ].map((item, i) => (
                             <Reveal key={item.step} delay={i * 0.15} className="flex-1 relative z-10 text-center">
-                                <div className="w-20 h-20 mx-auto bg-white border-4 border-background rounded-full flex items-center justify-center shadow-lg mb-6 ring-4 ring-accent/10">
-                                    <span className="text-xl font-bold text-primary font-serif">{item.step}</span>
+                                <div className="w-20 h-20 mx-auto bg-white border-4 border-background rounded-full flex items-center justify-center shadow-lg mb-6 ring-4 ring-brand-gold/10">
+                                    <span className="text-xl font-bold text-brand-navy font-serif">{item.step}</span>
                                 </div>
                                 <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
                                 <p className="text-sm text-muted-foreground leading-relaxed px-2">{item.desc}</p>
@@ -477,7 +561,7 @@ export default function Home() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
                     <Reveal>
                         <div className="text-center mb-12">
-                            <span className="inline-block bg-accent text-primary text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Got questions?</span>
+                            <span className="inline-block bg-brand-gold text-brand-navy text-xs font-bold tracking-[0.15em] uppercase px-3 py-1 rounded-full mb-3">Got questions?</span>
                             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-foreground">Frequently Asked Questions</h2>
                         </div>
                     </Reveal>
@@ -491,7 +575,7 @@ export default function Home() {
                                     className="border border-neutral-200/60 rounded-xl overflow-hidden bg-white"
                                 >
                                     <Accordion.Header>
-                                        <Accordion.Trigger className="flex justify-between items-center w-full p-5 md:p-6 font-semibold text-left text-foreground hover:text-primary transition-colors group text-sm md:text-base min-h-[48px]">
+                                        <Accordion.Trigger className="flex justify-between items-center w-full p-5 md:p-6 font-semibold text-left text-foreground hover:text-brand-navy transition-colors group text-sm md:text-base min-h-[48px]">
                                             {faq.question}
                                             <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform duration-300 shrink-0 ml-4" />
                                         </Accordion.Trigger>
@@ -518,7 +602,7 @@ export default function Home() {
                         className="w-full h-full bg-cover bg-center"
                         style={{ backgroundImage: `url('/images/thailand/samui.jpg')` }}
                     />
-                    <div className="absolute inset-0 bg-[#0b1a3d]/80" />
+                    <div className="absolute inset-0 bg-brand-navy/80" />
                 </div>
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                     <Reveal>
@@ -532,7 +616,7 @@ export default function Home() {
                             <Button
                                 render={<Link href="/contact" />}
                                 size="lg"
-                                className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shadow-xl hover:shadow-2xl transition-all"
+                                className="h-12 sm:h-14 px-8 sm:px-10 text-base sm:text-lg font-bold rounded-full bg-gradient-gold text-brand-navy hover:opacity-90 shadow-xl hover:shadow-2xl transition-all"
                             >
                                 Plan My Trip
                             </Button>

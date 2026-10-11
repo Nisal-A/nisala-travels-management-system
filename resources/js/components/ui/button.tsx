@@ -20,6 +20,7 @@ const buttonVariants = cva(
         "public-primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
         "public-secondary": "border-2 border-thailand text-thailand bg-transparent hover:bg-thailand hover:text-thailand-foreground",
         "public-accent": "bg-gradient-gold text-brand-navy font-bold hover:opacity-90 shadow-md",
+        "public-outline": "border-2 border-brand-navy text-brand-navy bg-transparent hover:bg-brand-navy hover:text-white transition-colors",
       },
       size: {
         default:

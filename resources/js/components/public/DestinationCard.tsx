@@ -12,7 +12,7 @@ export function DestinationCard({ name, description, image, href }: DestinationC
     return (
         <Link
             href={href}
-            className="group block relative w-full aspect-[4/5] sm:aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="group block relative w-full aspect-[4/5] sm:aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
         >
             <div className="absolute inset-0 bg-neutral-200">
                 {image ? (
@@ -30,10 +30,10 @@ export function DestinationCard({ name, description, image, href }: DestinationC
             </div>
 
             {/* Gradient overlay for readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/90 via-brand-navy/30 to-transparent transition-opacity duration-300" />
 
             {/* Hover subtle gold underline */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-accent scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold scale-x-0 origin-left transition-transform duration-300 ease-out group-hover:scale-x-100" />
 
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
                 <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2 transition-transform duration-300 group-hover:-translate-y-1">
@@ -46,7 +46,7 @@ export function DestinationCard({ name, description, image, href }: DestinationC
                     </p>
                 )}
 
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-accent opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-brand-gold opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
                     Explore Tours <ArrowRight className="w-4 h-4" />
                 </span>
             </div>
