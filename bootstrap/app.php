@@ -28,6 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'public.honeypot' => \App\Http\Middleware\RejectHoneypot::class,
         ]);
 
+        $middleware->priority([
+            \App\Http\Middleware\EnsurePublicApiKey::class,
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
+        ]);
+
         $middleware->redirectTo(
             guests: '/login',
             users: '/dashboard',

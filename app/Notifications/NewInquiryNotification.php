@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\Customer;
+use App\Models\Inquiry;
 use App\Services\NotificationGate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +15,7 @@ class NewInquiryNotification extends Notification implements ShouldQueue
 
     public $lead;
 
-    public function __construct(Customer $lead)
+    public function __construct(Inquiry $lead)
     {
         $this->lead = $lead;
     }
@@ -39,7 +39,7 @@ class NewInquiryNotification extends Notification implements ShouldQueue
         return [
             'type' => 'NewInquiryNotification',
             'title' => 'New Inquiry Submitted',
-            'body' => 'A new inquiry was submitted by '.$this->lead->full_name.'.',
+            'body' => 'A new inquiry was submitted by '.$this->lead->name.'.',
             'url' => config('app.url').'/admin/inquiries/'.$this->lead->id,
             'icon' => 'inbox',
             'severity' => 'info',

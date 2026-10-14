@@ -1,4 +1,4 @@
- <?php
+<?php
 
 use App\Models\Destination;
 use App\Models\TourPackage;

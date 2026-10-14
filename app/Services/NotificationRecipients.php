@@ -13,7 +13,11 @@ class NotificationRecipients
      */
     public static function getStaffByRole(array|string $roles)
     {
-        return User::role($roles)->get();
+        try {
+            return User::role($roles)->get();
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 
     /**
