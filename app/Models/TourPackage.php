@@ -13,16 +13,6 @@ class TourPackage extends Model
 
     protected $guarded = [];
 
-    protected static function booted()
-    {
-        static::saved(function ($package) {
-            Cache::flush(); // Simple cache clear for public pages
-        });
-
-        static::deleted(function ($package) {
-            Cache::flush();
-        });
-    }
 
     protected $casts = [
         'start_date' => 'date',

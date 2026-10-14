@@ -28,5 +28,6 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="cookie"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NEXTJS_REVALIDATE_URL" value=""/>
     </php>
 </phpunit>

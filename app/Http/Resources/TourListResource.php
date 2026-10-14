@@ -4,22 +4,49 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class TourListResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
             'slug' => $this->slug,
-            'package_name' => $this->package_name,
-            'destination' => $this->whenLoaded('destination', fn () => $this->destination->country.' - '.$this->destination->city_region),
-            'short_description' => $this->short_description,
-            'hero_image' => $this->hero_image,
+            'title' => $this->package_name,
+            'summary' => $this->short_description,
+            'destination' => [
+                'slug' => $this->destination?->slug,
+                'name' => $this->destination?->city_region,
+                'country' => $this->destination?->country,
+            ],
             'duration_days' => $this->duration_days,
-            'price_from' => (float) ($this->price_from ?? $this->price),
+            'duration_nights' => $this->duration_nights,
+            'price' => (float) ($this->price_from ?? $this->price),
+            'price_from_label' => !is_null($this->price_from),
             'currency' => $this->currency,
-            'is_featured' => $this->is_featured,
+            'hero_image_url' => $this->formatImageUrl($this->hero_image),
+            'tags' => $this->tags ?? [],
+            'featured' => (bool) $this->is_featured,
         ];
+    }
+
+    protected function formatImageUrl(?string $path): ?string
+    {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        $disk = config('filesystems.default_public_disk', 'public');
+        $url = Storage::disk($disk)->url($path);
+
+        if (!str_starts_with($url, 'http')) {
+            return url($url);
+        }
+
+        return $url;
     }
 }
