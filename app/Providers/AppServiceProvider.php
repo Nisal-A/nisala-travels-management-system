@@ -5,7 +5,10 @@ namespace App\Providers;
 use App\Contracts\NotificationServiceInterface;
 use App\Listeners\LogNotificationDelivery;
 use App\Services\NotificationService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,5 +30,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::subscribe(LogNotificationDelivery::class);
+
+        RateLimiter::for('public-inquiry', fn (Request $r) => Limit::perMinutes(10, 5)->by(hash('sha256', $r->attributes->get('client_ip', $r->ip()))));
     }
 }

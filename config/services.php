@@ -23,4 +23,14 @@ return [
         ],
     ],
 
+    'nisala_web' => [
+        'key' => env('NISALA_WEB_API_KEY'),
+        'ip_salt' => env('NISALA_IP_HASH_SALT'),
+    ],
+
+    'nextjs' => [
+        'revalidate_url' => env('NEXTJS_REVALIDATE_URL'),
+        'revalidate_secret' => env('NEXTJS_REVALIDATE_SECRET'),
+    ],
+
 ];

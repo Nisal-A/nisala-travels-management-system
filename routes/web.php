@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\PublicTourController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CalendarController;
@@ -11,7 +10,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GlobalSearchController;
-use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
@@ -21,41 +19,7 @@ use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Public/Home');
-})->name('home');
-
-Route::get('/our-destinations', function () {
-    return Inertia::render('Public/Destinations/Index');
-})->name('public.destinations.index');
-
-Route::get('/our-tours', function () {
-    return Inertia::render('Public/Tours/Index');
-})->name('public.tours.index');
-
-Route::get('/interactive-tours', function () {
-    return Inertia::render('Public/Tours/Interactive');
-})->name('tours.interactive');
-
-Route::get('/our-tours/{slug}', function ($slug) {
-    return Inertia::render('Public/Tours/Show', ['slug' => $slug]);
-})->name('public.tours.show');
-
-Route::get('/contact', function () {
-    session()->put('form_start_time', time());
-    return Inertia::render('Public/Contact');
-})->name('contact');
-
-Route::prefix('api/public')->group(function () {
-    Route::get('tours', [PublicTourController::class, 'index']);
-    Route::get('tours/featured', [PublicTourController::class, 'featured']);
-    Route::get('tours/{slug}', [PublicTourController::class, 'show']);
-    Route::get('destinations', [PublicTourController::class, 'destinations']);
-});
-
-Route::post('/inquiries', [InquiryController::class, 'store'])
-    ->middleware('throttle:5,60')
-    ->name('inquiries.store');
+Route::redirect('/', '/dashboard');
 
 /*
 |--------------------------------------------------------------------------

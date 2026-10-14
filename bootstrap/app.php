@@ -24,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'active' => EnsureUserIsActive::class,
             'role' => EnsureUserHasRole::class,
             'customer' => EnsureCustomer::class,
+            'public.key' => \App\Http\Middleware\EnsurePublicApiKey::class,
+            'public.honeypot' => \App\Http\Middleware\RejectHoneypot::class,
         ]);
 
         $middleware->redirectTo(
