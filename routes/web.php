@@ -142,6 +142,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('bookings/{booking}/notes', [BookingController::class, 'addNote'])->name('bookings.notes.store');
         Route::patch('bookings/{booking}/assign', [BookingController::class, 'assignStaff'])->name('bookings.assign');
         Route::post('bookings/{id}/restore', [BookingController::class, 'restore'])->name('bookings.restore');
+        // Inquiries admin routes
+        Route::get('admin/inquiries', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'index'])->name('admin.inquiries.index');
+        Route::get('admin/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'show'])->name('admin.inquiries.show');
+        Route::patch('admin/inquiries/{inquiry}/status', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'updateStatus'])->name('admin.inquiries.status');
+        Route::patch('admin/inquiries/{inquiry}/assign', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'assign'])->name('admin.inquiries.assign');
     });
 
     // ==============================

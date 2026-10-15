@@ -36,4 +36,11 @@ return [
         'phone',
     ],
 
+    'lead_statuses' => [
+        'New',
+        'Contacted',
+        'Verified',
+        'Closed',
+    ],
+    // PLACEHOLDER: confirm the status workflow with operations
 ];
