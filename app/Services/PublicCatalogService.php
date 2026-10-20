@@ -15,12 +15,7 @@ class PublicCatalogService
     public function destinations(): Collection
     {
         $remember = function () {
-            return Destination::query()
-                ->where('status', 'active')
-                ->whereIn('listing_state', [
-                    Destination::LISTING_STATE_LIVE,
-                    Destination::LISTING_STATE_COMING_SOON,
-                ])
+            return Destination::publicListed()
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get();
