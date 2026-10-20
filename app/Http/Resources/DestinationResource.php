@@ -24,6 +24,7 @@ class DestinationResource extends JsonResource
             'hero_image_url' => $this->formatImageUrl($this->hero_image),
             'gallery' => $this->formatGallery($this->gallery),
             'tour_count' => $this->publicTourCount(),
+            'listing_state' => $this->listing_state,
         ];
     }
 

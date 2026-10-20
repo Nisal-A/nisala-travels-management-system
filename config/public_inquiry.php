@@ -15,6 +15,10 @@ return [
         'Not sure yet',
     ],
 
+    'interest_labels' => [
+        'Sri Lanka' => 'Sri Lanka (coming soon)',
+    ],
+
     'budget_ranges' => [
         'Under LKR 150,000',
         'LKR 150,000 to 300,000',

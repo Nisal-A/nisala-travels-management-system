@@ -25,7 +25,12 @@ class DestinationObserver
 
     protected function clearCacheAndRevalidate(Destination $destination): void
     {
-        Cache::forget('public.destinations.all');
+        if (Cache::supportsTags()) {
+            Cache::tags(['public-catalog', 'destinations', 'tours'])->flush();
+        } else {
+            Cache::forget('public.destinations.all');
+            Cache::forget('public.tours.all');
+        }
 
         RevalidateNextJs::dispatch(['destinations'])->afterCommit();
     }

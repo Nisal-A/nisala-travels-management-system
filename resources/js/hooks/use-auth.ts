@@ -14,12 +14,12 @@ export function useAuth() {
     const { auth, navigation } = usePage<PageProps>().props;
 
     return {
-        user: auth.user,
+        user: auth?.user ?? null,
         navigation: navigation ?? ({} as NavigationGroups),
         /** Check if the user holds any of the given roles */
         hasRole: (...roles: string[]) => {
-            if (!auth.user) return false;
-            return roles.some((r) => auth.user!.roles.includes(r as User['roles'][number]));
+            if (!auth?.user) return false;
+            return Boolean(auth?.user && roles.some((r) => auth.user!.roles.includes(r as User['roles'][number])));
         },
     };
 }

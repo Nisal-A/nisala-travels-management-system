@@ -6,5 +6,5 @@ test('application is up', function () {
 
 test('home page loads successfully', function () {
     $response = $this->get('/');
-    $response->assertRedirect('/dashboard');
+    $response->assertOk();
 });

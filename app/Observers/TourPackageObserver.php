@@ -25,15 +25,19 @@ class TourPackageObserver
 
     protected function clearCacheAndRevalidate(TourPackage $tourPackage): void
     {
-        Cache::forget('public.tours.all');
+        if (Cache::supportsTags()) {
+            Cache::tags(['public-catalog', 'tours'])->flush();
+        } else {
+            Cache::forget('public.tours.all');
 
-        if (!empty($tourPackage->slug)) {
-            Cache::forget("public.tour.{$tourPackage->slug}");
-        }
+            if (!empty($tourPackage->slug)) {
+                Cache::forget("public.tour.{$tourPackage->slug}");
+            }
 
-        $originalSlug = $tourPackage->getOriginal('slug');
-        if (!empty($originalSlug) && $originalSlug !== $tourPackage->slug) {
-            Cache::forget("public.tour.{$originalSlug}");
+            $originalSlug = $tourPackage->getOriginal('slug');
+            if (!empty($originalSlug) && $originalSlug !== $tourPackage->slug) {
+                Cache::forget("public.tour.{$originalSlug}");
+            }
         }
 
         RevalidateNextJs::dispatch(['tours'])->afterCommit();

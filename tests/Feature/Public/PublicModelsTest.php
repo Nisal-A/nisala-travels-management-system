@@ -178,3 +178,105 @@ test('schema check: the new columns exist on destinations, tour_packages, and in
             ->toBeTrue("Column {$col} missing on inquiries table");
     }
 });
+
+test('Destination::publicListed() excludes coming_soon and hidden destinations as well as inactive', function () {
+    $liveActive = Destination::create([
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
+        'status' => 'active',
+        'listing_state' => 'live',
+        'slug' => 'bangkok-live',
+    ]);
+
+    $comingSoonActive = Destination::create([
+        'country' => 'Sri Lanka',
+        'city_region' => 'Colombo',
+        'status' => 'active',
+        'listing_state' => 'coming_soon',
+        'slug' => 'colombo-coming-soon',
+    ]);
+
+    $hiddenActive = Destination::create([
+        'country' => 'India',
+        'city_region' => 'Delhi',
+        'status' => 'active',
+        'listing_state' => 'hidden',
+        'slug' => 'delhi-hidden',
+    ]);
+
+    $liveInactive = Destination::create([
+        'country' => 'Thailand',
+        'city_region' => 'Phuket',
+        'status' => 'inactive',
+        'listing_state' => 'live',
+        'slug' => 'phuket-inactive',
+    ]);
+
+    $liveSoftDeleted = Destination::create([
+        'country' => 'Thailand',
+        'city_region' => 'Chiang Mai',
+        'status' => 'active',
+        'listing_state' => 'live',
+        'slug' => 'chiang-mai-deleted',
+    ]);
+    $liveSoftDeleted->delete();
+
+    $listed = Destination::publicListed()->get();
+
+    expect($listed->pluck('id')->all())->toBe([$liveActive->id])
+        ->and($listed->contains('id', $comingSoonActive->id))->toBeFalse()
+        ->and($listed->contains('id', $hiddenActive->id))->toBeFalse()
+        ->and($listed->contains('id', $liveInactive->id))->toBeFalse()
+        ->and($listed->contains('id', $liveSoftDeleted->id))->toBeFalse();
+});
+
+test('Destination model rejects invalid listing_state', function () {
+    expect(function () {
+        Destination::create([
+            'country' => 'Test',
+            'city_region' => 'Test',
+            'status' => 'active',
+            'listing_state' => 'invalid_state',
+            'slug' => 'invalid-dest',
+        ]);
+    })->toThrow(\InvalidArgumentException::class);
+});
+
+test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour is active', function () {
+    $this->seed(\Database\Seeders\PublicContentSeeder::class);
+
+    $sriLanka = Destination::where('slug', 'sri-lanka')->first();
+    expect($sriLanka)->not->toBeNull();
+    expect($sriLanka->listing_state)->toBe('coming_soon');
+
+    $thailand = Destination::where('slug', 'thailand')->first();
+    expect($thailand->listing_state)->toBe('live');
+
+    $india = Destination::where('slug', 'india')->first();
+    expect($india->listing_state)->toBe('live');
+
+    // Verify all Sri Lanka tours are inactive
+    $sriLankaTours = TourPackage::where('destination_id', $sriLanka->id)->get();
+    expect($sriLankaTours->count())->toBeGreaterThan(0);
+    foreach ($sriLankaTours as $tour) {
+        expect($tour->is_active)->toBeFalse();
+        expect($tour->status)->not->toBe('active');
+    }
+});
+
+test('config/tour_tiers.php structure and rules', function () {
+    $tiers = config('tour_tiers.tiers');
+    expect($tiers)->toHaveKeys(['semi_luxury', 'luxury', 'premium']);
+    expect($tiers['semi_luxury']['label'])->toBe('Semi Luxury');
+    expect($tiers['luxury']['label'])->toBe('Luxury');
+    expect($tiers['premium']['label'])->toBe('Premium');
+
+    $allowed = config('tour_tiers.allowed_by_destination');
+    expect($allowed['thailand'])->toBe(['semi_luxury', 'luxury', 'premium']);
+    expect($allowed['india'])->toBe(['semi_luxury', 'luxury']);
+    expect($allowed['sri-lanka'])->toBe([]);
+
+    $groupSizes = config('tour_tiers.suggested_group_size');
+    expect($groupSizes['india']['semi_luxury'])->toBe([30, 40]);
+    expect($groupSizes['india']['luxury'])->toBe([10, 15]);
+});

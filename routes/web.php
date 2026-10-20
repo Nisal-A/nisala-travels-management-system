@@ -14,12 +14,64 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::redirect('/', '/dashboard');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+|
+| Routes accessible to everyone (guests and authenticated users alike).
+| These render public-facing pages wrapped with PublicLayout.
+|
+*/
+Route::get('/', [PublicController::class, 'home'])->name('home');
+
+Route::get('/our-destinations', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Our Destinations',
+    'description' => 'Explore our handpicked travel destinations across Sri Lanka, India, and beyond.',
+]))->name('public.destinations');
+
+Route::get('/our-tours', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Our Tours',
+    'description' => 'Browse our curated collection of tour packages designed for unforgettable experiences.',
+]))->name('public.tours');
+
+Route::get('/our-tours/{slug}', fn (string $slug) => Inertia::render('Public/Placeholder', [
+    'title' => 'Tour Details',
+    'description' => 'Detailed information and itinerary for this tour package.',
+    'slug' => $slug,
+]))->name('public.tours.show');
+
+Route::get('/memories', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Memories',
+    'description' => 'Relive the magical moments and reviews from our travellers\' journeys.',
+]))->name('public.memories');
+
+Route::get('/travel-guides', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Travel Guides',
+    'description' => 'Expert tips, packing advice, and local insights for your next adventure.',
+]))->name('public.travel-guides');
+
+Route::match(['get', 'post'], '/contact', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Contact Us',
+    'description' => 'Get in touch with our travel experts to plan your customized journey.',
+]))->name('public.contact');
+
+Route::get('/privacy-policy', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Privacy Policy',
+    'description' => 'How we collect, use, and protect your personal information.',
+]))->name('public.privacy-policy');
+
+Route::get('/terms', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Terms & Conditions',
+    'description' => 'Our terms of service, booking conditions, and policies.',
+]))->name('public.terms');
+
 
 /*
 |--------------------------------------------------------------------------

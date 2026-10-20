@@ -27,6 +27,10 @@ class TourListResource extends JsonResource
             'hero_image_url' => $this->formatImageUrl($this->hero_image),
             'tags' => $this->tags ?? [],
             'featured' => (bool) $this->is_featured,
+            'tier' => $this->tier,
+            'tier_label' => $this->tier ? config("tour_tiers.tiers.{$this->tier}.label") : null,
+            'group_min' => $this->group_min,
+            'group_max' => $this->group_max,
         ];
     }
 

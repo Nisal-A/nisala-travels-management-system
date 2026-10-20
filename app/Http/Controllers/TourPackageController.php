@@ -56,6 +56,29 @@ class TourPackageController extends Controller
 
         return Inertia::render('Tours/Create', [
             'destinations' => $destinations,
+            'package' => [
+                'destination_id' => '',
+                'package_name' => '',
+                'description' => '',
+                'duration_days' => '',
+                'start_date' => '',
+                'end_date' => '',
+                'price' => '',
+                'currency' => 'LKR',
+                'capacity' => '',
+                'available_seats' => '',
+                'hotel_information' => '',
+                'transportation_information' => '',
+                'meals' => '',
+                'included_items' => '',
+                'excluded_items' => '',
+                'terms' => '',
+                'status' => 'active',
+                'tier' => '',
+                'group_min' => '',
+                'group_max' => '',
+            ],
+            'tiers' => config('tour_tiers.tiers'),
         ]);
     }
 
@@ -82,6 +105,7 @@ class TourPackageController extends Controller
         return Inertia::render('Tours/Edit', [
             'tour' => $tour,
             'destinations' => $destinations,
+            'tiers' => config('tour_tiers.tiers'),
         ]);
     }
 

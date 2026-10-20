@@ -5,14 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Cache;
 
 class TourPackage extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
-
 
     protected $casts = [
         'start_date' => 'date',
@@ -25,11 +23,36 @@ class TourPackage extends Model
         'gallery' => 'array',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'group_min' => 'integer',
+        'group_max' => 'integer',
     ];
 
+    /**
+     * Scope to published packages (status = active AND is_active = true).
+     */
     public function scopePublished($query)
     {
         return $query->where('status', 'active')->where('is_active', true);
+    }
+
+    /**
+     * Scope to public listed packages (active, is_active, and destination is publicListed).
+     */
+    public function scopePublicListed($query)
+    {
+        return $query->where('status', 'active')
+            ->where('is_active', true)
+            ->whereHas('destination', function ($q) {
+                $q->publicListed();
+            });
+    }
+
+    /**
+     * Human-readable tier label from config.
+     */
+    public function getTierLabelAttribute(): ?string
+    {
+        return $this->tier ? config("tour_tiers.tiers.{$this->tier}.label") : null;
     }
 
     public function destination()

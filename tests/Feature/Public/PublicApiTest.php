@@ -3,6 +3,7 @@
 use App\Models\Destination;
 use App\Models\TourPackage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 
 uses(RefreshDatabase::class);
 
@@ -10,12 +11,21 @@ beforeEach(function () {
     config(['services.nisala_web.key' => 'test-valid-api-key']);
 });
 
-test('only published tours and destinations are returned, excluding inactive, draft, and soft-deleted', function () {
-    $destination = Destination::create([
+test('only publicListed tours and destinations are returned, excluding inactive, draft, soft-deleted, and coming_soon', function () {
+    $liveDest = Destination::create([
+        'slug' => 'thailand',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
+        'status' => 'active',
+        'listing_state' => 'live',
+    ]);
+
+    $comingSoonDest = Destination::create([
         'slug' => 'sri-lanka',
         'country' => 'Sri Lanka',
         'city_region' => 'Colombo',
         'status' => 'active',
+        'listing_state' => 'coming_soon',
     ]);
 
     $inactiveDest = Destination::create([
@@ -23,6 +33,7 @@ test('only published tours and destinations are returned, excluding inactive, dr
         'country' => 'Maldives',
         'city_region' => 'Male',
         'status' => 'inactive',
+        'listing_state' => 'live',
     ]);
 
     $draftDest = Destination::create([
@@ -30,6 +41,7 @@ test('only published tours and destinations are returned, excluding inactive, dr
         'country' => 'Bhutan',
         'city_region' => 'Thimphu',
         'status' => 'draft',
+        'listing_state' => 'live',
     ]);
 
     $deletedDest = Destination::create([
@@ -37,11 +49,12 @@ test('only published tours and destinations are returned, excluding inactive, dr
         'country' => 'Nepal',
         'city_region' => 'Kathmandu',
         'status' => 'active',
+        'listing_state' => 'live',
     ]);
     $deletedDest->delete();
 
     $publishedTour = TourPackage::create([
-        'destination_id' => $destination->id,
+        'destination_id' => $liveDest->id,
         'package_name' => 'Active Tour',
         'slug' => 'active-tour',
         'price' => 10000,
@@ -49,8 +62,17 @@ test('only published tours and destinations are returned, excluding inactive, dr
         'is_active' => true,
     ]);
 
+    $sriLankaTour = TourPackage::create([
+        'destination_id' => $comingSoonDest->id,
+        'package_name' => 'Sri Lanka Tour',
+        'slug' => 'sri-lanka-tour',
+        'price' => 10000,
+        'status' => 'active',
+        'is_active' => true,
+    ]);
+
     $inactiveTour = TourPackage::create([
-        'destination_id' => $destination->id,
+        'destination_id' => $liveDest->id,
         'package_name' => 'Inactive Tour',
         'slug' => 'inactive-tour',
         'price' => 10000,
@@ -59,7 +81,7 @@ test('only published tours and destinations are returned, excluding inactive, dr
     ]);
 
     $draftTour = TourPackage::create([
-        'destination_id' => $destination->id,
+        'destination_id' => $liveDest->id,
         'package_name' => 'Draft Tour',
         'slug' => 'draft-tour',
         'price' => 10000,
@@ -68,7 +90,7 @@ test('only published tours and destinations are returned, excluding inactive, dr
     ]);
 
     $deletedTour = TourPackage::create([
-        'destination_id' => $destination->id,
+        'destination_id' => $liveDest->id,
         'package_name' => 'Deleted Tour',
         'slug' => 'deleted-tour',
         'price' => 10000,
@@ -84,6 +106,7 @@ test('only published tours and destinations are returned, excluding inactive, dr
     $tourResponse->assertStatus(200);
     $tourSlugs = collect($tourResponse->json('data'))->pluck('slug')->all();
     expect($tourSlugs)->toBe(['active-tour'])
+        ->and($tourSlugs)->not->toContain('sri-lanka-tour')
         ->and($tourSlugs)->not->toContain('inactive-tour')
         ->and($tourSlugs)->not->toContain('draft-tour')
         ->and($tourSlugs)->not->toContain('deleted-tour');
@@ -94,7 +117,8 @@ test('only published tours and destinations are returned, excluding inactive, dr
 
     $destResponse->assertStatus(200);
     $destSlugs = collect($destResponse->json('data'))->pluck('slug')->all();
-    expect($destSlugs)->toBe(['sri-lanka'])
+    expect($destSlugs)->toBe(['thailand'])
+        ->and($destSlugs)->not->toContain('sri-lanka')
         ->and($destSlugs)->not->toContain('maldives')
         ->and($destSlugs)->not->toContain('bhutan')
         ->and($destSlugs)->not->toContain('nepal');
@@ -107,23 +131,23 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'city_region' => 'Bangkok',
         'region' => 'southeast-asia',
         'tagline' => 'City of Angels',
-        'description' => 'A wonderful capital city.',
-        'travel_information' => 'Visa required for some.',
-        'best_months' => 'Nov to Feb',
-        'facts' => [['label' => 'Time', 'value' => 'UTC+7']],
-        'highlights' => ['Temples', 'Food'],
-        'hero_image' => 'https://images.example.com/bangkok.jpg',
-        'gallery' => ['https://images.example.com/bkk-1.jpg'],
+        'description' => 'A wonderful city',
+        'travel_information' => 'Visa on arrival',
+        'best_months' => 'Nov-Feb',
+        'facts' => [['label' => 'Currency', 'value' => 'THB']],
+        'highlights' => ['Temples', 'Street food'],
+        'hero_image' => 'destinations/bangkok.jpg',
+        'gallery' => ['destinations/bangkok-1.jpg'],
         'status' => 'active',
-        'sort_order' => 1,
+        'listing_state' => 'live',
     ]);
 
     $tour = TourPackage::create([
         'destination_id' => $destination->id,
         'package_name' => 'Bangkok Explorer',
         'slug' => 'bangkok-explorer',
-        'short_description' => 'Explore the city.',
-        'description' => 'A detailed tour overview.',
+        'short_description' => 'Explore the vibrant city',
+        'description' => 'Full tour description here',
         'duration_days' => 5,
         'duration_nights' => 4,
         'price' => 120000,
@@ -138,7 +162,9 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'highlights' => ['Wat Arun', 'Grand Palace'],
         'itinerary' => [['day' => 1, 'title' => 'Arrival', 'description' => 'Welcome']],
         'group_min' => 2,
-        'capacity' => 10,
+        'group_max' => 10,
+        'capacity' => 20,
+        'tier' => 'semi_luxury',
         'departure_months' => ['Nov', 'Dec'],
         'gallery' => ['https://images.example.com/tour-1.jpg'],
         'faqs' => [['question' => 'Q?', 'answer' => 'A!']],
@@ -157,6 +183,18 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'updated_at',
         'deleted_at',
         'created_by',
+        // Customer, booking, and document fields must never appear
+        'customer',
+        'customer_id',
+        'customers',
+        'booking',
+        'bookings',
+        'document',
+        'documents',
+        'payment',
+        'payments',
+        'user',
+        'user_id',
     ];
 
     // 1. Tour List Item Whitelist Check
@@ -178,6 +216,10 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'hero_image_url',
         'tags',
         'featured',
+        'tier',
+        'tier_label',
+        'group_min',
+        'group_max',
     ];
 
     expect(array_keys($tourListItem))->toBe($expectedTourListKeys);
@@ -214,6 +256,8 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'itinerary',
         'group_min',
         'group_max',
+        'tier',
+        'tier_label',
         'departure_months',
         'gallery',
         'faqs',
@@ -246,6 +290,7 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'hero_image_url',
         'gallery',
         'tour_count',
+        'listing_state',
     ];
 
     expect(array_keys($destListItem))->toBe($expectedDestKeys);
@@ -261,6 +306,7 @@ test('a numeric ID returns 404 on /tours/{id}', function () {
         'country' => 'India',
         'city_region' => 'Delhi',
         'status' => 'active',
+        'listing_state' => 'live',
     ]);
 
     $tour = TourPackage::create([
@@ -287,16 +333,17 @@ test('an unknown slug returns 404', function () {
 
 test('included and excluded are arrays of strings', function () {
     $destination = Destination::create([
-        'slug' => 'sri-lanka-2',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Galle',
+        'slug' => 'india-coastal',
+        'country' => 'India',
+        'city_region' => 'Goa',
         'status' => 'active',
+        'listing_state' => 'live',
     ]);
 
     TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Galle Fort Tour',
-        'slug' => 'galle-fort-tour',
+        'package_name' => 'Goa Beach Tour',
+        'slug' => 'goa-beach-tour',
         'price' => 30000,
         'included_items' => "  Hotel accommodation  \n\nDaily breakfast\n  Guide fees\n",
         'excluded_items' => "International airfare\n\nTips and gratuities  \n",
@@ -305,7 +352,7 @@ test('included and excluded are arrays of strings', function () {
     ]);
 
     $response = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
-        ->getJson('/api/public/tours/galle-fort-tour');
+        ->getJson('/api/public/tours/goa-beach-tour');
 
     $response->assertStatus(200);
 
@@ -318,27 +365,28 @@ test('included and excluded are arrays of strings', function () {
 
 test('image URLs are absolute', function () {
     $destination = Destination::create([
-        'slug' => 'sri-lanka-3',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Kandy',
+        'slug' => 'thailand-north',
+        'country' => 'Thailand',
+        'city_region' => 'Chiang Mai',
         'hero_image' => 'tours/hero.jpg',
         'gallery' => ['tours/gallery1.jpg', 'https://cdn.example.com/photo.jpg'],
         'status' => 'active',
+        'listing_state' => 'live',
     ]);
 
     TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Kandy Tour',
-        'slug' => 'kandy-tour',
+        'package_name' => 'Chiang Mai Tour',
+        'slug' => 'chiang-mai-tour',
         'price' => 40000,
-        'hero_image' => 'tours/kandy-hero.jpg',
+        'hero_image' => 'tours/cm-hero.jpg',
         'gallery' => ['tours/g1.jpg', 'https://cdn.example.com/ext.jpg'],
         'status' => 'active',
         'is_active' => true,
     ]);
 
     $response = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
-        ->getJson('/api/public/tours/kandy-tour');
+        ->getJson('/api/public/tours/chiang-mai-tour');
 
     $response->assertStatus(200);
 
@@ -351,12 +399,13 @@ test('image URLs are absolute', function () {
     }
 });
 
-test('after a tour is saved, the next GET /api/public/tours returns the updated title', function () {
+test('after a tour is saved, the next GET /api/public/tours returns the updated title and cache is cleared', function () {
     $destination = Destination::create([
-        'slug' => 'sri-lanka-cache-test',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Negombo',
+        'slug' => 'thailand-cache',
+        'country' => 'Thailand',
+        'city_region' => 'Pattaya',
         'status' => 'active',
+        'listing_state' => 'live',
     ]);
 
     $tour = TourPackage::create([
@@ -377,9 +426,29 @@ test('after a tour is saved, the next GET /api/public/tours returns the updated 
     // Update tour title
     $tour->update(['package_name' => 'Updated Title']);
 
-    // Next request should return updated title
+    // Next request should return updated title because cache was cleared by observer
     $secondResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
         ->getJson('/api/public/tours');
     $secondResponse->assertStatus(200);
     expect($secondResponse->json('data.0.title'))->toBe('Updated Title');
+});
+
+test('PublicCatalogService methods work and exclude Sri Lanka packages', function () {
+    $this->seed(\Database\Seeders\PublicContentSeeder::class);
+
+    $service = app(\App\Services\PublicCatalogService::class);
+
+    $destinations = $service->destinations();
+    $destSlugs = $destinations->pluck('slug')->all();
+    expect($destSlugs)->toContain('thailand')
+        ->and($destSlugs)->toContain('india')
+        ->and($destSlugs)->not->toContain('sri-lanka');
+
+    $tours = $service->tours();
+    $tourDestSlugs = $tours->pluck('destination.slug')->unique()->all();
+    expect($tourDestSlugs)->not->toContain('sri-lanka');
+
+    $featured = $service->featuredTours();
+    $featuredDestSlugs = $featured->pluck('destination.slug')->unique()->all();
+    expect($featuredDestSlugs)->not->toContain('sri-lanka');
 });
