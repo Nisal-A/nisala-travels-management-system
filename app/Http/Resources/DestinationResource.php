@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Destination;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +24,7 @@ class DestinationResource extends JsonResource
             'highlights' => $this->highlights ?? [],
             'hero_image_url' => $this->formatImageUrl($this->hero_image),
             'gallery' => $this->formatGallery($this->gallery),
-            'tour_count' => $this->publicTourCount(),
+            'tour_count' => $this->listing_state === Destination::LISTING_STATE_LIVE ? $this->publicTourCount() : 0,
             'listing_state' => $this->listing_state,
         ];
     }

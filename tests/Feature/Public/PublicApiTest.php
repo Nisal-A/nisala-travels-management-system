@@ -11,7 +11,7 @@ beforeEach(function () {
     config(['services.nisala_web.key' => 'test-valid-api-key']);
 });
 
-test('only publicListed tours and destinations are returned, excluding inactive, draft, soft-deleted, and coming_soon', function () {
+test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_soon and no tours. A hidden destination is absent. The response has no booking, customer, or document fields', function () {
     $liveDest = Destination::create([
         'slug' => 'thailand',
         'country' => 'Thailand',
@@ -26,6 +26,14 @@ test('only publicListed tours and destinations are returned, excluding inactive,
         'city_region' => 'Colombo',
         'status' => 'active',
         'listing_state' => 'coming_soon',
+    ]);
+
+    $hiddenDest = Destination::create([
+        'slug' => 'hidden-dest',
+        'country' => 'Hidden Country',
+        'city_region' => 'Hidden City',
+        'status' => 'active',
+        'listing_state' => 'hidden',
     ]);
 
     $inactiveDest = Destination::create([
@@ -99,7 +107,7 @@ test('only publicListed tours and destinations are returned, excluding inactive,
     ]);
     $deletedTour->delete();
 
-    // Verify tours endpoint
+    // Verify tours endpoint: tours endpoints still exclude anything not live
     $tourResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
         ->getJson('/api/public/tours');
 
@@ -111,17 +119,43 @@ test('only publicListed tours and destinations are returned, excluding inactive,
         ->and($tourSlugs)->not->toContain('draft-tour')
         ->and($tourSlugs)->not->toContain('deleted-tour');
 
-    // Verify destinations endpoint
+    // Filter tours by coming_soon destination: returns empty
+    $filteredTourResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
+        ->getJson('/api/public/tours?destination=sri-lanka');
+    $filteredTourResponse->assertStatus(200);
+    expect($filteredTourResponse->json('data'))->toBeEmpty();
+
+    // Verify destinations endpoint: live and coming_soon returned, hidden/draft/inactive/deleted excluded
     $destResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
         ->getJson('/api/public/destinations');
 
     $destResponse->assertStatus(200);
-    $destSlugs = collect($destResponse->json('data'))->pluck('slug')->all();
-    expect($destSlugs)->toBe(['thailand'])
-        ->and($destSlugs)->not->toContain('sri-lanka')
+    $destData = collect($destResponse->json('data'));
+    $destSlugs = $destData->pluck('slug')->all();
+
+    expect($destSlugs)->toContain('thailand')
+        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->not->toContain('hidden-dest')
         ->and($destSlugs)->not->toContain('maldives')
         ->and($destSlugs)->not->toContain('bhutan')
         ->and($destSlugs)->not->toContain('nepal');
+
+    // Sri Lanka (coming_soon) appears with listing_state coming_soon and tour_count 0
+    $sriLankaItem = $destData->firstWhere('slug', 'sri-lanka');
+    expect($sriLankaItem)->not->toBeNull()
+        ->and($sriLankaItem['listing_state'])->toBe('coming_soon')
+        ->and($sriLankaItem['tour_count'])->toBe(0);
+
+    // The response has no booking, customer, or document fields
+    $forbiddenFields = [
+        'customer', 'customer_id', 'customers',
+        'booking', 'bookings',
+        'document', 'documents',
+        'payment', 'payments',
+    ];
+    foreach ($forbiddenFields as $field) {
+        expect(array_key_exists($field, $sriLankaItem))->toBeFalse("Forbidden field {$field} found in coming_soon destination");
+    }
 });
 
 test('the keys of each response object match the whitelist exactly and forbidden fields are absent', function () {
@@ -433,7 +467,7 @@ test('after a tour is saved, the next GET /api/public/tours returns the updated 
     expect($secondResponse->json('data.0.title'))->toBe('Updated Title');
 });
 
-test('PublicCatalogService methods work and exclude Sri Lanka packages', function () {
+test('PublicCatalogService methods work, include coming_soon destinations, and exclude Sri Lanka packages from tours', function () {
     $this->seed(\Database\Seeders\PublicContentSeeder::class);
 
     $service = app(\App\Services\PublicCatalogService::class);
@@ -442,7 +476,11 @@ test('PublicCatalogService methods work and exclude Sri Lanka packages', functio
     $destSlugs = $destinations->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('india')
-        ->and($destSlugs)->not->toContain('sri-lanka');
+        ->and($destSlugs)->toContain('sri-lanka');
+
+    $sriLankaDest = $destinations->firstWhere('slug', 'sri-lanka');
+    expect($sriLankaDest)->not->toBeNull()
+        ->and($sriLankaDest->listing_state)->toBe('coming_soon');
 
     $tours = $service->tours();
     $tourDestSlugs = $tours->pluck('destination.slug')->unique()->all();
