@@ -65,6 +65,9 @@ php artisan serve
 
 # Run both concurrently
 composer run dev
+
+# Run queue worker (local development runs php artisan queue:work in a second terminal)
+php artisan queue:work
 ```
 
 Open [http://localhost:8000](http://localhost:8000) in your browser.

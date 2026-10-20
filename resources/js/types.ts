@@ -1,3 +1,13 @@
+
+export interface CompanyConfig {
+    name: string;
+    logo_url?: string;
+    brand_color?: string;
+    address?: string;
+    phone?: string;
+    whatsapp_url?: string;
+    support_email?: string;
+}
 /**
  * Global TypeScript type definitions for Inertia.js shared data.
  *
@@ -38,14 +48,16 @@ export interface NavigationGroups {
 }
 
 export interface PageProps {
-    auth: {
+    auth?: {
         user: User | null;
+        unreadNotificationsCount?: number;
     };
-    navigation: NavigationGroups;
-    flash: {
+    navigation?: NavigationGroups;
+    flash?: {
         success: string | null;
         error: string | null;
     };
+    company?: CompanyConfig;
     [key: string]: unknown;
 }
 

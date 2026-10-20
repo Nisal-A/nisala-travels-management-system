@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminUserSeeder::class);
         $this->call(TestUserSeeder::class);
 
+        if (app()->environment('local')) {
+            $this->call(PublicContentSeeder::class);
+        }
+
         // Phase 4 — NT-006
         // $this->call(CustomerSeeder::class);
 

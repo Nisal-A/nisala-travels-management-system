@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\UserRole;
 use App\Events\InquirySubmitted;
 use App\Notifications\NewInquiryNotification;
 use App\Services\NotificationRecipients;
@@ -15,6 +16,13 @@ class SendNewInquiryNotification implements ShouldQueue
 
     public function handle(InquirySubmitted $event): void
     {
-        Notification::send(NotificationRecipients::getStaffByRole(['Sales', 'Admin']), new NewInquiryNotification($event->lead));
+        Notification::send(
+            NotificationRecipients::getStaffByRole([
+                UserRole::SuperAdmin,
+                UserRole::Manager,
+                UserRole::Staff,
+            ]),
+            new NewInquiryNotification($event->lead)
+        );
     }
 }

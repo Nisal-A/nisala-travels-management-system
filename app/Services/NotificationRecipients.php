@@ -11,9 +11,17 @@ class NotificationRecipients
     /**
      * Get the right users by role/permission.
      */
-    public static function getStaffByRole(array|string $roles)
+    public static function getStaffByRole(array|\UnitEnum|string $roles)
     {
-        return User::role($roles)->get();
+        $roles = collect((array) $roles)
+            ->map(fn ($role) => $role instanceof \BackedEnum ? $role->value : ($role instanceof \UnitEnum ? $role->name : $role))
+            ->all();
+
+        try {
+            return User::role($roles)->get();
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 
     /**

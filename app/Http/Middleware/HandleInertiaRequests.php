@@ -24,14 +24,50 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * Determine if the current request is for a public website page.
+     */
+    protected function isPublicRequest(Request $request): bool
+    {
+        if ($request->routeIs('public.*') || $request->routeIs('home')) {
+            return true;
+        }
+
+        return $request->is(
+            '/',
+            'our-destinations',
+            'our-tours',
+            'our-tours/*',
+            'memories',
+            'travel-guides',
+            'contact',
+            'privacy-policy',
+            'terms'
+        );
+    }
+
+    /**
      * Define the props that are shared by default.
      *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
+        // On public pages, share ONLY public props (company config).
+        // Never share the authenticated user or internal navigation on public pages.
+        if ($this->isPublicRequest($request)) {
+            return [
+                ...parent::share($request),
+                'company' => config('company'),
+                'flash' => [
+                    'success' => fn () => $request->session()->get('success'),
+                    'error' => fn () => $request->session()->get('error'),
+                ],
+            ];
+        }
+
         return [
             ...parent::share($request),
+            'company' => config('company'),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,

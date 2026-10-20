@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\PublicTourController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CalendarController;
@@ -11,51 +10,68 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GlobalSearchController;
-use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Public/Home');
-})->name('home');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+|
+| Routes accessible to everyone (guests and authenticated users alike).
+| These render public-facing pages wrapped with PublicLayout.
+|
+*/
+Route::get('/', [PublicController::class, 'home'])->name('home');
 
-Route::get('/our-destinations', function () {
-    return Inertia::render('Public/Destinations/Index');
-})->name('public.destinations.index');
+Route::get('/our-destinations', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Our Destinations',
+    'description' => 'Explore our handpicked travel destinations across Sri Lanka, India, and beyond.',
+]))->name('public.destinations');
 
-Route::get('/our-tours', function () {
-    return Inertia::render('Public/Tours/Index');
-})->name('public.tours.index');
+Route::get('/our-tours', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Our Tours',
+    'description' => 'Browse our curated collection of tour packages designed for unforgettable experiences.',
+]))->name('public.tours');
 
-Route::get('/interactive-tours', function () {
-    return Inertia::render('Public/Tours/Interactive');
-})->name('tours.interactive');
+Route::get('/our-tours/{slug}', fn (string $slug) => Inertia::render('Public/Placeholder', [
+    'title' => 'Tour Details',
+    'description' => 'Detailed information and itinerary for this tour package.',
+    'slug' => $slug,
+]))->name('public.tours.show');
 
-Route::get('/our-tours/{slug}', function ($slug) {
-    return Inertia::render('Public/Tours/Show', ['slug' => $slug]);
-})->name('public.tours.show');
+Route::get('/memories', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Memories',
+    'description' => 'Relive the magical moments and reviews from our travellers\' journeys.',
+]))->name('public.memories');
 
-Route::get('/contact', function () {
-    session()->put('form_start_time', time());
-    return Inertia::render('Public/Contact');
-})->name('contact');
+Route::get('/travel-guides', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Travel Guides',
+    'description' => 'Expert tips, packing advice, and local insights for your next adventure.',
+]))->name('public.travel-guides');
 
-Route::prefix('api/public')->group(function () {
-    Route::get('tours', [PublicTourController::class, 'index']);
-    Route::get('tours/featured', [PublicTourController::class, 'featured']);
-    Route::get('tours/{slug}', [PublicTourController::class, 'show']);
-    Route::get('destinations', [PublicTourController::class, 'destinations']);
-});
+Route::match(['get', 'post'], '/contact', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Contact Us',
+    'description' => 'Get in touch with our travel experts to plan your customized journey.',
+]))->name('public.contact');
 
-Route::post('/inquiries', [InquiryController::class, 'store'])
-    ->middleware('throttle:5,60')
-    ->name('inquiries.store');
+Route::get('/privacy-policy', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Privacy Policy',
+    'description' => 'How we collect, use, and protect your personal information.',
+]))->name('public.privacy-policy');
+
+Route::get('/terms', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'Terms & Conditions',
+    'description' => 'Our terms of service, booking conditions, and policies.',
+]))->name('public.terms');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -178,6 +194,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('bookings/{booking}/notes', [BookingController::class, 'addNote'])->name('bookings.notes.store');
         Route::patch('bookings/{booking}/assign', [BookingController::class, 'assignStaff'])->name('bookings.assign');
         Route::post('bookings/{id}/restore', [BookingController::class, 'restore'])->name('bookings.restore');
+        // Inquiries admin routes
+        Route::get('admin/inquiries', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'index'])->name('admin.inquiries.index');
+        Route::get('admin/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'show'])->name('admin.inquiries.show');
+        Route::patch('admin/inquiries/{inquiry}/status', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'updateStatus'])->name('admin.inquiries.status');
+        Route::patch('admin/inquiries/{inquiry}/assign', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'assign'])->name('admin.inquiries.assign');
     });
 
     // ==============================

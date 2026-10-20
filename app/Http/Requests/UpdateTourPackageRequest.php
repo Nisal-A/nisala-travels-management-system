@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Destination;
+use App\Models\TourPackage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -32,6 +34,57 @@ class UpdateTourPackageRequest extends FormRequest
             'excluded_items' => ['nullable', 'string'],
             'terms' => ['nullable', 'string'],
             'status' => ['required', 'string', Rule::in(['active', 'inactive', 'archived'])],
+
+            'group_min' => ['nullable', 'integer', 'min:1'],
+            'group_max' => [
+                'nullable',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $min = $this->input('group_min');
+                    if ($min === null && $this->route('tour')) {
+                        $tour = $this->route('tour') instanceof TourPackage
+                            ? $this->route('tour')
+                            : TourPackage::find($this->route('tour'));
+                        $min = $tour?->group_min;
+                    }
+                    if ($value !== null && $min !== null && $value < $min) {
+                        $fail('The group max must be greater than or equal to group min.');
+                    }
+                },
+            ],
+            'tier' => [
+                'nullable',
+                'string',
+                Rule::in(array_keys(config('tour_tiers.tiers', []))),
+                function ($attribute, $value, $fail) {
+                    if (empty($value)) {
+                        return;
+                    }
+
+                    $destinationId = $this->input('destination_id');
+                    if (! $destinationId && $this->route('tour')) {
+                        $tour = $this->route('tour') instanceof TourPackage
+                            ? $this->route('tour')
+                            : TourPackage::find($this->route('tour'));
+                        $destinationId = $tour?->destination_id;
+                    }
+
+                    if (! $destinationId) {
+                        return;
+                    }
+
+                    $destination = Destination::find($destinationId);
+                    if (! $destination) {
+                        return;
+                    }
+
+                    $allowedTiers = config("tour_tiers.allowed_by_destination.{$destination->slug}", []);
+                    if (! in_array($value, $allowedTiers, true)) {
+                        $fail("The selected tier is not allowed for destination {$destination->city_region}.");
+                    }
+                },
+            ],
         ];
     }
 }
