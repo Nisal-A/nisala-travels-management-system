@@ -34,10 +34,13 @@ class PublicContentSeeder extends Seeder
                 'gallery' => null,
                 'sort_order' => 1,
                 'listing_state' => 'coming_soon',
+                // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
-                    '[CONFIRM] Recommended clothing for hill country vs coastal areas in Sri Lanka',
-                    '[CONFIRM] Scenic train booking recommendations and advance notice requirements for Sri Lanka',
-                    '[CONFIRM] Wildlife safari guidelines and respectful temple visitation tips for Sri Lanka',
+                    'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
+                    'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
+                    'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
+                    'Use licensed guides and vehicles, and agree on fares before the trip starts.',
+                    'Carry sun protection and drink plenty of water in the dry zones.',
                 ],
             ],
             [
@@ -62,10 +65,13 @@ class PublicContentSeeder extends Seeder
                 ],
                 'sort_order' => 2,
                 'listing_state' => 'live',
+                // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
-                    '[CONFIRM] Best local dining recommendations and night market tips for Thailand',
-                    '[CONFIRM] Recommended packing items and temple dress code guidelines for Thailand',
-                    '[CONFIRM] Seasonal weather recommendations and travel insurance advice for Thailand',
+                    'Dress modestly at temples: cover your shoulders and knees, and take off your shoes before entering temple buildings.',
+                    'Carry some Thai baht for markets and small shops, and use cards at hotels and larger shops.',
+                    'Show respect for the royal family, and don\'t post disrespectful comments or photos about them.',
+                    'Book island boat tours and sunset cruises early during the busy months, November to April.',
+                    'Pack sun protection and a light rain jacket, since weather can change quickly in the monsoon months.',
                 ],
             ],
             [
@@ -89,10 +95,13 @@ class PublicContentSeeder extends Seeder
                 ],
                 'sort_order' => 3,
                 'listing_state' => 'live',
+                // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
-                    '[CONFIRM] Recommended monument visit timings and photography guidelines for India',
-                    '[CONFIRM] Health, hydration, and cultural etiquette recommendations for India',
-                    '[CONFIRM] Recommended local craft markets and tipping norms for India',
+                    'Check health advice and vaccination requirements before you go, and carry a basic first-aid kit with any personal medicine.',
+                    'Drink only sealed bottled water, and be careful with street food in the first days.',
+                    'Dress modestly at temples and religious sites, and remove your shoes where asked.',
+                    'Keep valuables secure in busy markets and on crowded trains.',
+                    'Travel with a company guide for long drives and temple visits, and allow extra time for road journeys.',
                 ],
             ],
             [
@@ -114,10 +123,13 @@ class PublicContentSeeder extends Seeder
                 'gallery' => null,
                 'sort_order' => 4,
                 'listing_state' => 'coming_soon',
+                // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
-                    '[CONFIRM] Speedboat vs seaplane transfer recommendations for Maldives',
-                    '[CONFIRM] Recommended resort meal plans and water sports guidelines for Maldives',
-                    '[CONFIRM] Sun protection and marine conservation etiquette recommendations for Maldives',
+                    'Resort islands allow swimwear. Local islands require modest clothing, so plan your outfits for each part of the trip.',
+                    'Alcohol is sold only at resorts and on some islands, so check the rules before you travel.',
+                    'Use reef-safe sunscreen, and don\'t touch or stand on coral.',
+                    'Book water activities with certified operators, and check sea conditions before each trip.',
+                    'Plan transfers in advance, since many islands are reached by speedboat or seaplane.',
                 ],
             ],
         ];
