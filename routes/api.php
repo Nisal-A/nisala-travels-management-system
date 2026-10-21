@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\PublicMemoryController;
+use App\Http\Controllers\Api\PublicTestimonialController;
 use App\Http\Controllers\Api\PublicTourController;
 use App\Http\Controllers\InquiryController;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ Route::prefix('public')->group(function () {
         Route::get('tours', [PublicTourController::class, 'index']);
         Route::get('tours/{slug}', [PublicTourController::class, 'show']);
         Route::get('destinations', [PublicTourController::class, 'destinations']);
+        Route::get('memories', [PublicMemoryController::class, 'index']);
+        Route::get('testimonials', [PublicTestimonialController::class, 'index']);
     });
 
     Route::middleware(['public.key', 'throttle:public-inquiry', 'public.honeypot'])->group(function () {

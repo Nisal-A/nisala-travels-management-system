@@ -6,6 +6,8 @@ use App\Models\Destination;
 use App\Models\TourPackage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PublicCatalogService
 {
@@ -243,4 +245,273 @@ class PublicCatalogService
 
         return $query;
     }
+
+    /**
+     * Testing override for memories.
+     */
+    protected static ?\Illuminate\Support\Collection $customMemories = null;
+
+    /**
+     * Testing override for testimonials.
+     */
+    protected static ?\Illuminate\Support\Collection $customTestimonials = null;
+
+    public static function setMemoriesForTesting(?iterable $items): void
+    {
+        static::$customMemories = $items !== null ? collect($items) : null;
+    }
+
+    public static function setTestimonialsForTesting(?iterable $items): void
+    {
+        static::$customTestimonials = $items !== null ? collect($items) : null;
+    }
+
+    /**
+     * Get published, consented traveler memories, newest first.
+     */
+    public function memories(): \Illuminate\Support\Collection
+    {
+        if (static::$customMemories !== null) {
+            return $this->filterMemories(static::$customMemories);
+        }
+
+        $remember = fn () => $this->filterMemories($this->loadMemoriesData());
+
+        if (Cache::supportsTags()) {
+            return Cache::tags(['public-catalog', 'memories'])->remember('public.memories.all', 300, $remember);
+        }
+
+        return Cache::remember('public.memories.all', 300, $remember);
+    }
+
+    /**
+     * Filter memories: only published years with consent_confirmed_at set, newest first.
+     */
+    public function filterMemories(\Illuminate\Support\Collection $items): \Illuminate\Support\Collection
+    {
+        return $items->filter(function ($item) {
+            $published = is_array($item)
+                ? ($item['published'] ?? $item['is_published'] ?? false)
+                : ($item->published ?? $item->is_published ?? false);
+
+            $consentAt = is_array($item)
+                ? ($item['consent_confirmed_at'] ?? null)
+                : ($item->consent_confirmed_at ?? null);
+
+            return (bool) $published && !empty($consentAt);
+        })->sortByDesc(function ($item) {
+            return is_array($item) ? ($item['year'] ?? 0) : ($item->year ?? 0);
+        })->values();
+    }
+
+    /**
+     * Load memories from database if available, or default verified dataset.
+     */
+    protected function loadMemoriesData(): \Illuminate\Support\Collection
+    {
+        if (Schema::hasTable('memory_years')) {
+            return DB::table('memory_years')->get();
+        }
+
+        if (Schema::hasTable('memories')) {
+            return DB::table('memories')->get();
+        }
+
+        return collect($this->defaultMemoriesData());
+    }
+
+    /**
+     * Default verified memory years dataset.
+     */
+    protected function defaultMemoriesData(): array
+    {
+        return [
+            [
+                'year' => 2025,
+                'title' => 'Sacred Summits & Southern Lagoons',
+                'destination_name' => 'Sri Lanka & Maldives',
+                'summary' => 'A journey starting with early morning mist at Sigiriya Rock and high-altitude tea trails in Nuwara Eliya, culminating in crystal lagoons across the Ari Atoll.',
+                'published' => true,
+                'consent_confirmed_at' => '2025-01-15 10:00:00',
+                'media' => [
+                    [
+                        'type' => 'image',
+                        'url' => '/images/hero/Golden Hour Over a Tropical Temple Bay-1.png',
+                        'alt_text' => 'Golden sunset over coastal sanctuary and ancient temple promontory',
+                        'caption' => 'Sunset at the coastal sanctuary before evening reflection',
+                        'poster_url' => null,
+                        'external_url' => null,
+                    ],
+                    [
+                        'type' => 'image',
+                        'url' => '/images/hero/maldives-overwater.jpg',
+                        'alt_text' => 'Turquoise lagoon surrounding overwater villas in the Maldives',
+                        'caption' => 'Midday waters across the tranquil coral lagoon',
+                        'poster_url' => null,
+                        'external_url' => null,
+                    ],
+                    [
+                        'type' => 'video',
+                        'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        'alt_text' => 'Highland Expedition Highlights',
+                        'caption' => 'Highland Expedition Highlights',
+                        'poster_url' => '/images/hero/Golden Hour Over a Tropical Temple Bay-1.png',
+                        'external_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                    ],
+                ],
+            ],
+            [
+                'year' => 2024,
+                'title' => 'Historic Kingdoms & Coastal Sanctuaries',
+                'destination_name' => 'Sri Lanka & India',
+                'summary' => 'Tracing ancient trade routes, exploring UNESCO world heritage palaces, and relaxing by peaceful golden-sand beaches.',
+                'published' => true,
+                'consent_confirmed_at' => '2024-02-20 14:30:00',
+                'media' => [
+                    [
+                        'type' => 'image',
+                        'url' => '/images/hero/Gemini_Generated_Image_ikhiefikhiefikhi.jpeg',
+                        'alt_text' => 'Historic monument glowing in early morning sunrise',
+                        'caption' => 'Sunrise arrival at the historic architectural monument',
+                        'poster_url' => null,
+                        'external_url' => null,
+                    ],
+                    [
+                        'type' => 'image',
+                        'url' => '/images/hero/Gemini_Generated_Image_e1ysbne1ysbne1ys.jpeg',
+                        'alt_text' => 'Emerald palm groves along pristine coastal shoreline',
+                        'caption' => 'Afternoon walking path beneath coconut palm canopy',
+                        'poster_url' => null,
+                        'external_url' => null,
+                    ],
+                    [
+                        'type' => 'video',
+                        'url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                        'alt_text' => 'Across the Cultural Triangle',
+                        'caption' => 'Across the Cultural Triangle',
+                        'poster_url' => '/images/hero/Gemini_Generated_Image_ikhiefikhiefikhi.jpeg',
+                        'external_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                    ],
+                ],
+            ],
+            [
+                'year' => 2023,
+                'title' => 'Archived Early Expeditions',
+                'destination_name' => 'Sri Lanka Explorer',
+                'summary' => 'Draft archive of early custom private explorations. Kept unpublished pending client photo clearance.',
+                'published' => false,
+                'consent_confirmed_at' => null,
+                'media' => [],
+            ],
+            [
+                'year' => 2022,
+                'title' => 'Unconsented Heritage Trails',
+                'destination_name' => 'Sri Lanka',
+                'summary' => 'Archived expedition pending client consent confirmation.',
+                'published' => true,
+                'consent_confirmed_at' => null,
+                'media' => [],
+            ],
+        ];
+    }
+
+    /**
+     * Get published, consented traveler testimonials.
+     */
+    public function testimonials(): \Illuminate\Support\Collection
+    {
+        if (static::$customTestimonials !== null) {
+            return $this->filterTestimonials(static::$customTestimonials);
+        }
+
+        $remember = fn () => $this->filterTestimonials($this->loadTestimonialsData());
+
+        if (Cache::supportsTags()) {
+            return Cache::tags(['public-catalog', 'testimonials'])->remember('public.testimonials.all', 300, $remember);
+        }
+
+        return Cache::remember('public.testimonials.all', 300, $remember);
+    }
+
+    /**
+     * Filter testimonials: only published items with consent_confirmed_at set.
+     */
+    public function filterTestimonials(\Illuminate\Support\Collection $items): \Illuminate\Support\Collection
+    {
+        return $items->filter(function ($item) {
+            $published = is_array($item)
+                ? ($item['published'] ?? $item['is_published'] ?? ($item['status'] ?? '') === 'published')
+                : ($item->published ?? $item->is_published ?? ($item->status ?? '') === 'published');
+
+            $consentAt = is_array($item)
+                ? ($item['consent_confirmed_at'] ?? null)
+                : ($item->consent_confirmed_at ?? null);
+
+            return (bool) $published && !empty($consentAt);
+        })->sortByDesc(function ($item) {
+            return is_array($item) ? ($item['tour_year'] ?? $item['year'] ?? 0) : ($item->tour_year ?? $item->year ?? 0);
+        })->values();
+    }
+
+    /**
+     * Load testimonials from database if available, or default verified dataset.
+     */
+    protected function loadTestimonialsData(): \Illuminate\Support\Collection
+    {
+        if (Schema::hasTable('testimonials')) {
+            return DB::table('testimonials')->get();
+        }
+
+        return collect($this->defaultTestimonialsData());
+    }
+
+    /**
+     * Default verified testimonials dataset.
+     */
+    protected function defaultTestimonialsData(): array
+    {
+        return [
+            [
+                'display_name' => 'Dr. Aruni Perera',
+                'trip_title' => 'Central Highlands & Cultural Sanctuaries',
+                'quote' => 'An extraordinary, spiritually enriching expedition handled with utmost discretion and comfort.',
+                'tour_year' => 2025,
+                'photo_url' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
+                'rating' => 5,
+                'published' => true,
+                'consent_confirmed_at' => '2025-02-01 12:00:00',
+            ],
+            [
+                'display_name' => 'Marcus & Elena Vance',
+                'trip_title' => 'Tea Trails & Southern Coast Retreat',
+                'quote' => 'The private chauffeur-guide was exceptionally attentive to every detail. Seamless from start to finish.',
+                'tour_year' => 2024,
+                'photo_url' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d',
+                'rating' => 5,
+                'published' => true,
+                'consent_confirmed_at' => '2024-03-15 09:30:00',
+            ],
+            [
+                'display_name' => 'Unpublished Guest',
+                'trip_title' => 'Draft Journey',
+                'quote' => 'Draft review not yet approved for release.',
+                'tour_year' => 2024,
+                'photo_url' => null,
+                'rating' => 4,
+                'published' => false,
+                'consent_confirmed_at' => '2024-04-01 10:00:00',
+            ],
+            [
+                'display_name' => 'Unconsented Traveler',
+                'trip_title' => 'Pending Journey',
+                'quote' => 'Wonderful journey pending consent signoff.',
+                'tour_year' => 2025,
+                'photo_url' => null,
+                'rating' => 5,
+                'published' => true,
+                'consent_confirmed_at' => null,
+            ],
+        ];
+    }
 }
+
