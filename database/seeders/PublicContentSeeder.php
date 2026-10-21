@@ -34,6 +34,11 @@ class PublicContentSeeder extends Seeder
                 'gallery' => null,
                 'sort_order' => 1,
                 'listing_state' => 'coming_soon',
+                'recommendations' => [
+                    '[CONFIRM] Recommended clothing for hill country vs coastal areas in Sri Lanka',
+                    '[CONFIRM] Scenic train booking recommendations and advance notice requirements for Sri Lanka',
+                    '[CONFIRM] Wildlife safari guidelines and respectful temple visitation tips for Sri Lanka',
+                ],
             ],
             [
                 'slug' => 'thailand',
@@ -57,6 +62,11 @@ class PublicContentSeeder extends Seeder
                 ],
                 'sort_order' => 2,
                 'listing_state' => 'live',
+                'recommendations' => [
+                    '[CONFIRM] Best local dining recommendations and night market tips for Thailand',
+                    '[CONFIRM] Recommended packing items and temple dress code guidelines for Thailand',
+                    '[CONFIRM] Seasonal weather recommendations and travel insurance advice for Thailand',
+                ],
             ],
             [
                 'slug' => 'india',
@@ -79,6 +89,36 @@ class PublicContentSeeder extends Seeder
                 ],
                 'sort_order' => 3,
                 'listing_state' => 'live',
+                'recommendations' => [
+                    '[CONFIRM] Recommended monument visit timings and photography guidelines for India',
+                    '[CONFIRM] Health, hydration, and cultural etiquette recommendations for India',
+                    '[CONFIRM] Recommended local craft markets and tipping norms for India',
+                ],
+            ],
+            [
+                'slug' => 'maldives',
+                'name' => 'Maldives',
+                'country' => 'Maldives',
+                'tagline' => 'Sun-kissed atolls, turquoise lagoons, and overwater luxury.',
+                // Image is a placeholder until owner photos are supplied
+                'image' => null,
+                'highlights' => ['Overwater Villa Retreats', 'Coral Reef Snorkeling & Diving', 'Sunset Dolphin Cruises'],
+                'region' => 'south-asia',
+                'best_months' => 'November to April',
+                'facts' => [
+                    ['label' => 'Time zone', 'value' => 'UTC+05:00'],
+                    ['label' => 'Currency', 'value' => 'Maldivian Rufiyaa (MVR) / USD'],
+                    ['label' => 'International airport', 'value' => 'Velana International (MLE)'],
+                ],
+                // Placeholder gallery until owner photos are supplied
+                'gallery' => null,
+                'sort_order' => 4,
+                'listing_state' => 'coming_soon',
+                'recommendations' => [
+                    '[CONFIRM] Speedboat vs seaplane transfer recommendations for Maldives',
+                    '[CONFIRM] Recommended resort meal plans and water sports guidelines for Maldives',
+                    '[CONFIRM] Sun protection and marine conservation etiquette recommendations for Maldives',
+                ],
             ],
         ];
 
@@ -98,6 +138,7 @@ class PublicContentSeeder extends Seeder
                     'sort_order' => $dest['sort_order'],
                     'status' => 'active',
                     'listing_state' => $dest['listing_state'],
+                    'recommendations' => $dest['recommendations'] ?? [],
                 ]
             );
         }

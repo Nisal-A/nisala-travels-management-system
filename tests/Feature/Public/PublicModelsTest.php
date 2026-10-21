@@ -125,6 +125,7 @@ test('schema check: the new columns exist on destinations, tour_packages, and in
         'hero_image',
         'gallery',
         'sort_order',
+        'recommendations',
     ];
 
     foreach ($destinationColumns as $col) {
@@ -254,6 +255,19 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
 
     $india = Destination::where('slug', 'india')->first();
     expect($india->listing_state)->toBe('live');
+
+    $maldives = Destination::where('slug', 'maldives')->first();
+    expect($maldives)->not->toBeNull();
+    expect($maldives->listing_state)->toBe('coming_soon');
+
+    // Verify recommendations are placeholder lines marked [CONFIRM] for all 4 countries
+    foreach ([$sriLanka, $thailand, $india, $maldives] as $dest) {
+        expect($dest->recommendations)->toBeArray()
+            ->and(count($dest->recommendations))->toBeGreaterThan(0);
+        foreach ($dest->recommendations as $rec) {
+            expect($rec)->toStartWith('[CONFIRM]');
+        }
+    }
 
     // Verify all Sri Lanka tours are inactive
     $sriLankaTours = TourPackage::where('destination_id', $sriLanka->id)->get();

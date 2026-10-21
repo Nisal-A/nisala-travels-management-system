@@ -10,15 +10,33 @@ use Illuminate\Support\Facades\Cache;
 class PublicCatalogService
 {
     /**
-     * Get all public listed destinations.
+     * Get all public listed and coming_soon destinations (never hidden).
      */
     public function destinations(): Collection
     {
         $remember = function () {
-            return Destination::publicListed()
+            $destinations = Destination::where('status', 'active')
+                ->whereIn('listing_state', [
+                    Destination::LISTING_STATE_LIVE,
+                    Destination::LISTING_STATE_COMING_SOON,
+                ])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get();
+
+            foreach ($destinations as $destination) {
+                if ($destination->listing_state === Destination::LISTING_STATE_COMING_SOON) {
+                    $destination->tour_count = 0;
+                    $destination->places = [];
+                    $destination->common_inclusions = [];
+                } else {
+                    $destination->tour_count = $destination->publicTourCount();
+                    $destination->places = $this->computePlacesForDestination($destination);
+                    $destination->common_inclusions = $this->computeCommonInclusionsForDestination($destination);
+                }
+            }
+
+            return $destinations;
         };
 
         if (Cache::supportsTags()) {
@@ -26,6 +44,108 @@ class PublicCatalogService
         }
 
         return Cache::remember('public.destinations.all', 300, $remember);
+    }
+
+    /**
+     * Unique values from the highlights of live, published tours in this country, in tour order, max 12.
+     */
+    public function computePlacesForDestination(Destination $destination): array
+    {
+        if ($destination->listing_state !== Destination::LISTING_STATE_LIVE) {
+            return [];
+        }
+
+        $tours = TourPackage::published()
+            ->whereHas('destination', function ($q) use ($destination) {
+                $q->where('status', 'active')
+                    ->where('listing_state', Destination::LISTING_STATE_LIVE)
+                    ->where('country', $destination->country);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $places = [];
+        foreach ($tours as $tour) {
+            $highlights = $tour->highlights;
+            if (is_array($highlights)) {
+                foreach ($highlights as $highlight) {
+                    $val = trim((string) $highlight);
+                    if ($val !== '' && !in_array($val, $places, true)) {
+                        $places[] = $val;
+                        if (count($places) >= 12) {
+                            return $places;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $places;
+    }
+
+    /**
+     * Lines from included_items that appear in at least 2 live tours of this country, max 8.
+     */
+    public function computeCommonInclusionsForDestination(Destination $destination): array
+    {
+        if ($destination->listing_state !== Destination::LISTING_STATE_LIVE) {
+            return [];
+        }
+
+        $tours = TourPackage::published()
+            ->whereHas('destination', function ($q) use ($destination) {
+                $q->where('status', 'active')
+                    ->where('listing_state', Destination::LISTING_STATE_LIVE)
+                    ->where('country', $destination->country);
+            })
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $lineCounts = [];
+        $firstSeen = [];
+
+        foreach ($tours as $tour) {
+            $text = $tour->included_items;
+            if (empty($text)) {
+                continue;
+            }
+
+            if (is_array($text)) {
+                $lines = array_values(array_filter(
+                    array_map('trim', $text),
+                    fn ($line) => $line !== ''
+                ));
+            } else {
+                $lines = array_values(array_filter(
+                    array_map('trim', preg_split('/\r\n|\r|\n/', (string) $text)),
+                    fn ($line) => $line !== ''
+                ));
+            }
+
+            $uniqueLinesInTour = array_unique($lines);
+
+            foreach ($uniqueLinesInTour as $line) {
+                if (!isset($lineCounts[$line])) {
+                    $lineCounts[$line] = 0;
+                    $firstSeen[] = $line;
+                }
+                $lineCounts[$line]++;
+            }
+        }
+
+        $common = [];
+        foreach ($firstSeen as $line) {
+            if ($lineCounts[$line] >= 2) {
+                $common[] = $line;
+                if (count($common) >= 8) {
+                    break;
+                }
+            }
+        }
+
+        return $common;
     }
 
     /**

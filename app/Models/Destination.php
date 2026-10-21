@@ -38,12 +38,14 @@ class Destination extends Model
         'hero_image',
         'gallery',
         'sort_order',
+        'recommendations',
     ];
 
     protected $casts = [
         'facts' => 'array',
         'highlights' => 'array',
         'gallery' => 'array',
+        'recommendations' => 'array',
     ];
 
     /**

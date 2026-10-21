@@ -11,7 +11,7 @@ beforeEach(function () {
     config(['services.nisala_web.key' => 'test-valid-api-key']);
 });
 
-test('only publicListed tours and destinations are returned, excluding inactive, draft, soft-deleted, and coming_soon', function () {
+test('only live and coming_soon destinations are returned, excluding inactive, draft, soft-deleted, and hidden', function () {
     $liveDest = Destination::create([
         'slug' => 'thailand',
         'country' => 'Thailand',
@@ -28,6 +28,14 @@ test('only publicListed tours and destinations are returned, excluding inactive,
         'listing_state' => 'coming_soon',
     ]);
 
+    $hiddenDest = Destination::create([
+        'slug' => 'hidden-dest',
+        'country' => 'Bhutan',
+        'city_region' => 'Thimphu',
+        'status' => 'active',
+        'listing_state' => 'hidden',
+    ]);
+
     $inactiveDest = Destination::create([
         'slug' => 'maldives',
         'country' => 'Maldives',
@@ -37,9 +45,9 @@ test('only publicListed tours and destinations are returned, excluding inactive,
     ]);
 
     $draftDest = Destination::create([
-        'slug' => 'bhutan',
+        'slug' => 'bhutan-draft',
         'country' => 'Bhutan',
-        'city_region' => 'Thimphu',
+        'city_region' => 'Paro',
         'status' => 'draft',
         'listing_state' => 'live',
     ]);
@@ -117,10 +125,11 @@ test('only publicListed tours and destinations are returned, excluding inactive,
 
     $destResponse->assertStatus(200);
     $destSlugs = collect($destResponse->json('data'))->pluck('slug')->all();
-    expect($destSlugs)->toBe(['thailand'])
-        ->and($destSlugs)->not->toContain('sri-lanka')
+    expect($destSlugs)->toContain('thailand')
+        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->not->toContain('hidden-dest')
         ->and($destSlugs)->not->toContain('maldives')
-        ->and($destSlugs)->not->toContain('bhutan')
+        ->and($destSlugs)->not->toContain('bhutan-draft')
         ->and($destSlugs)->not->toContain('nepal');
 });
 
@@ -280,17 +289,16 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'slug',
         'name',
         'country',
-        'region',
+        'listing_state',
         'tagline',
         'overview',
-        'travel_information',
-        'best_months',
-        'facts',
-        'highlights',
         'hero_image_url',
         'gallery',
         'tour_count',
-        'listing_state',
+        'places',
+        'common_inclusions',
+        'recommendations',
+        'best_months',
     ];
 
     expect(array_keys($destListItem))->toBe($expectedDestKeys);
@@ -442,13 +450,16 @@ test('PublicCatalogService methods work and exclude Sri Lanka packages', functio
     $destSlugs = $destinations->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('india')
-        ->and($destSlugs)->not->toContain('sri-lanka');
+        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->toContain('maldives');
 
     $tours = $service->tours();
     $tourDestSlugs = $tours->pluck('destination.slug')->unique()->all();
-    expect($tourDestSlugs)->not->toContain('sri-lanka');
+    expect($tourDestSlugs)->not->toContain('sri-lanka')
+        ->and($tourDestSlugs)->not->toContain('maldives');
 
     $featured = $service->featuredTours();
     $featuredDestSlugs = $featured->pluck('destination.slug')->unique()->all();
-    expect($featuredDestSlugs)->not->toContain('sri-lanka');
+    expect($featuredDestSlugs)->not->toContain('sri-lanka')
+        ->and($featuredDestSlugs)->not->toContain('maldives');
 });
