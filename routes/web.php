@@ -164,6 +164,19 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
         Route::resource('employees', EmployeeController::class);
+
+        // Memories Management (TASK P10)
+        Route::prefix('admin/memories')->name('admin.memories.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\MemoryYearController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\MemoryYearController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\MemoryYearController::class, 'store'])->name('store');
+            Route::get('/{memoryYear}/edit', [\App\Http\Controllers\Admin\MemoryYearController::class, 'edit'])->name('edit');
+            Route::put('/{memoryYear}', [\App\Http\Controllers\Admin\MemoryYearController::class, 'update'])->name('update');
+            Route::delete('/{memoryYear}', [\App\Http\Controllers\Admin\MemoryYearController::class, 'destroy'])->name('destroy');
+            Route::patch('/{memoryYear}/toggle-publish', [\App\Http\Controllers\Admin\MemoryYearController::class, 'togglePublish'])->name('toggle-publish');
+            Route::post('/{memoryYear}/media', [\App\Http\Controllers\Admin\MemoryYearController::class, 'storeMedia'])->name('media.store');
+            Route::delete('/{memoryYear}/media/{media}', [\App\Http\Controllers\Admin\MemoryYearController::class, 'destroyMedia'])->name('media.destroy');
+        });
     });
 
     // ==============================
