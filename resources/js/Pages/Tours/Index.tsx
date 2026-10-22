@@ -97,7 +97,7 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to archive this tour package?')) {
-            router.delete(route('tours.destroy', id), {
+            router.delete(route('tours.destroy', { tour: id }), {
                 preserveScroll: true,
             });
         }
@@ -117,7 +117,7 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                 </div>
                 <div className="flex space-x-2">
                     <Link href={route('destinations.index')} className={buttonVariants({ variant: 'outline' })}>
-                        <MapPin className="mr-2 h-4 w-4" /> Manage Destinations
+                        <MapPin className="mr-2 h-4 w-4" /> Manage destinations
                     </Link>
                     {canCreate && (
                         <Link href={route('tours.create')} className={buttonVariants({ variant: 'default' })}>
@@ -144,8 +144,9 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     <Select
                         value={destinationFilter}
                         onValueChange={(v) => {
-                            setDestinationFilter(v);
-                            applyFilters({ destination: v });
+                            const val = v || 'all';
+                            setDestinationFilter(val);
+                            applyFilters({ destination: val });
                         }}
                     >
                         <SelectTrigger className="w-full sm:w-[200px] bg-background">
@@ -164,8 +165,9 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     <Select
                         value={statusFilter}
                         onValueChange={(v) => {
-                            setStatusFilter(v);
-                            applyFilters({ status: v });
+                            const val = v || 'all';
+                            setStatusFilter(val);
+                            applyFilters({ status: val });
                         }}
                     >
                         <SelectTrigger className="w-full sm:w-[150px] bg-background">
