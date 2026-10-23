@@ -16,9 +16,12 @@ use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SavedFilterController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+require_once app_path('Models/AppSetting.php');
 
 /*
 |--------------------------------------------------------------------------
@@ -153,7 +156,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Settings/Index'))->name('index');
+            Route::get('/', [SettingsController::class, 'index'])->name('index');
+            Route::match(['put', 'post'], '/', [SettingsController::class, 'update'])->name('update');
+            Route::post('/clear-cache', [SettingsController::class, 'clearPublicCache'])->name('clear-cache');
             Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
             Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });

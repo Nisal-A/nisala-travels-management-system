@@ -23,10 +23,10 @@
         h1 { font-size: 24px; font-weight: 600; margin-top: 0; margin-bottom: 20px; color: #0f172a; }
         h2 { font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 16px; color: #0f172a; }
         p { margin-top: 0; margin-bottom: 16px; }
-        a { color: {{ config('company.brand_color') }}; text-decoration: underline; }
+        a { color: {{ company_setting('brand_color') }}; text-decoration: underline; }
         
         .button-wrap { text-align: center; margin: 30px 0; }
-        .button { background-color: {{ config('company.brand_color') }}; border-radius: 6px; color: #ffffff !important; display: inline-block; font-size: 16px; font-weight: 600; padding: 12px 24px; text-decoration: none; border: 1px solid {{ config('company.brand_color') }}; }
+        .button { background-color: {{ company_setting('brand_color') }}; border-radius: 6px; color: #ffffff !important; display: inline-block; font-size: 16px; font-weight: 600; padding: 12px 24px; text-decoration: none; border: 1px solid {{ company_setting('brand_color') }}; }
         
         .footer { padding: 32px 24px; text-align: center; color: #64748b; font-size: 13px; line-height: 1.5; }
         .footer a { color: #64748b; text-decoration: underline; }
@@ -64,7 +64,7 @@
                     <tr>
                         <td class="header" align="center" style="padding: 25px 0;">
                             <a href="{{ config('app.url') }}" style="display: inline-block;">
-                                <img src="{{ config('company.logo_url') }}" alt="{{ config('company.name') }}" style="max-width: 150px; border: none; display: block;" border="0">
+                                <img src="{{ company_setting('logo_url') }}" alt="{{ company_setting('name') }}" style="max-width: 150px; border: none; display: block;" border="0">
                             </a>
                         </td>
                     </tr>
@@ -82,14 +82,14 @@
                     <tr>
                         <td class="footer" align="center" style="padding: 32px 24px; color: #64748b; font-size: 13px; line-height: 1.5; text-align: center;">
                             <p style="margin: 0 0 10px 0;">
-                                <strong>{{ config('company.name') }}</strong><br>
-                                {{ config('company.address') }}<br>
-                                Phone: {{ config('company.phone') }} | 
-                                <a href="{{ config('company.whatsapp_url') }}">WhatsApp</a> | 
-                                <a href="mailto:{{ config('company.support_email') }}">{{ config('company.support_email') }}</a>
+                                <strong>{{ company_setting('name') }}</strong><br>
+                                {{ company_setting('address') }}<br>
+                                Phone: {{ company_setting('phone') }} | 
+                                <a href="{{ company_setting('whatsapp_url') }}">WhatsApp</a> | 
+                                <a href="mailto:{{ company_setting('support_email') }}">{{ company_setting('support_email') }}</a>
                             </p>
                             <p style="margin: 0;">
-                                {{ $footer_note ?? 'You received this email because you are a registered user of ' . config('company.name') . '.' }}
+                                {{ $footer_note ?? 'You received this email because you are a registered user of ' . company_setting('name') . '.' }}
                             </p>
                         </td>
                     </tr>
