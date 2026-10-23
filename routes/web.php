@@ -51,10 +51,11 @@ Route::get('/our-tours/{slug}', fn (string $slug) => Inertia::render('Public/Pla
     'slug' => $slug,
 ]))->name('public.tours.show');
 
-Route::get('/memories', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Memories',
-    'description' => 'Relive the magical moments and reviews from our travellers\' journeys.',
-]))->name('public.memories');
+Route::redirect('/memories', '/about#memories', 301);
+Route::get('/about', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'About Us',
+    'description' => 'Learn about Nisala Travels, our story, and our journey.',
+]))->name('public.about');
 
 Route::get('/travel-guides', fn () => Inertia::render('Public/Placeholder', [
     'title' => 'Travel Guides',

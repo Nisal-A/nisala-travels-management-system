@@ -210,7 +210,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/memories" className="transition-colors hover:text-foreground">
+                                    <Link href="/about#memories" className="transition-colors hover:text-foreground">
                                         Traveller Memories
                                     </Link>
                                 </li>

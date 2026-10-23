@@ -105,7 +105,7 @@ test('all placeholder public routes return 200', function () {
         ['GET', '/our-destinations', 'Our Destinations'],
         ['GET', '/our-tours', 'Our Tours'],
         ['GET', '/our-tours/sri-lanka-round-trip', 'Tour Details'],
-        ['GET', '/memories', 'Memories'],
+        ['GET', '/about', 'About Us'],
         ['GET', '/travel-guides', 'Travel Guides'],
         ['GET', '/contact', 'Contact Us'],
         ['POST', '/contact', 'Contact Us'],
@@ -123,6 +123,17 @@ test('all placeholder public routes return 200', function () {
             ->missing('auth')
         );
     }
+});
+
+test('get /memories returns 301 redirect to /about#memories', function () {
+    $response = $this->get('/memories');
+    $response->assertStatus(301);
+    $response->assertRedirect('/about#memories');
+});
+
+test('guest get /about returns 200', function () {
+    $response = $this->get('/about');
+    $response->assertStatus(200);
 });
 
 test('dev styleguide returns 404 when APP_ENV=production', function () {
