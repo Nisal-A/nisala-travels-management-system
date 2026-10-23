@@ -64,7 +64,7 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
         filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc',
     );
 
-    const canCreate = hasRole('super_admin', 'manager');
+    const canCreate = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
 
     const applyFilters = (overrides = {}) => {
