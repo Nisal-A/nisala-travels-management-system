@@ -238,3 +238,47 @@ test('homepage renders featured packages and destinations when available', funct
     );
 });
 
+test('staff routes redirect guests to login', function () {
+    $staffRoutes = [
+        '/admin',
+        '/customers',
+        '/documents',
+        '/tours',
+        '/bookings',
+        '/payments',
+        '/employees',
+        '/settings',
+    ];
+
+    foreach ($staffRoutes as $route) {
+        $response = $this->get($route);
+        $response->assertRedirect('/login');
+    }
+    $this->assertGuest();
+});
+
+test('the rendered navbar does not contain Enquire Now or Memories', function () {
+    $layoutFile = resource_path('js/components/layouts/PublicLayout.tsx');
+    expect(file_exists($layoutFile))->toBeTrue();
+
+    $layoutContent = file_get_contents($layoutFile);
+
+    // Assert that the navbar items and header actions do not contain "Enquire Now" or "Memories"
+    expect($layoutContent)->not->toContain("'Memories'");
+    expect($layoutContent)->not->toContain('"Memories"');
+    expect($layoutContent)->not->toContain('Enquire Now');
+
+    // Assert that the remaining navbar items are preserved
+    expect($layoutContent)->toContain("'Destinations'");
+    expect($layoutContent)->toContain("'/our-destinations'");
+    expect($layoutContent)->toContain("'Tours'");
+    expect($layoutContent)->toContain("'/our-tours'");
+    expect($layoutContent)->toContain("'Contact'");
+    expect($layoutContent)->toContain("'/contact'");
+
+    // Verify GET / returns 200 and HTML response does not see Enquire Now
+    $response = $this->get('/');
+    $response->assertStatus(200);
+    $response->assertDontSee('Enquire Now');
+});
+

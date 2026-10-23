@@ -19,7 +19,7 @@ export function DestinationsPreview({ destinations = [] }: DestinationsPreviewPr
                 <SectionHeading
                     badge="Explore Destinations"
                     title="Inspiring Places to Discover"
-                    description="From emerald hill country and heritage citadels to golden coastal sanctuaries across the island and beyond."
+                    description="From vibrant heritage citadels and golden temples to tropical coastal sanctuaries across India, Thailand, and beyond."
                     align="center"
                     headingLevel="h2"
                 />

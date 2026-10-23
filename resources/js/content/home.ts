@@ -49,8 +49,8 @@ export interface DestinationItem {
 }
 
 export const heroContent = {
-    badge: 'Bespoke Travel in Sri Lanka & Beyond',
-    title: 'Thoughtfully Crafted Journeys Across Sri Lanka & Beyond',
+    badge: 'Bespoke Travel in India, Thailand & Beyond',
+    title: 'Thoughtfully Crafted Journeys Across India, Thailand & Beyond',
     description:
         'Personal travel guidance, transparent itineraries, and authentic experiences crafted to match your preferences and budget.',
     primaryCta: {
@@ -140,7 +140,7 @@ export const commitmentItems: CommitmentItem[] = [
 
 export const finalCtaContent = {
     badge: 'Start Planning Today',
-    title: 'Ready to Plan Your Sri Lankan Journey?',
+    title: 'Ready to Plan Your Journey Across India & Thailand?',
     description:
         'Connect with our team directly on WhatsApp for immediate guidance or submit an inquiry with your travel preferences.',
     whatsappLabel: 'Chat on WhatsApp',

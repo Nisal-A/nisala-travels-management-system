@@ -8,7 +8,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { Globe, Menu, Phone, Mail, MapPin, ArrowRight, MessageCircle } from 'lucide-react';
+import { Globe, Menu, Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import type { CompanyConfig, PageProps } from '@/types';
 
 interface PublicLayoutProps {
@@ -19,7 +19,6 @@ const NAV_LINKS = [
     { label: 'Home', href: '/' },
     { label: 'Destinations', href: '/our-destinations' },
     { label: 'Tours', href: '/our-tours' },
-    { label: 'Memories', href: '/memories' },
     { label: 'Travel Guides', href: '/travel-guides' },
     { label: 'Contact', href: '/contact' },
 ];
@@ -81,15 +80,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                         })}
                     </nav>
 
-                    {/* Header Action: Enquire Now & Mobile Menu Trigger */}
+                    {/* Header Action: Mobile Menu Trigger */}
                     <div className="flex items-center gap-3">
-                        <Button asChild size="sm" className="hidden sm:inline-flex shadow-sm shadow-primary/20">
-                            <Link href="/contact">
-                                Enquire Now
-                                <ArrowRight className="ml-1.5 h-4 w-4" />
-                            </Link>
-                        </Button>
-
                         {/* Mobile Sheet Menu */}
                         <div className="md:hidden">
                             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -141,15 +133,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                         </nav>
                                     </div>
 
-                                    {/* Mobile Drawer Footer with CTA */}
+                                    {/* Mobile Drawer Footer */}
                                     <div className="border-t border-border/50 bg-muted/20 p-5 space-y-3.5">
-                                        <Button asChild className="w-full shadow-sm" size="lg">
-                                            <Link href="/contact" onClick={() => setMobileOpen(false)}>
-                                                Enquire Now
-                                                <ArrowRight className="ml-1.5 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-
                                         <div className="space-y-1.5 pt-2 text-xs text-muted-foreground">
                                             <div className="flex items-center gap-2">
                                                 <Phone className="h-3.5 w-3.5 text-primary" />
