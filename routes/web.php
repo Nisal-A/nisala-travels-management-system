@@ -17,6 +17,7 @@ use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -229,6 +230,16 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
         });
+    });
+
+    // ==============================
+    // Staff Profile (super_admin, manager, staff, finance)
+    // ==============================
+    Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
+        Route::get('/profile', [StaffProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [StaffProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [StaffProfileController::class, 'updatePassword'])->name('profile.password.update');
+        Route::delete('/profile/sessions', [StaffProfileController::class, 'logoutOtherBrowserSessions'])->name('profile.sessions.destroy');
     });
 
     // ==============================

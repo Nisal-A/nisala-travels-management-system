@@ -169,12 +169,26 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                     <nav className={`space-y-6 ${isCollapsed ? 'px-2' : 'px-3'}`}>
                         {navigation.main && <NavSection items={navigation.main} />}
 
-                        {navigation.management && navigation.management.length > 0 && (
-                            <>
-                                {!isCollapsed && <Separator className="opacity-50" />}
-                                <NavSection label="Management" items={navigation.management} />
-                            </>
-                        )}
+                        {(() => {
+                            const managementItems = [...(navigation.management || [])];
+                            if (
+                                hasRole('super_admin', 'manager') &&
+                                !managementItems.some((i) => i.route === 'employees.index' || i.label === 'Employees')
+                            ) {
+                                managementItems.unshift({
+                                    label: 'Employees',
+                                    route: 'employees.index',
+                                    icon: 'UserCog',
+                                });
+                            }
+
+                            return managementItems.length > 0 ? (
+                                <>
+                                    {!isCollapsed && <Separator className="opacity-50" />}
+                                    <NavSection label="Management" items={managementItems} />
+                                </>
+                            ) : null;
+                        })()}
 
                         {navigation.portal && navigation.portal.length > 0 && (
                             <>
@@ -211,73 +225,49 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                                 </button>
                             }
                         />
-                        <DropdownMenuContent side="top" align="start" className="w-56">
-                            <DropdownMenuLabel className="font-normal">
-                                <div className="flex flex-col space-y-1.5">
-                                    <p className="text-sm font-medium">{user?.name}</p>
-                                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                                    <Badge variant="outline" className="w-fit text-[0.65rem] capitalize">
-                                        {roleBadge}
-                                    </Badge>
+                        <DropdownMenuContent side="top" align="start" className="w-64 p-2">
+                            <div className="flex items-center gap-3 p-2">
+                                <Avatar className="h-10 w-10 shrink-0">
+                                    <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                                        {initials}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col space-y-0.5 min-w-0">
+                                    <span className="truncate text-sm font-semibold text-foreground">
+                                        {user?.name}
+                                    </span>
+                                    <span className="truncate text-xs text-muted-foreground">
+                                        {user?.email}
+                                    </span>
+                                    <div className="pt-0.5">
+                                        <Badge variant="outline" className="w-fit text-[0.65rem] capitalize">
+                                            {roleBadge}
+                                        </Badge>
+                                    </div>
                                 </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
+                            </div>
+                            <DropdownMenuSeparator className="my-1.5" />
 
                             <DropdownMenuItem
                                 render={
-                                    <a href="#" className="w-full cursor-pointer flex items-center">
-                                        <UserIcon className="mr-2 h-4 w-4" />
-                                        My Profile
-                                    </a>
+                                    <Link href={route('profile.edit')} className="w-full cursor-pointer flex items-center px-2 py-1.5">
+                                        <UserIcon className="mr-2.5 h-4 w-4 text-muted-foreground" />
+                                        <span>My Profile</span>
+                                    </Link>
                                 }
                             />
 
-                            {hasRole('super_admin', 'manager') && (
-                                <DropdownMenuItem
-                                    render={
-                                        <Link href={route('employees.index')} className="w-full cursor-pointer flex items-center">
-                                            <UserCog className="mr-2 h-4 w-4" />
-                                            Employees
-                                        </Link>
-                                    }
-                                />
-                            )}
-
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="flex items-center">
-                                    <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                                    <Moon className="absolute h-4 w-4 mr-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                                    <span>Appearance</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem onClick={() => setTheme('light')}>
-                                            <Sun className="mr-2 h-4 w-4" />
-                                            <span>Light</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTheme('dark')}>
-                                            <Moon className="mr-2 h-4 w-4" />
-                                            <span>Dark</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setTheme('system')}>
-                                            <Laptop className="mr-2 h-4 w-4" />
-                                            <span>System</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator className="my-1.5" />
                             <DropdownMenuItem
                                 onClick={(e: React.MouseEvent) => {
                                     e.preventDefault();
                                     handleLogout(e as unknown as FormEvent);
                                 }}
                                 disabled={processing}
-                                className="text-destructive focus:text-destructive"
+                                className="text-destructive focus:text-destructive cursor-pointer px-2 py-1.5"
                             >
-                                <LogOut className="mr-2 h-4 w-4" />
-                                {processing ? 'Signing out…' : 'Sign Out'}
+                                <LogOut className="mr-2.5 h-4 w-4" />
+                                <span>{processing ? 'Signing out…' : 'Sign Out'}</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
