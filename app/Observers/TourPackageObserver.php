@@ -26,9 +26,10 @@ class TourPackageObserver
     protected function clearCacheAndRevalidate(TourPackage $tourPackage): void
     {
         if (Cache::supportsTags()) {
-            Cache::tags(['public-catalog', 'tours'])->flush();
+            Cache::tags(['public-catalog', 'tours', 'destinations'])->flush();
         } else {
             Cache::forget('public.tours.all');
+            Cache::forget('public.destinations.all');
 
             if (!empty($tourPackage->slug)) {
                 Cache::forget("public.tour.{$tourPackage->slug}");

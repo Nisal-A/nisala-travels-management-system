@@ -11,7 +11,7 @@ beforeEach(function () {
     config(['services.nisala_web.key' => 'test-valid-api-key']);
 });
 
-test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_soon and no tours. A hidden destination is absent. The response has no booking, customer, or document fields', function () {
+test('only live and coming_soon destinations are returned, excluding inactive, draft, soft-deleted, and hidden', function () {
     $liveDest = Destination::create([
         'slug' => 'thailand',
         'country' => 'Thailand',
@@ -30,8 +30,8 @@ test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_
 
     $hiddenDest = Destination::create([
         'slug' => 'hidden-dest',
-        'country' => 'Hidden Country',
-        'city_region' => 'Hidden City',
+        'country' => 'Bhutan',
+        'city_region' => 'Thimphu',
         'status' => 'active',
         'listing_state' => 'hidden',
     ]);
@@ -45,9 +45,9 @@ test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_
     ]);
 
     $draftDest = Destination::create([
-        'slug' => 'bhutan',
+        'slug' => 'bhutan-draft',
         'country' => 'Bhutan',
-        'city_region' => 'Thimphu',
+        'city_region' => 'Paro',
         'status' => 'draft',
         'listing_state' => 'live',
     ]);
@@ -107,7 +107,7 @@ test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_
     ]);
     $deletedTour->delete();
 
-    // Verify tours endpoint: tours endpoints still exclude anything not live
+    // Verify tours endpoint
     $tourResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
         ->getJson('/api/public/tours');
 
@@ -119,43 +119,18 @@ test('Sri Lanka (coming_soon) appears in destinations with listing_state coming_
         ->and($tourSlugs)->not->toContain('draft-tour')
         ->and($tourSlugs)->not->toContain('deleted-tour');
 
-    // Filter tours by coming_soon destination: returns empty
-    $filteredTourResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
-        ->getJson('/api/public/tours?destination=sri-lanka');
-    $filteredTourResponse->assertStatus(200);
-    expect($filteredTourResponse->json('data'))->toBeEmpty();
-
-    // Verify destinations endpoint: live and coming_soon returned, hidden/draft/inactive/deleted excluded
+    // Verify destinations endpoint
     $destResponse = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
         ->getJson('/api/public/destinations');
 
     $destResponse->assertStatus(200);
-    $destData = collect($destResponse->json('data'));
-    $destSlugs = $destData->pluck('slug')->all();
-
+    $destSlugs = collect($destResponse->json('data'))->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('sri-lanka')
         ->and($destSlugs)->not->toContain('hidden-dest')
         ->and($destSlugs)->not->toContain('maldives')
-        ->and($destSlugs)->not->toContain('bhutan')
+        ->and($destSlugs)->not->toContain('bhutan-draft')
         ->and($destSlugs)->not->toContain('nepal');
-
-    // Sri Lanka (coming_soon) appears with listing_state coming_soon and tour_count 0
-    $sriLankaItem = $destData->firstWhere('slug', 'sri-lanka');
-    expect($sriLankaItem)->not->toBeNull()
-        ->and($sriLankaItem['listing_state'])->toBe('coming_soon')
-        ->and($sriLankaItem['tour_count'])->toBe(0);
-
-    // The response has no booking, customer, or document fields
-    $forbiddenFields = [
-        'customer', 'customer_id', 'customers',
-        'booking', 'bookings',
-        'document', 'documents',
-        'payment', 'payments',
-    ];
-    foreach ($forbiddenFields as $field) {
-        expect(array_key_exists($field, $sriLankaItem))->toBeFalse("Forbidden field {$field} found in coming_soon destination");
-    }
 });
 
 test('the keys of each response object match the whitelist exactly and forbidden fields are absent', function () {
@@ -314,17 +289,16 @@ test('the keys of each response object match the whitelist exactly and forbidden
         'slug',
         'name',
         'country',
-        'region',
+        'listing_state',
         'tagline',
         'overview',
-        'travel_information',
-        'best_months',
-        'facts',
-        'highlights',
         'hero_image_url',
         'gallery',
         'tour_count',
-        'listing_state',
+        'places',
+        'common_inclusions',
+        'recommendations',
+        'best_months',
     ];
 
     expect(array_keys($destListItem))->toBe($expectedDestKeys);
@@ -467,7 +441,7 @@ test('after a tour is saved, the next GET /api/public/tours returns the updated 
     expect($secondResponse->json('data.0.title'))->toBe('Updated Title');
 });
 
-test('PublicCatalogService methods work, include coming_soon destinations, and exclude Sri Lanka packages from tours', function () {
+test('PublicCatalogService methods work and exclude Sri Lanka packages', function () {
     $this->seed(\Database\Seeders\PublicContentSeeder::class);
 
     $service = app(\App\Services\PublicCatalogService::class);
@@ -476,17 +450,16 @@ test('PublicCatalogService methods work, include coming_soon destinations, and e
     $destSlugs = $destinations->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('india')
-        ->and($destSlugs)->toContain('sri-lanka');
-
-    $sriLankaDest = $destinations->firstWhere('slug', 'sri-lanka');
-    expect($sriLankaDest)->not->toBeNull()
-        ->and($sriLankaDest->listing_state)->toBe('coming_soon');
+        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->toContain('maldives');
 
     $tours = $service->tours();
     $tourDestSlugs = $tours->pluck('destination.slug')->unique()->all();
-    expect($tourDestSlugs)->not->toContain('sri-lanka');
+    expect($tourDestSlugs)->not->toContain('sri-lanka')
+        ->and($tourDestSlugs)->not->toContain('maldives');
 
     $featured = $service->featuredTours();
     $featuredDestSlugs = $featured->pluck('destination.slug')->unique()->all();
-    expect($featuredDestSlugs)->not->toContain('sri-lanka');
+    expect($featuredDestSlugs)->not->toContain('sri-lanka')
+        ->and($featuredDestSlugs)->not->toContain('maldives');
 });

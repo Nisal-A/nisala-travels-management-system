@@ -16,5 +16,9 @@ export default defineConfig({
         alias: {
             '@': '/resources/js',
         },
+        dedupe: ['react', 'react-dom', '@base-ui/react'],
+    },
+    optimizeDeps: {
+        include: ['@base-ui/react/tabs'],
     },
 });
