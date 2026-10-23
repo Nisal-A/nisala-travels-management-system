@@ -30,7 +30,7 @@
 
     <div class="callout" style="background-color: #f0fdf4; border-left-color: #22c55e;">
         <strong>Emergency Contact:</strong><br>
-        If you face any issues during your trip, please contact us at {{ config('company.phone') }}.
+        If you face any issues during your trip, please contact us at {{ company_setting('phone') }}.
     </div>
 
     <div class="button-wrap">
