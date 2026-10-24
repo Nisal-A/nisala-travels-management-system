@@ -55,6 +55,11 @@ class TourPackage extends Model
         return $this->tier ? config("tour_tiers.tiers.{$this->tier}.label") : null;
     }
 
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['package_name'] ?? null;
+    }
+
     public function destination()
     {
         return $this->belongsTo(Destination::class);

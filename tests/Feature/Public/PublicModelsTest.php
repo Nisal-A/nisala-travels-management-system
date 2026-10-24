@@ -243,12 +243,11 @@ test('Destination model rejects invalid listing_state', function () {
     })->toThrow(\InvalidArgumentException::class);
 });
 
-test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour is active', function () {
+test('seeded destinations have correct listing_state and Sri Lanka is not seeded', function () {
     $this->seed(\Database\Seeders\PublicContentSeeder::class);
 
     $sriLanka = Destination::where('slug', 'sri-lanka')->first();
-    expect($sriLanka)->not->toBeNull();
-    expect($sriLanka->listing_state)->toBe('coming_soon');
+    expect($sriLanka)->toBeNull();
 
     $thailand = Destination::where('slug', 'thailand')->first();
     expect($thailand->listing_state)->toBe('live');
@@ -276,14 +275,6 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
         'Travel with a company guide for long drives and temple visits, and allow extra time for road journeys.',
     ]);
 
-    expect($sriLanka->recommendations)->toBe([
-        'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
-        'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
-        'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
-        'Use licensed guides and vehicles, and agree on fares before the trip starts.',
-        'Carry sun protection and drink plenty of water in the dry zones.',
-    ]);
-
     expect($maldives->recommendations)->toBe([
         'Resort islands allow swimwear. Local islands require modest clothing, so plan your outfits for each part of the trip.',
         'Alcohol is sold only at resorts and on some islands, so check the rules before you travel.',
@@ -291,14 +282,6 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
         'Book water activities with certified operators, and check sea conditions before each trip.',
         'Plan transfers in advance, since many islands are reached by speedboat or seaplane.',
     ]);
-
-    // Verify all Sri Lanka tours are inactive
-    $sriLankaTours = TourPackage::where('destination_id', $sriLanka->id)->get();
-    expect($sriLankaTours->count())->toBeGreaterThan(0);
-    foreach ($sriLankaTours as $tour) {
-        expect($tour->is_active)->toBeFalse();
-        expect($tour->status)->not->toBe('active');
-    }
 });
 
 test('config/tour_tiers.php structure and rules', function () {
@@ -311,9 +294,10 @@ test('config/tour_tiers.php structure and rules', function () {
     $allowed = config('tour_tiers.allowed_by_destination');
     expect($allowed['thailand'])->toBe(['semi_luxury', 'luxury', 'premium']);
     expect($allowed['india'])->toBe(['semi_luxury', 'luxury']);
-    expect($allowed['sri-lanka'])->toBe([]);
+    expect($allowed)->not->toHaveKey('sri-lanka');
 
     $groupSizes = config('tour_tiers.suggested_group_size');
     expect($groupSizes['india']['semi_luxury'])->toBe([30, 40]);
     expect($groupSizes['india']['luxury'])->toBe([10, 15]);
 });
+

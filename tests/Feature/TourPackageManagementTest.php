@@ -245,21 +245,22 @@ test('manager can edit an existing tour package', function () {
 });
 
 test('a tier not allowed for the destination is rejected', function () {
-    // Sri Lanka has no allowed tiers according to config/tour_tiers.php
+    // Maldives has no allowed tiers according to config/tour_tiers.php
     $destination = Destination::factory()->create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Ella',
-        'slug' => 'sri-lanka',
+        'country' => 'Maldives',
+        'city_region' => 'Male',
+        'slug' => 'maldives',
+        'status' => 'active',
     ]);
 
     $response = $this->actingAs($this->manager)->post(route('tours.store'), [
         'destination_id' => $destination->id,
-        'package_name' => 'Ella Mountain Trail',
-        'slug' => 'ella-mountain-trail',
+        'package_name' => 'Male Island Escape',
+        'slug' => 'male-island-escape',
         'status' => 'active',
         'price' => 95000,
         'currency' => 'LKR',
-        'tier' => 'luxury', // Not allowed for Sri Lanka
+        'tier' => 'luxury', // Not allowed for Maldives
     ]);
 
     $response->assertSessionHasErrors(['tier']);
@@ -269,6 +270,7 @@ test('a tier not allowed for the destination is rejected', function () {
         'country' => 'India',
         'city_region' => 'Jaipur',
         'slug' => 'india',
+        'status' => 'active',
     ]);
 
     $response2 = $this->actingAs($this->manager)->post(route('tours.store'), [

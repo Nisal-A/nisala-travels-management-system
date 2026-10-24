@@ -37,7 +37,7 @@ Route::get('/', [PublicController::class, 'home'])->name('home');
 
 Route::get('/our-destinations', fn () => Inertia::render('Public/Placeholder', [
     'title' => 'Our Destinations',
-    'description' => 'Explore our handpicked travel destinations across Sri Lanka, India, and beyond.',
+    'description' => 'Explore our handpicked travel destinations across Thailand, India, and beyond.',
 ]))->name('public.destinations');
 
 Route::get('/our-tours', fn () => Inertia::render('Public/Placeholder', [

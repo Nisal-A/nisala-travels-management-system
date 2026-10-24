@@ -450,7 +450,7 @@ test('PublicCatalogService methods work and exclude Sri Lanka packages', functio
     $destSlugs = $destinations->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('india')
-        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->not->toContain('sri-lanka')
         ->and($destSlugs)->toContain('maldives');
 
     $tours = $service->tours();

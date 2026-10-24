@@ -38,7 +38,10 @@ class StoreTourPackageRequest extends FormRequest
     {
         $rules = [
             // Basics
-            'destination_id' => ['required', 'exists:destinations,id'],
+            'destination_id' => [
+                'required',
+                Rule::exists('destinations', 'id')->where('status', 'active'),
+            ],
             'package_name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:tour_packages,slug'],
             'status' => ['required', 'string', Rule::in(['active', 'inactive', 'archived'])],

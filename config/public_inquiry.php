@@ -8,7 +8,6 @@ return [
 
     'interests' => [
         'A specific tour',
-        'Sri Lanka',
         'Thailand',
         'India',
         'Custom trip',
@@ -16,7 +15,6 @@ return [
     ],
 
     'interest_labels' => [
-        'Sri Lanka' => 'Sri Lanka (coming soon)',
     ],
 
     'budget_ranges' => [

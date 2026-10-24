@@ -90,9 +90,13 @@ class BookingController extends Controller
             ->limit(50)
             ->get();
 
-        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')
+        $packages = TourPackage::select('id', 'package_name', 'package_name as name', 'price', 'currency', 'capacity', 'duration_days')
             ->where('status', 'active')
-            ->orderBy('name')
+            ->where('is_active', true)
+            ->whereHas('destination', function ($q) {
+                $q->where('status', 'active');
+            })
+            ->orderBy('package_name')
             ->get();
 
         $employees = Employee::select('id', 'first_name', 'last_name', 'designation')
@@ -445,13 +449,19 @@ class BookingController extends Controller
     {
         Gate::authorize('update', $booking);
 
-        $booking->load(['travelers', 'customer', 'tourPackage', 'paymentSchedules']);
+        $booking->load(['travelers', 'customer', 'tourPackage.destination', 'paymentSchedules']);
         $customers = Customer::select('id', 'customer_id', 'first_name', 'last_name', 'email', 'phone', 'passport_number', 'nationality')
             ->orderBy('first_name')
             ->get();
-        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')
-            ->where('status', 'active')
-            ->orderBy('name')
+        $packages = TourPackage::select('id', 'package_name', 'package_name as name', 'price', 'currency', 'capacity', 'duration_days')
+            ->where(function ($q) use ($booking) {
+                $q->where(function ($sub) {
+                    $sub->where('status', 'active')
+                        ->where('is_active', true)
+                        ->whereHas('destination', fn ($d) => $d->where('status', 'active'));
+                })->orWhere('id', $booking->tour_package_id);
+            })
+            ->orderBy('package_name')
             ->get();
         $employees = Employee::select('id', 'first_name', 'last_name', 'designation')
             ->where('status', 'active')

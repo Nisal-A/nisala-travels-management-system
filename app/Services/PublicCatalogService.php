@@ -150,7 +150,7 @@ class PublicCatalogService
 
     /**
      * Get public listed tours with optional filters.
-     * Note: Packages on Sri Lanka or unlisted destinations are strictly excluded.
+     * Note: Only active, publicly listed packages and destinations are included.
      */
     public function tours(array $filters = []): Collection
     {

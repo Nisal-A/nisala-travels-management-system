@@ -27,7 +27,12 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'exists:customers,id'],
-            'tour_package_id' => ['required', 'exists:tour_packages,id'],
+            'tour_package_id' => [
+                'required',
+                Rule::exists('tour_packages', 'id')
+                    ->where('status', 'active')
+                    ->where('is_active', true),
+            ],
             'booking_date' => ['required', 'date'],
             'travel_date' => ['required', 'date', 'after_or_equal:booking_date'],
             'return_date' => ['nullable', 'date', 'after_or_equal:travel_date'],

@@ -54,7 +54,10 @@ class TourPackageController extends Controller
 
     public function create()
     {
-        $destinations = Destination::orderBy('country')->orderBy('city_region')->get();
+        $destinations = Destination::where('status', 'active')
+            ->orderBy('country')
+            ->orderBy('city_region')
+            ->get();
 
         return Inertia::render('Tours/Create', [
             'destinations' => $destinations,
@@ -95,7 +98,11 @@ class TourPackageController extends Controller
     public function edit(TourPackage $tour)
     {
         $tour->load('destination');
-        $destinations = Destination::orderBy('country')->orderBy('city_region')->get();
+        $destinations = Destination::where('status', 'active')
+            ->orWhere('id', $tour->destination_id)
+            ->orderBy('country')
+            ->orderBy('city_region')
+            ->get();
 
         return Inertia::render('Tours/Edit', [
             'tour' => $tour,
