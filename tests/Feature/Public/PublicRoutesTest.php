@@ -214,18 +214,18 @@ test('homepage whatsapp link uses config value', function () {
 
 test('homepage renders featured packages and destinations when available', function () {
     $destination = \App\Models\Destination::create([
-        'city_region' => 'Ella',
-        'country' => 'Sri Lanka',
-        'description' => 'Misty mountains and waterfalls',
+        'city_region' => 'Bangkok',
+        'country' => 'Thailand',
+        'description' => 'Vibrant canals and ornate palaces',
         'listing_state' => \App\Models\Destination::LISTING_STATE_LIVE,
         'status' => 'active',
-        'slug' => 'ella',
+        'slug' => 'bangkok',
     ]);
 
     \App\Models\TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Ella Highlands Adventure',
-        'description' => 'Experience scenic trails and railway bridges.',
+        'package_name' => 'Bangkok City Explorer',
+        'description' => 'Experience temples and street food.',
         'duration_days' => 4,
         'duration_nights' => 3,
         'price' => 450,
@@ -234,7 +234,7 @@ test('homepage renders featured packages and destinations when available', funct
         'is_featured' => true,
         'is_active' => true,
         'status' => 'active',
-        'slug' => 'ella-highlands-adventure',
+        'slug' => 'bangkok-city-explorer',
     ]);
 
     $response = $this->get('/');
@@ -244,8 +244,8 @@ test('homepage renders featured packages and destinations when available', funct
         ->component('Public/Home')
         ->has('featuredPackages', 1)
         ->has('destinations', 1)
-        ->where('featuredPackages.0.title', 'Ella Highlands Adventure')
-        ->where('destinations.0.name', 'Ella')
+        ->where('featuredPackages.0.title', 'Bangkok City Explorer')
+        ->where('destinations.0.name', 'Bangkok')
     );
 });
 

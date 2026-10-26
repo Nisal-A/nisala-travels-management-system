@@ -8,15 +8,15 @@ return [
 
     'interests' => [
         'A specific tour',
-        'Sri Lanka',
         'Thailand',
         'India',
+        'Maldives',
         'Custom trip',
         'Not sure yet',
     ],
 
     'interest_labels' => [
-        'Sri Lanka' => 'Sri Lanka (coming soon)',
+        'Maldives' => 'Maldives (coming soon)',
     ],
 
     'budget_ranges' => [

@@ -110,7 +110,7 @@ export function DestinationsPreview({ destinations = [] }: DestinationsPreviewPr
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                             Our destination guides and regional itineraries are currently being finalized. Contact us
-                            directly to ask about any destination in Sri Lanka, India, and Southeast Asia.
+                            directly to ask about any destination in Thailand, India, and the Maldives.
                         </p>
                         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                             <Button asChild className="w-full sm:w-auto rounded-xl">

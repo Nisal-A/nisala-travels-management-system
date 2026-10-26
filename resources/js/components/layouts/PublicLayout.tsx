@@ -177,8 +177,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
                                 </span>
                             </Link>
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                Curating bespoke journeys, luxury escapes, and cultural discoveries across Sri Lanka,
-                                India, and Southeast Asia.
+                                Curating bespoke journeys, luxury escapes, and cultural discoveries across India,
+                                Thailand, and the Maldives.
                             </p>
                             {companyWhatsapp && (
                                 <a

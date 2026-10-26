@@ -16,34 +16,6 @@ class PublicContentSeeder extends Seeder
     {
         $destinations = [
             [
-                'slug' => 'sri-lanka',
-                'name' => 'Sri Lanka',
-                'country' => 'Sri Lanka',
-                'tagline' => 'An island of ancient ruins, misty highlands, and golden shores.',
-                // Image is a placeholder until owner photos are supplied
-                'image' => null,
-                'highlights' => ['Sigiriya Rock Fortress', 'Tea Country Scenic Train', 'Yala Wildlife Safari'],
-                'region' => 'south-asia',
-                'best_months' => 'December to April',
-                'facts' => [
-                    ['label' => 'Time zone', 'value' => 'UTC+05:30'],
-                    ['label' => 'Currency', 'value' => 'Sri Lankan Rupee (LKR)'],
-                    ['label' => 'International airport', 'value' => 'Bandaranaike (CMB)'],
-                ],
-                // Placeholder gallery until owner photos are supplied
-                'gallery' => null,
-                'sort_order' => 1,
-                'listing_state' => 'coming_soon',
-                // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
-                'recommendations' => [
-                    'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
-                    'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
-                    'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
-                    'Use licensed guides and vehicles, and agree on fares before the trip starts.',
-                    'Carry sun protection and drink plenty of water in the dry zones.',
-                ],
-            ],
-            [
                 'slug' => 'thailand',
                 'name' => 'Thailand',
                 'country' => 'Thailand',
@@ -63,7 +35,8 @@ class PublicContentSeeder extends Seeder
                     '/images/thailand/krabi.jpg',
                     '/images/thailand/island-hopping.jpg',
                 ],
-                'sort_order' => 2,
+                'sort_order' => 1,
+                'status' => 'active',
                 'listing_state' => 'live',
                 // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
@@ -93,7 +66,8 @@ class PublicContentSeeder extends Seeder
                 'gallery' => [
                     '/images/india/bodhgaya.jpg',
                 ],
-                'sort_order' => 3,
+                'sort_order' => 2,
+                'status' => 'active',
                 'listing_state' => 'live',
                 // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
@@ -121,7 +95,8 @@ class PublicContentSeeder extends Seeder
                 ],
                 // Placeholder gallery until owner photos are supplied
                 'gallery' => null,
-                'sort_order' => 4,
+                'sort_order' => 3,
+                'status' => 'coming_soon',
                 'listing_state' => 'coming_soon',
                 // Draft written by the company team for Sri Lankan travellers. Owner to review before launch.
                 'recommendations' => [
@@ -148,7 +123,7 @@ class PublicContentSeeder extends Seeder
                     'facts' => $dest['facts'],
                     'gallery' => $dest['gallery'],
                     'sort_order' => $dest['sort_order'],
-                    'status' => 'active',
+                    'status' => $dest['status'] ?? 'active',
                     'listing_state' => $dest['listing_state'],
                     'recommendations' => $dest['recommendations'] ?? [],
                 ]
@@ -156,154 +131,6 @@ class PublicContentSeeder extends Seeder
         }
 
         $tours = [
-            [
-                'slug' => 'cultural-triangle-discovery',
-                'title' => 'Cultural Triangle Discovery',
-                'destinationSlug' => 'sri-lanka',
-                'durationDays' => 7,
-                'durationNights' => 6,
-                'priceLKR' => 145000,
-                'priceFromLabel' => true,
-                'featured' => true,
-                'tags' => ['Culture', 'Heritage', 'UNESCO'],
-                'startingMonths' => ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
-                'summary' => 'Journey through Sri Lanka\'s ancient kingdoms, sacred temples, and UNESCO World Heritage sites.',
-                'overview' => 'Explore the heart of Sri Lankan civilization across the Cultural Triangle. Ascend the legendary Sigiriya Rock Fortress, wander the cave shrines of Dambulla, marvel at the ancient ruins of Polonnaruwa, and soak in the spiritual serenity of Kandy.',
-                'image' => null, // Placeholder until owner photos are supplied
-                'gallery' => null,
-                'highlights' => [
-                    'Climb the 5th-century Sigiriya Rock Fortress at sunrise',
-                    'Explore the gilded Dambulla Cave Temple complex',
-                    'Cycle through the ancient capital ruins of Polonnaruwa',
-                    'Visit the sacred Temple of the Tooth Relic in Kandy',
-                    'Scenic village bullock cart ride with traditional lunch',
-                ],
-                'included' => [
-                    '6 nights\' boutique hotel accommodation with breakfast',
-                    'Private air-conditioned vehicle with English-speaking chauffeur-guide',
-                    'All entrance fees to listed monuments and UNESCO sites',
-                    'Traditional village lunch experience in Habarana',
-                    'All government taxes and service charges',
-                ],
-                'excluded' => [
-                    'International flights and Sri Lanka visa fees',
-                    'Lunches and dinners not specified in the itinerary',
-                    'Travel insurance and personal expenses',
-                    'Optional activities and camera/video permits',
-                    'Gratuities for guides and drivers',
-                ],
-                'itinerary' => [
-                    ['day' => 1, 'title' => 'Arrival & transfer to Habarana', 'description' => 'Arrive at Bandaranaike International Airport. Meet your chauffeur-guide and travel to Habarana in the Cultural Triangle. Relax and enjoy a welcome dinner.'],
-                    ['day' => 2, 'title' => 'Sigiriya Rock & Minneriya Safari', 'description' => 'Early morning ascent of Sigiriya Lion Rock Fortress. Afternoon 4x4 safari in Minneriya National Park to witness the famous elephant gathering.'],
-                    ['day' => 3, 'title' => 'Polonnaruwa Ancient City', 'description' => 'Explore the medieval capital of Polonnaruwa by bicycle, including the Gal Vihara rock sculptures and the Royal Palace ruins.'],
-                    ['day' => 4, 'title' => 'Dambulla Caves & Spice Gardens', 'description' => 'Visit the Dambulla Cave Temples with over 150 Buddha statues. Continue to Matale spice garden and arrive in the hill capital of Kandy.'],
-                    ['day' => 5, 'title' => 'Temple of the Tooth & Cultural Show', 'description' => 'Visit the revered Sri Dalada Maligawa (Temple of the Tooth). Afternoon stroll around Kandy Lake and an evening traditional dance performance.'],
-                    ['day' => 6, 'title' => 'Royal Botanical Gardens & Colombo', 'description' => 'Explore the sprawling Peradeniya Botanical Gardens. Transfer to Colombo for an evening orientation drive along Galle Face Green.'],
-                    ['day' => 7, 'title' => 'Departure', 'description' => 'Leisure time for last-minute shopping in Colombo before your airport transfer for your departure flight.'],
-                ],
-                'accommodation' => 'Boutique eco-resort in Habarana and colonial hill country hotel in Kandy',
-                'groupSize' => ['min' => 2, 'max' => 12],
-                'faqs' => [
-                    ['question' => 'Is climbing Sigiriya difficult?', 'answer' => 'Sigiriya involves approximately 1,200 steps with handrails. Most visitors with reasonable fitness manage it comfortably in about 45-60 minutes.'],
-                ],
-            ],
-            [
-                'slug' => 'southern-coast-and-wildlife',
-                'title' => 'Southern Coast & Wildlife Safari',
-                'destinationSlug' => 'sri-lanka',
-                'durationDays' => 6,
-                'durationNights' => 5,
-                'priceLKR' => 165000,
-                'priceFromLabel' => true,
-                'featured' => false,
-                'tags' => ['Wildlife', 'Beaches', 'Adventure'],
-                'startingMonths' => ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
-                'summary' => 'Experience thrilling leopard safaris in Yala, colonial charm in Galle Fort, and pristine southern beaches.',
-                'overview' => 'An unforgettable blend of untamed wilderness and tropical coastal leisure. Track elusive leopards and sloth bears in Yala National Park, stroll cobblestone alleys of 17th-century Dutch Galle Fort, and unwind on sun-drenched beaches.',
-                'image' => null, // Placeholder until owner photos are supplied
-                'gallery' => null,
-                'highlights' => [
-                    'Two private game drives in Yala National Park with expert naturalist',
-                    'Walking tour of UNESCO-listed Galle Dutch Fort with a local historian',
-                    'Whale watching excursion off the coast of Mirissa',
-                    'Relaxation on palm-fringed Mirissa and Bentota beaches',
-                ],
-                'included' => [
-                    '5 nights\' accommodation in 4-star beach and safari resorts',
-                    'Private air-conditioned vehicle throughout the journey',
-                    'All park entrance fees and private 4x4 safari jeep hire',
-                    'Daily breakfast and two bush dinners at Yala',
-                    'Bottled mineral water during transfers and game drives',
-                ],
-                'excluded' => [
-                    'International airfare and travel insurance',
-                    'Meals and beverages not specified',
-                    'Camera and video permits at parks',
-                    'Personal expenses and laundry',
-                    'Driver and guide tips',
-                ],
-                'itinerary' => [
-                    ['day' => 1, 'title' => 'Arrival & transfer to Yala', 'description' => 'Meet your guide at Colombo Airport and drive south along the coastline toward Yala. Check into your safari lodge.'],
-                    ['day' => 2, 'title' => 'Full-day Yala Safari', 'description' => 'Morning and afternoon game drives through Yala National Park searching for leopards, sloth bears, elephants, and abundant birdlife.'],
-                    ['day' => 3, 'title' => 'Yala to Mirissa & Whale Watching', 'description' => 'Morning drive to Mirissa. Afternoon free for beach relaxation, surfing, or an optional sunset catamaran cruise.'],
-                    ['day' => 4, 'title' => 'Whale Watching & Galle Fort', 'description' => 'Early morning boat excursion to spot blue whales and dolphins. Afternoon transfer to Galle Fort for a guided sunset heritage walk.'],
-                    ['day' => 5, 'title' => 'Bentota Beach Day', 'description' => 'Transfer to the golden shores of Bentota. Enjoy water sports, a Madu River boat safari through mangroves, or relax at the spa.'],
-                    ['day' => 6, 'title' => 'Departure via Colombo', 'description' => 'Leisurely breakfast before transferring along the Southern Expressway directly to Bandaranaike International Airport.'],
-                ],
-                'accommodation' => 'Luxury safari lodge near Yala and beachfront boutique hotel in Mirissa/Bentota',
-                'groupSize' => ['min' => 2, 'max' => 10],
-                'faqs' => [
-                    ['question' => 'When is the best time for whale watching?', 'answer' => 'The prime whale watching season on the southern coast runs from November to April when seas are calm and blue whales migrate close to shore.'],
-                ],
-            ],
-            [
-                'slug' => 'hill-country-and-tea-trails',
-                'title' => 'Hill Country & Tea Trails',
-                'destinationSlug' => 'sri-lanka',
-                'durationDays' => 5,
-                'durationNights' => 4,
-                'priceLKR' => 125000,
-                'priceFromLabel' => true,
-                'featured' => false,
-                'tags' => ['Nature', 'Scenic', 'Tea'],
-                'startingMonths' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jul', 'Aug', 'Sep', 'Dec'],
-                'summary' => 'Ride the famous scenic train through misty tea estates, hike Little Adam\'s Peak, and explore colonial Nuwara Eliya.',
-                'overview' => 'Escape into the cool, emerald-green highlands of Sri Lanka. Ride one of the world\'s most beautiful train routes from Nuwara Eliya to Ella, walk among manicured tea plantations, and marvel at dramatic mountain vistas.',
-                'image' => null, // Placeholder until owner photos are supplied
-                'gallery' => null,
-                'highlights' => [
-                    'Iconic scenic train journey between Nanu Oya and Ella',
-                    'Visit a working tea factory with tea tasting session',
-                    'Sunrise hike to Little Adam\'s Peak overlooking Ella Gap',
-                    'Photograph the famous Nine Arch Bridge in Ella',
-                ],
-                'included' => [
-                    '4 nights\' accommodation in heritage colonial bungalows and boutique stays',
-                    'Reserved 1st or 2nd class scenic train tickets',
-                    'Private transport with dedicated chauffeur-guide',
-                    'All tea factory tours, tastings, and site entry tickets',
-                    'Daily breakfast and afternoon high tea at a historic estate',
-                ],
-                'excluded' => [
-                    'International flights and visa fees',
-                    'Lunches and alcoholic beverages',
-                    'Travel and medical insurance',
-                    'Personal expenses and shopping',
-                    'Tips for guides, drivers, and porters',
-                ],
-                'itinerary' => [
-                    ['day' => 1, 'title' => 'Colombo to Nuwara Eliya', 'description' => 'Drive through winding mountain roads past cascading waterfalls to "Little England" — Nuwara Eliya. Visit an iconic tea estate.'],
-                    ['day' => 2, 'title' => 'Scenic Train to Ella', 'description' => 'Board the scenic highland train winding through misty valleys, tunnels, and tea terraces. Arrive in Ella and check into your mountain-view lodge.'],
-                    ['day' => 3, 'title' => 'Nine Arch Bridge & Little Adam\'s Peak', 'description' => 'Early morning hike to Little Adam\'s Peak for sweeping views. Walk along the railway line to see a train cross the iconic Nine Arch Bridge.'],
-                    ['day' => 4, 'title' => 'Ravana Falls & Highland Leisure', 'description' => 'Visit Ravana Falls and explore local cafes in Ella village. Afternoon optional zip-lining or cooking masterclass.'],
-                    ['day' => 5, 'title' => 'Return to Colombo', 'description' => 'Scenic descent from the hill country back to Colombo or international airport with stops at scenic viewpoints.'],
-                ],
-                'accommodation' => 'Colonial tea planter\'s bungalow in Nuwara Eliya and scenic mountain resort in Ella',
-                'groupSize' => ['min' => 2, 'max' => 8],
-                'faqs' => [
-                    ['question' => 'How cold does it get in Nuwara Eliya?', 'answer' => 'Nuwara Eliya sits at 1,868m elevation. Daytime temperatures average 15-20°C, but nights can drop to 10°C. Warm layers are recommended.'],
-                ],
-            ],
             [
                 'slug' => 'thailand-island-escape',
                 'title' => 'Thailand Island & Culture Escape',
@@ -472,10 +299,8 @@ class PublicContentSeeder extends Seeder
                 continue;
             }
 
-            // The seeder must not mark any Sri Lanka tour as active
-            $isSriLanka = ($t['destinationSlug'] === 'sri-lanka');
-            $isActive = ! $isSriLanka;
-            $status = $isActive ? 'active' : 'draft';
+            $isActive = true;
+            $status = 'active';
 
             TourPackage::updateOrCreate(
                 ['slug' => $t['slug']],

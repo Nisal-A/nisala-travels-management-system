@@ -473,7 +473,7 @@ export default function MemoriesEdit({ memoryYear, destinations, canPublish }: E
                         </Label>
                         <Input
                           id="image_caption"
-                          placeholder="e.g. Sunset over Sigiriya Rock"
+                          placeholder="e.g. Sunset over Ayutthaya Temple"
                           value={imageCaption}
                           onChange={(e) => setImageCaption(e.target.value)}
                           className="rounded-xl text-xs h-9"

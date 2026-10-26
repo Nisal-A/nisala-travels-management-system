@@ -28,13 +28,6 @@ test('seeder runs without errors on a fresh database and seeds exact recommendat
             'Keep valuables secure in busy markets and on crowded trains.',
             'Travel with a company guide for long drives and temple visits, and allow extra time for road journeys.',
         ],
-        'sri-lanka' => [
-            'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
-            'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
-            'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
-            'Use licensed guides and vehicles, and agree on fares before the trip starts.',
-            'Carry sun protection and drink plenty of water in the dry zones.',
-        ],
         'maldives' => [
             'Resort islands allow swimwear. Local islands require modest clothing, so plan your outfits for each part of the trip.',
             'Alcohol is sold only at resorts and on some islands, so check the rules before you travel.',
@@ -77,15 +70,6 @@ test('public destination API response includes the exact recommendations', funct
         'Dress modestly at temples and religious sites, and remove your shoes where asked.',
         'Keep valuables secure in busy markets and on crowded trains.',
         'Travel with a company guide for long drives and temple visits, and allow extra time for road journeys.',
-    ]);
-
-    $sriLanka = $data->firstWhere('slug', 'sri-lanka');
-    expect($sriLanka['recommendations'])->toBe([
-        'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
-        'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
-        'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
-        'Use licensed guides and vehicles, and agree on fares before the trip starts.',
-        'Carry sun protection and drink plenty of water in the dry zones.',
     ]);
 
     $maldives = $data->firstWhere('slug', 'maldives');

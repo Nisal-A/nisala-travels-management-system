@@ -19,7 +19,6 @@ return [
     'allowed_by_destination' => [
         'thailand' => ['semi_luxury', 'luxury', 'premium'],
         'india' => ['semi_luxury', 'luxury'],
-        'sri-lanka' => [],
     ],
 
     'suggested_group_size' => [
