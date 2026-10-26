@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
+import { PageTransition } from '@/components/motion/PageTransition';
 import {
     Sheet,
     SheetContent,
@@ -159,7 +160,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1">
-                {children}
+                <PageTransition>{children}</PageTransition>
             </main>
 
             {/* Footer reading from config/company.php */}
