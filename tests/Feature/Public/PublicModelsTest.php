@@ -10,31 +10,31 @@ uses(RefreshDatabase::class);
 
 test('Destination::published() excludes status other than active and excludes soft-deleted rows', function () {
     $active = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
         'status' => 'active',
-        'slug' => 'colombo',
+        'slug' => 'bangkok',
     ]);
 
     $inactive = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Kandy',
+        'country' => 'Thailand',
+        'city_region' => 'Chiang Mai',
         'status' => 'inactive',
-        'slug' => 'kandy',
+        'slug' => 'chiang-mai',
     ]);
 
     $draft = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Galle',
+        'country' => 'Thailand',
+        'city_region' => 'Phuket',
         'status' => 'draft',
-        'slug' => 'galle',
+        'slug' => 'phuket',
     ]);
 
     $softDeleted = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Ella',
+        'country' => 'Thailand',
+        'city_region' => 'Krabi',
         'status' => 'active',
-        'slug' => 'ella',
+        'slug' => 'krabi',
     ]);
     $softDeleted->delete();
 
@@ -48,15 +48,15 @@ test('Destination::published() excludes status other than active and excludes so
 
 test('TourPackage::published() excludes is_active false and status other than active', function () {
     $destination = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Sigiriya',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
         'status' => 'active',
-        'slug' => 'sigiriya',
+        'slug' => 'bangkok-pkg-dest',
     ]);
 
     $publishedPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Explorer',
+        'package_name' => 'Bangkok Explorer',
         'price' => 15000,
         'status' => 'active',
         'is_active' => true,
@@ -64,7 +64,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $inactiveIsActivePkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Hidden Sigiriya',
+        'package_name' => 'Hidden Bangkok',
         'price' => 12000,
         'status' => 'active',
         'is_active' => false,
@@ -72,7 +72,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $inactiveStatusPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Ancient',
+        'package_name' => 'Bangkok Ancient',
         'price' => 18000,
         'status' => 'inactive',
         'is_active' => true,
@@ -80,7 +80,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $draftPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Draft',
+        'package_name' => 'Bangkok Draft',
         'price' => 20000,
         'status' => 'draft',
         'is_active' => true,
@@ -190,11 +190,11 @@ test('Destination::publicListed() excludes coming_soon and hidden destinations a
     ]);
 
     $comingSoonActive = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'country' => 'Maldives',
+        'city_region' => 'Male',
         'status' => 'active',
         'listing_state' => 'coming_soon',
-        'slug' => 'colombo-coming-soon',
+        'slug' => 'male-coming-soon',
     ]);
 
     $hiddenActive = Destination::create([

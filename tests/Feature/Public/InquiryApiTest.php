@@ -26,8 +26,8 @@ function validInquiryPayload(array $overrides = []): array
 {
     return array_merge([
         'interest' => 'A specific tour',
-        'tour_slug' => 'sri-lanka-cultural-tour',
-        'destination_slug' => 'sri-lanka',
+        'tour_slug' => 'thailand-island-escape',
+        'destination_slug' => 'thailand',
         'start_date' => now()->addDays(10)->format('Y-m-d'),
         'end_date' => now()->addDays(15)->format('Y-m-d'),
         'flexible_dates' => true,
@@ -39,7 +39,7 @@ function validInquiryPayload(array $overrides = []): array
         'phone' => '+94771234567',
         'preferred_contact' => 'whatsapp',
         'country' => 'United Kingdom',
-        'message' => 'Interested in heritage hotels and village tours.',
+        'message' => 'Interested in heritage hotels and island tours.',
         'budget_range' => 'LKR 150,000 to 300,000',
         'referral_source' => 'Google search',
         'privacy_consent' => true,
@@ -50,16 +50,16 @@ function validInquiryPayload(array $overrides = []): array
 function createPublishedRecords(): array
 {
     $destination = Destination::create([
-        'slug' => 'sri-lanka',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo & Cultural Triangle',
+        'slug' => 'thailand',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok & Southern Islands',
         'status' => 'active',
     ]);
 
     $tour = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sri Lanka Cultural Tour',
-        'slug' => 'sri-lanka-cultural-tour',
+        'package_name' => 'Thailand Island Escape',
+        'slug' => 'thailand-island-escape',
         'price' => 150000,
         'status' => 'active',
         'is_active' => true,
@@ -104,8 +104,8 @@ test('stored row has source website, status New, consent timestamps, and non-nul
         ->and($inquiry->contact_information)->toBe('jane@example.com')
         ->and($inquiry->tour_package_id)->toBe($tour->id)
         ->and($inquiry->destination_id)->toBe($destination->id)
-        ->and($inquiry->destination)->toBe('Colombo & Cultural Triangle')
-        ->and($inquiry->package_interest)->toBe('Sri Lanka Cultural Tour')
+        ->and($inquiry->destination)->toBe('Bangkok & Southern Islands')
+        ->and($inquiry->package_interest)->toBe('Thailand Island Escape')
         ->and($inquiry->number_of_travelers)->toBe(3)
         ->and($inquiry->travel_date?->format('Y-m-d'))->toBe(now()->addDays(10)->format('Y-m-d'));
 });

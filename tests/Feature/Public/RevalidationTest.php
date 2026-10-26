@@ -15,9 +15,9 @@ test('saving a tour dispatches RevalidateNextJs with tours', function () {
     Queue::fake();
 
     $destination = Destination::create([
-        'slug' => 'sri-lanka-test',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'slug' => 'thailand-test',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
         'status' => 'active',
     ]);
 

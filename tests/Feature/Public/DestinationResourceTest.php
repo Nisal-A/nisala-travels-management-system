@@ -286,25 +286,25 @@ test('common_inclusions is capped at maximum 8 items', function () {
 
 test('coming_soon destinations have tour_count 0, empty places, and empty common_inclusions', function () {
     $comingSoon = Destination::create([
-        'slug' => 'sri-lanka-coming',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'slug' => 'maldives-coming',
+        'country' => 'Maldives',
+        'city_region' => 'Male Atoll',
         'status' => 'active',
         'listing_state' => 'coming_soon',
         'recommendations' => [
-            '[CONFIRM] Clothing advice for temple visits',
-            '[CONFIRM] Train ticket reservation guide',
+            'Clothing advice for local island visits',
+            'Speedboat transfer guide',
         ],
     ]);
 
     // Even if a tour is attached to it in the DB
     TourPackage::create([
         'destination_id' => $comingSoon->id,
-        'package_name' => 'Sri Lanka Package',
-        'slug' => 'sl-package',
+        'package_name' => 'Maldives Package',
+        'slug' => 'maldives-package',
         'price' => 50000,
-        'highlights' => ['Sigiriya Rock Fortress'],
-        'included_items' => "Daily Breakfast\nChauffeur Guide",
+        'highlights' => ['Coral Reef Snorkeling'],
+        'included_items' => "Daily Breakfast\nSpeedboat Transfer",
         'status' => 'active',
         'is_active' => true,
     ]);
@@ -314,7 +314,7 @@ test('coming_soon destinations have tour_count 0, empty places, and empty common
 
     $response->assertStatus(200);
 
-    $dest = collect($response->json('data'))->firstWhere('slug', 'sri-lanka-coming');
+    $dest = collect($response->json('data'))->firstWhere('slug', 'maldives-coming');
 
     expect($dest)->not->toBeNull();
     expect($dest['listing_state'])->toBe('coming_soon');
@@ -322,8 +322,8 @@ test('coming_soon destinations have tour_count 0, empty places, and empty common
     expect($dest['places'])->toBe([]);
     expect($dest['common_inclusions'])->toBe([]);
     expect($dest['recommendations'])->toBe([
-        '[CONFIRM] Clothing advice for temple visits',
-        '[CONFIRM] Train ticket reservation guide',
+        'Clothing advice for local island visits',
+        'Speedboat transfer guide',
     ]);
 });
 
