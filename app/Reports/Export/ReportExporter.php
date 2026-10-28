@@ -37,7 +37,9 @@ class ReportExporter
 
         // 1. Calculate matching row count
         $query = $report->queryBuilder($filters);
-        $totalRows = (clone $query)->count();
+        $totalRows = ! empty($query->groups)
+            ? \Illuminate\Support\Facades\DB::query()->fromSub($query, 'sub_count')->count()
+            : (clone $query)->count();
 
         // 2. Enforce 20,000 row cap
         if ($totalRows > self::ROW_CAP) {

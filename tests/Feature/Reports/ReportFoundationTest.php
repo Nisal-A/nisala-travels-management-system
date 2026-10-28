@@ -51,11 +51,13 @@ test('super admin sees both financial and operational reports on the hub', funct
     $response->assertStatus(200);
     $response->assertInertia(fn (Assert $page) => $page
         ->component('Reports/Index')
-        ->has('reports', 3)
+        ->has('reports', 5)
         ->has('grouped.financial', 1)
-        ->has('grouped.operational', 2)
+        ->has('grouped.operational', 4)
         ->where('grouped.operational.0.key', 'booking-register')
         ->where('grouped.operational.1.key', 'upcoming-tours')
+        ->where('grouped.operational.2.key', 'passenger-count')
+        ->where('grouped.operational.3.key', 'document-status')
         ->where('grouped.financial.0.key', 'income-expenses')
     );
 });
@@ -68,11 +70,13 @@ test('staff sees only operational reports on the hub', function () {
     $response->assertStatus(200);
     $response->assertInertia(fn (Assert $page) => $page
         ->component('Reports/Index')
-        ->has('reports', 2)
-        ->has('grouped.operational', 2)
+        ->has('reports', 4)
+        ->has('grouped.operational', 4)
         ->has('grouped.financial', 0)
         ->where('grouped.operational.0.key', 'booking-register')
         ->where('grouped.operational.1.key', 'upcoming-tours')
+        ->where('grouped.operational.2.key', 'passenger-count')
+        ->where('grouped.operational.3.key', 'document-status')
     );
 });
 

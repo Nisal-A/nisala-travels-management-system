@@ -52,7 +52,12 @@ return [
             'low_seats_threshold_percentage' => (float) env('UPCOMING_TOURS_LOW_SEATS_THRESHOLD', 20.0),
             'starting_soon_days' => (int) env('UPCOMING_TOURS_STARTING_SOON_DAYS', 7),
         ],
+        'document_status' => [
+            'travel_date_expiry_buffer_months' => (int) env('DOCUMENT_STATUS_EXPIRY_BUFFER_MONTHS', 6),
+            'default_expiring_within_days' => (int) env('DOCUMENT_STATUS_EXPIRING_DAYS', 30),
+        ],
     ],
 
 ];
+
 

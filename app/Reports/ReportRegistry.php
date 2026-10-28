@@ -6,6 +6,8 @@ use App\Enums\UserRole;
 use App\Models\User;
 use App\Reports\Financial\IncomeExpensesReport;
 use App\Reports\Operational\BookingRegisterReport;
+use App\Reports\Operational\DocumentStatusReport;
+use App\Reports\Operational\PassengerCountReport;
 use App\Reports\Operational\UpcomingToursReport;
 use Illuminate\Support\Collection;
 
@@ -36,6 +38,8 @@ class ReportRegistry
     {
         $this->register(new BookingRegisterReport());
         $this->register(new UpcomingToursReport());
+        $this->register(new PassengerCountReport());
+        $this->register(new DocumentStatusReport());
         $this->register(new IncomeExpensesReport());
     }
 

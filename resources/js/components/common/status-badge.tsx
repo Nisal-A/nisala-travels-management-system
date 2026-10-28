@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, AlertCircle, XCircle, FileWarning, HelpCircle } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, XCircle, FileWarning, HelpCircle, AlertTriangle } from 'lucide-react';
 
 type BookingStatus = 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed' | string;
 type PaymentStatus = 'Pending' | 'Verified' | 'Completed' | 'Failed' | 'Unpaid' | 'Partial' | 'Paid' | 'Refunded' | string;
@@ -79,8 +79,17 @@ export function StatusBadge({ type, status, className }: StatusBadgeProps) {
                 Icon = XCircle;
                 break;
         }
-    } else if (type === 'document' || (!type && ['Pending Review', 'Expired', 'Rejected'].includes(normalizedStatus))) {
+    } else if (type === 'document' || (!type && ['Pending Review', 'Pending', 'Verified', 'Rejected', 'Expired', 'Expiring soon', 'Expiring Soon', 'Missing'].includes(normalizedStatus))) {
         switch (normalizedStatus.toLowerCase()) {
+            case 'missing':
+                colorClass = 'bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50';
+                Icon = AlertTriangle;
+                break;
+            case 'expiring soon':
+                colorClass = 'bg-warning/20 text-warning hover:bg-warning/30 border-warning/50';
+                Icon = Clock;
+                break;
+            case 'pending':
             case 'pending review':
                 colorClass = 'bg-warning/20 text-warning hover:bg-warning/30 border-warning/50';
                 Icon = Clock;
@@ -90,7 +99,7 @@ export function StatusBadge({ type, status, className }: StatusBadgeProps) {
                 Icon = CheckCircle;
                 break;
             case 'rejected':
-                colorClass = 'bg-error/20 text-error hover:bg-error/30 border-error/50';
+                colorClass = 'bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50';
                 Icon = XCircle;
                 break;
             case 'expired':
@@ -98,6 +107,12 @@ export function StatusBadge({ type, status, className }: StatusBadgeProps) {
                 Icon = FileWarning;
                 break;
         }
+    } else if (normalizedStatus.toLowerCase() === 'mismatch' || normalizedStatus.toLowerCase().startsWith('mismatch')) {
+        colorClass = 'bg-destructive/20 text-destructive hover:bg-destructive/30 border-destructive/50';
+        Icon = AlertCircle;
+    } else if (normalizedStatus.toLowerCase() === 'matched' || normalizedStatus.toLowerCase() === 'reconciled') {
+        colorClass = 'bg-success/20 text-success hover:bg-success/30 border-success/50';
+        Icon = CheckCircle;
     }
 
     return (
