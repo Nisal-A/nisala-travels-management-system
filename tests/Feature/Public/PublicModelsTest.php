@@ -97,9 +97,9 @@ test('TourPackage::published() excludes is_active false and status other than ac
     expect($destination->publicTourCount())->toBe(1);
 });
 
-test('Inquiry::generateReference() matches NT- followed by 8 uppercase alphanumeric characters and 50 calls are unique', function () {
+test('Inquiry::generateReference() matches INQ- followed by 8 uppercase alphanumeric characters and 50 calls are unique', function () {
     $ref = Inquiry::generateReference();
-    expect($ref)->toMatch('/^NT-[A-Z0-9]{8}$/');
+    expect($ref)->toMatch('/^INQ-[A-Z0-9]{8}$/');
 
     $references = [];
     for ($i = 0; $i < 50; $i++) {
@@ -110,7 +110,7 @@ test('Inquiry::generateReference() matches NT- followed by 8 uppercase alphanume
         ->and(count(array_unique($references)))->toBe(50);
 
     foreach ($references as $r) {
-        expect($r)->toMatch('/^NT-[A-Z0-9]{8}$/');
+        expect($r)->toMatch('/^INQ-[A-Z0-9]{8}$/');
     }
 });
 

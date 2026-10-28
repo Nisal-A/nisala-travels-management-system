@@ -161,6 +161,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index');
             Route::match(['put', 'post'], '/', [SettingsController::class, 'update'])->name('update');
             Route::post('/clear-cache', [SettingsController::class, 'clearPublicCache'])->name('clear-cache');
+            Route::post('/exchange-rates', [SettingsController::class, 'storeExchangeRates'])->name('exchange-rates.store');
             Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
             Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });

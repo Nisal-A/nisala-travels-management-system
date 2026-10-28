@@ -26,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
             NotificationServiceInterface::class,
             NotificationService::class
         );
+
+        $this->app->bind(
+            \App\Services\Currency\ExchangeRateProvider::class,
+            fn () => new (config('currency.provider', \App\Services\Currency\ManualRateProvider::class))
+        );
     }
 
     /**

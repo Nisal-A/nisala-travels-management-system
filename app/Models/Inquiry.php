@@ -85,7 +85,7 @@ class Inquiry extends Model
     public static function generateReference(): string
     {
         for ($attempt = 0; $attempt < 5; $attempt++) {
-            $reference = 'NT-'.Str::upper(Str::random(8));
+            $reference = 'INQ-'.Str::upper(Str::random(8));
 
             if (!static::where('reference', $reference)->exists()) {
                 return $reference;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Bell, ShieldCheck, Globe } from 'lucide-react';
+import { Building2, Bell, ShieldCheck, Globe, ArrowRightLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface SettingsSection {
@@ -15,6 +15,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
         title: 'General',
         description: 'Company info, contacts & hours',
         icon: Building2,
+    },
+    {
+        id: 'exchange_rates',
+        title: 'Exchange Rates',
+        description: 'Currency rates & manual updates',
+        icon: ArrowRightLeft,
     },
     {
         id: 'notifications',

@@ -188,5 +188,6 @@ test('customer cannot reject documents', function () {
 });
 
 test('customer cannot delete documents', function () {
+    $this->documentA->update(['verification_status' => 'verified']);
     expect($this->customerUserA->can('delete', $this->documentA))->toBeFalse();
 });

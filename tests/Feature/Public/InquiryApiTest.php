@@ -68,7 +68,7 @@ function createPublishedRecords(): array
     return [$destination, $tour];
 }
 
-test('valid payload returns 201 with a reference matching NT- prefix', function () {
+test('valid payload returns 201 with a reference matching INQ- prefix', function () {
     createPublishedRecords();
 
     $response = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
@@ -76,7 +76,7 @@ test('valid payload returns 201 with a reference matching NT- prefix', function 
 
     $response->assertStatus(201);
     $reference = $response->json('reference');
-    expect($reference)->toMatch('/^NT-[A-Z0-9]{8}$/');
+    expect($reference)->toMatch('/^INQ-[A-Z0-9]{8}$/');
 });
 
 test('stored row has source website, status New, consent timestamps, and non-null ip_hash', function () {
