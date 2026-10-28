@@ -177,3 +177,45 @@ test('the cache button clears the public catalog cache', function () {
     expect(Cache::has('public.destinations.all'))->toBeFalse();
     expect(Cache::has('public.tours.all'))->toBeFalse();
 });
+
+/* =========================================================================
+ * 6. Exchange Rates: View and manual updates
+ * ========================================================================= */
+
+test('settings page renders exchange rates and super_admin can manually update them', function () {
+    $superAdmin = User::factory()->superAdmin()->create();
+    $manager = User::factory()->manager()->create();
+
+    // 1. Initial page load
+    $response = $this->actingAs($superAdmin)->get(route('settings.index'));
+    $response->assertStatus(200);
+    $page = $response->viewData('page');
+    expect($page['props'])->toHaveKey('exchangeRates');
+
+    // 2. Non-super admin cannot store rates
+    $this->actingAs($manager)
+        ->post(route('settings.exchange-rates.store'), [
+            'rates' => ['USD' => '325.50'],
+        ])
+        ->assertStatus(403);
+
+    // 3. Super admin stores manual rates
+    $saveResponse = $this->actingAs($superAdmin)
+        ->post(route('settings.exchange-rates.store'), [
+            'rates' => [
+                'USD' => '325.500000',
+                'INR' => '3.850000',
+                'THB' => '9.250000',
+            ],
+        ]);
+
+    $saveResponse->assertRedirect();
+    $saveResponse->assertSessionHas('success');
+
+    // Verify stored with source 'manual'
+    $usdRate = \App\Models\ExchangeRate::where('currency', 'USD')->latest('id')->first();
+    expect($usdRate)->not->toBeNull();
+    expect((string) $usdRate->rate_to_lkr)->toBe('325.500000');
+    expect($usdRate->source)->toBe('manual');
+    expect($usdRate->fetched_at)->not->toBeNull();
+});

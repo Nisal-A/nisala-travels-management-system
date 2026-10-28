@@ -19,7 +19,7 @@ export function DestinationsPreview({ destinations = [] }: DestinationsPreviewPr
                 <SectionHeading
                     badge="Explore Destinations"
                     title="Inspiring Places to Discover"
-                    description="From emerald hill country and heritage citadels to golden coastal sanctuaries across the island and beyond."
+                    description="From vibrant heritage citadels and golden temples to tropical coastal sanctuaries across India, Thailand, and beyond."
                     align="center"
                     headingLevel="h2"
                 />
@@ -110,7 +110,7 @@ export function DestinationsPreview({ destinations = [] }: DestinationsPreviewPr
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                             Our destination guides and regional itineraries are currently being finalized. Contact us
-                            directly to ask about any destination in Sri Lanka, India, and Southeast Asia.
+                            directly to ask about any destination in Thailand, India, and the Maldives.
                         </p>
                         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                             <Button asChild className="w-full sm:w-auto rounded-xl">

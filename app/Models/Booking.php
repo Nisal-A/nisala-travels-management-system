@@ -28,6 +28,7 @@ class Booking extends Model
         'final_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'balance_amount' => 'decimal:2',
+        'exchange_rate_to_lkr' => 'decimal:6',
         'extras' => 'array',
     ];
 
@@ -114,7 +115,7 @@ class Booking extends Model
     // Filterable configuration
     public function getSearchableColumns()
     {
-        return ['booking_reference', 'customer.full_name', 'customer.first_name', 'customer.last_name', 'tourPackage.name'];
+        return ['booking_reference', 'customer.full_name', 'tourPackage.package_name'];
     }
 
     public function getFilterableColumns()

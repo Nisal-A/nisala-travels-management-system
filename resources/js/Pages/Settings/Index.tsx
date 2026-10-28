@@ -6,6 +6,7 @@ import { GeneralSettingsForm } from '@/components/settings/GeneralSettingsForm';
 import { NotificationsCard } from '@/components/settings/NotificationsCard';
 import { AccessRolesTable, type RoleData } from '@/components/settings/AccessRolesTable';
 import { PublicWebsiteSettings } from '@/components/settings/PublicWebsiteSettings';
+import { ExchangeRatesCard, type ExchangeRateData } from '@/components/settings/ExchangeRatesCard';
 import { Toaster } from '@/components/ui/toast';
 import { Settings, SlidersHorizontal } from 'lucide-react';
 
@@ -15,6 +16,18 @@ interface SettingsIndexProps {
         name?: string;
         company_phone?: string;
         phone?: string;
+        phones?: string;
+        company_phones?: string;
+        website?: string;
+        company_website?: string;
+        email?: string;
+        company_email?: string;
+        registration_number?: string;
+        company_registration_number?: string;
+        bank_details?: string;
+        company_bank_details?: string;
+        logo_path?: string;
+        company_logo_path?: string;
         company_whatsapp_number?: string;
         whatsapp_number?: string;
         company_support_email?: string;
@@ -32,6 +45,7 @@ interface SettingsIndexProps {
         publicSiteUrl: string;
         public_site_url?: string;
     };
+    exchangeRates: ExchangeRateData[];
 }
 
 export default function SettingsIndex({
@@ -39,6 +53,7 @@ export default function SettingsIndex({
     notificationSettingsUrl,
     roles,
     publicWebsite,
+    exchangeRates = [],
 }: SettingsIndexProps) {
     const [activeSection, setActiveSection] = useState('general');
 
@@ -46,6 +61,8 @@ export default function SettingsIndex({
         switch (activeSection) {
             case 'general':
                 return <GeneralSettingsForm initialData={general} />;
+            case 'exchange_rates':
+                return <ExchangeRatesCard exchangeRates={exchangeRates} />;
             case 'notifications':
                 return <NotificationsCard notificationSettingsUrl={notificationSettingsUrl} />;
             case 'access_roles':

@@ -21,10 +21,10 @@ test('only live and coming_soon destinations are returned, excluding inactive, d
     ]);
 
     $comingSoonDest = Destination::create([
-        'slug' => 'sri-lanka',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
-        'status' => 'active',
+        'slug' => 'maldives',
+        'country' => 'Maldives',
+        'city_region' => 'Male',
+        'status' => 'coming_soon',
         'listing_state' => 'coming_soon',
     ]);
 
@@ -37,9 +37,9 @@ test('only live and coming_soon destinations are returned, excluding inactive, d
     ]);
 
     $inactiveDest = Destination::create([
-        'slug' => 'maldives',
-        'country' => 'Maldives',
-        'city_region' => 'Male',
+        'slug' => 'nepal-inactive',
+        'country' => 'Nepal',
+        'city_region' => 'Pokhara',
         'status' => 'inactive',
         'listing_state' => 'live',
     ]);
@@ -70,10 +70,10 @@ test('only live and coming_soon destinations are returned, excluding inactive, d
         'is_active' => true,
     ]);
 
-    $sriLankaTour = TourPackage::create([
+    $maldivesTour = TourPackage::create([
         'destination_id' => $comingSoonDest->id,
-        'package_name' => 'Sri Lanka Tour',
-        'slug' => 'sri-lanka-tour',
+        'package_name' => 'Maldives Tour',
+        'slug' => 'maldives-tour',
         'price' => 10000,
         'status' => 'active',
         'is_active' => true,
@@ -114,7 +114,7 @@ test('only live and coming_soon destinations are returned, excluding inactive, d
     $tourResponse->assertStatus(200);
     $tourSlugs = collect($tourResponse->json('data'))->pluck('slug')->all();
     expect($tourSlugs)->toBe(['active-tour'])
-        ->and($tourSlugs)->not->toContain('sri-lanka-tour')
+        ->and($tourSlugs)->not->toContain('maldives-tour')
         ->and($tourSlugs)->not->toContain('inactive-tour')
         ->and($tourSlugs)->not->toContain('draft-tour')
         ->and($tourSlugs)->not->toContain('deleted-tour');
@@ -126,9 +126,9 @@ test('only live and coming_soon destinations are returned, excluding inactive, d
     $destResponse->assertStatus(200);
     $destSlugs = collect($destResponse->json('data'))->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
-        ->and($destSlugs)->toContain('sri-lanka')
+        ->and($destSlugs)->toContain('maldives')
         ->and($destSlugs)->not->toContain('hidden-dest')
-        ->and($destSlugs)->not->toContain('maldives')
+        ->and($destSlugs)->not->toContain('nepal-inactive')
         ->and($destSlugs)->not->toContain('bhutan-draft')
         ->and($destSlugs)->not->toContain('nepal');
 });
@@ -450,8 +450,8 @@ test('PublicCatalogService methods work and exclude Sri Lanka packages', functio
     $destSlugs = $destinations->pluck('slug')->all();
     expect($destSlugs)->toContain('thailand')
         ->and($destSlugs)->toContain('india')
-        ->and($destSlugs)->toContain('sri-lanka')
-        ->and($destSlugs)->toContain('maldives');
+        ->and($destSlugs)->toContain('maldives')
+        ->and($destSlugs)->not->toContain('sri-lanka');
 
     $tours = $service->tours();
     $tourDestSlugs = $tours->pluck('destination.slug')->unique()->all();
@@ -462,4 +462,22 @@ test('PublicCatalogService methods work and exclude Sri Lanka packages', functio
     $featuredDestSlugs = $featured->pluck('destination.slug')->unique()->all();
     expect($featuredDestSlugs)->not->toContain('sri-lanka')
         ->and($featuredDestSlugs)->not->toContain('maldives');
+});
+
+test('public destinations API returns Maldives as coming_soon and zero Sri Lanka references', function () {
+    $this->seed(\Database\Seeders\PublicContentSeeder::class);
+
+    $response = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')
+        ->getJson('/api/public/destinations');
+
+    $response->assertStatus(200);
+    $data = collect($response->json('data'));
+
+    $maldives = $data->firstWhere('slug', 'maldives');
+    expect($maldives)->not->toBeNull()
+        ->and($maldives['listing_state'])->toBe('coming_soon')
+        ->and($maldives['tour_count'])->toBe(0);
+
+    $sriLanka = $data->firstWhere('slug', 'sri-lanka');
+    expect($sriLanka)->toBeNull();
 });

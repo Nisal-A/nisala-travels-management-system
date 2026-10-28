@@ -10,31 +10,31 @@ uses(RefreshDatabase::class);
 
 test('Destination::published() excludes status other than active and excludes soft-deleted rows', function () {
     $active = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
         'status' => 'active',
-        'slug' => 'colombo',
+        'slug' => 'bangkok',
     ]);
 
     $inactive = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Kandy',
+        'country' => 'Thailand',
+        'city_region' => 'Chiang Mai',
         'status' => 'inactive',
-        'slug' => 'kandy',
+        'slug' => 'chiang-mai',
     ]);
 
     $draft = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Galle',
+        'country' => 'Thailand',
+        'city_region' => 'Phuket',
         'status' => 'draft',
-        'slug' => 'galle',
+        'slug' => 'phuket',
     ]);
 
     $softDeleted = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Ella',
+        'country' => 'Thailand',
+        'city_region' => 'Krabi',
         'status' => 'active',
-        'slug' => 'ella',
+        'slug' => 'krabi',
     ]);
     $softDeleted->delete();
 
@@ -48,15 +48,15 @@ test('Destination::published() excludes status other than active and excludes so
 
 test('TourPackage::published() excludes is_active false and status other than active', function () {
     $destination = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Sigiriya',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok',
         'status' => 'active',
-        'slug' => 'sigiriya',
+        'slug' => 'bangkok-pkg-dest',
     ]);
 
     $publishedPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Explorer',
+        'package_name' => 'Bangkok Explorer',
         'price' => 15000,
         'status' => 'active',
         'is_active' => true,
@@ -64,7 +64,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $inactiveIsActivePkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Hidden Sigiriya',
+        'package_name' => 'Hidden Bangkok',
         'price' => 12000,
         'status' => 'active',
         'is_active' => false,
@@ -72,7 +72,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $inactiveStatusPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Ancient',
+        'package_name' => 'Bangkok Ancient',
         'price' => 18000,
         'status' => 'inactive',
         'is_active' => true,
@@ -80,7 +80,7 @@ test('TourPackage::published() excludes is_active false and status other than ac
 
     $draftPkg = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Draft',
+        'package_name' => 'Bangkok Draft',
         'price' => 20000,
         'status' => 'draft',
         'is_active' => true,
@@ -97,9 +97,9 @@ test('TourPackage::published() excludes is_active false and status other than ac
     expect($destination->publicTourCount())->toBe(1);
 });
 
-test('Inquiry::generateReference() matches NT- followed by 8 uppercase alphanumeric characters and 50 calls are unique', function () {
+test('Inquiry::generateReference() matches INQ- followed by 8 uppercase alphanumeric characters and 50 calls are unique', function () {
     $ref = Inquiry::generateReference();
-    expect($ref)->toMatch('/^NT-[A-Z0-9]{8}$/');
+    expect($ref)->toMatch('/^INQ-[A-Z0-9]{8}$/');
 
     $references = [];
     for ($i = 0; $i < 50; $i++) {
@@ -110,7 +110,7 @@ test('Inquiry::generateReference() matches NT- followed by 8 uppercase alphanume
         ->and(count(array_unique($references)))->toBe(50);
 
     foreach ($references as $r) {
-        expect($r)->toMatch('/^NT-[A-Z0-9]{8}$/');
+        expect($r)->toMatch('/^INQ-[A-Z0-9]{8}$/');
     }
 });
 
@@ -190,11 +190,11 @@ test('Destination::publicListed() excludes coming_soon and hidden destinations a
     ]);
 
     $comingSoonActive = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'country' => 'Maldives',
+        'city_region' => 'Male',
         'status' => 'active',
         'listing_state' => 'coming_soon',
-        'slug' => 'colombo-coming-soon',
+        'slug' => 'male-coming-soon',
     ]);
 
     $hiddenActive = Destination::create([
@@ -243,12 +243,11 @@ test('Destination model rejects invalid listing_state', function () {
     })->toThrow(\InvalidArgumentException::class);
 });
 
-test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour is active', function () {
+test('Maldives listing_state is coming_soon after seeding and no Sri Lanka data exists', function () {
     $this->seed(\Database\Seeders\PublicContentSeeder::class);
 
     $sriLanka = Destination::where('slug', 'sri-lanka')->first();
-    expect($sriLanka)->not->toBeNull();
-    expect($sriLanka->listing_state)->toBe('coming_soon');
+    expect($sriLanka)->toBeNull();
 
     $thailand = Destination::where('slug', 'thailand')->first();
     expect($thailand->listing_state)->toBe('live');
@@ -259,6 +258,7 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
     $maldives = Destination::where('slug', 'maldives')->first();
     expect($maldives)->not->toBeNull();
     expect($maldives->listing_state)->toBe('coming_soon');
+    expect($maldives->status)->toBe('coming_soon');
 
     expect($thailand->recommendations)->toBe([
         'Dress modestly at temples: cover your shoulders and knees, and take off your shoes before entering temple buildings.',
@@ -276,14 +276,6 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
         'Travel with a company guide for long drives and temple visits, and allow extra time for road journeys.',
     ]);
 
-    expect($sriLanka->recommendations)->toBe([
-        'Plan around the season: the south-west coast is best from December to April, and the east coast from April to September.',
-        'Dress modestly at temples such as Sigiriya and Anuradhapura, covering your shoulders and knees.',
-        'Book Sigiriya climbs and Yala safaris early, since visitor numbers are limited.',
-        'Use licensed guides and vehicles, and agree on fares before the trip starts.',
-        'Carry sun protection and drink plenty of water in the dry zones.',
-    ]);
-
     expect($maldives->recommendations)->toBe([
         'Resort islands allow swimwear. Local islands require modest clothing, so plan your outfits for each part of the trip.',
         'Alcohol is sold only at resorts and on some islands, so check the rules before you travel.',
@@ -292,13 +284,9 @@ test('Sri Lanka listing_state is coming_soon after seeding and no Sri Lanka tour
         'Plan transfers in advance, since many islands are reached by speedboat or seaplane.',
     ]);
 
-    // Verify all Sri Lanka tours are inactive
-    $sriLankaTours = TourPackage::where('destination_id', $sriLanka->id)->get();
-    expect($sriLankaTours->count())->toBeGreaterThan(0);
-    foreach ($sriLankaTours as $tour) {
-        expect($tour->is_active)->toBeFalse();
-        expect($tour->status)->not->toBe('active');
-    }
+    // Verify no tours exist for Maldives
+    $maldivesTours = TourPackage::where('destination_id', $maldives->id)->get();
+    expect($maldivesTours->count())->toBe(0);
 });
 
 test('config/tour_tiers.php structure and rules', function () {
@@ -311,7 +299,7 @@ test('config/tour_tiers.php structure and rules', function () {
     $allowed = config('tour_tiers.allowed_by_destination');
     expect($allowed['thailand'])->toBe(['semi_luxury', 'luxury', 'premium']);
     expect($allowed['india'])->toBe(['semi_luxury', 'luxury']);
-    expect($allowed['sri-lanka'])->toBe([]);
+    expect(array_key_exists('sri-lanka', $allowed))->toBeFalse();
 
     $groupSizes = config('tour_tiers.suggested_group_size');
     expect($groupSizes['india']['semi_luxury'])->toBe([30, 40]);

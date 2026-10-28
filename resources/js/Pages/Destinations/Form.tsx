@@ -401,7 +401,7 @@ export default function DestinationForm({ destination, isEditing = false }: Form
                             </Label>
                             <Input
                                 id="city_region"
-                                placeholder="e.g. Ella, Bangkok, Kandy"
+                                placeholder="e.g. Bangkok, Jaipur, Malé"
                                 value={cityRegion}
                                 onChange={handleCityRegionChange}
                                 required
@@ -417,7 +417,7 @@ export default function DestinationForm({ destination, isEditing = false }: Form
                             </Label>
                             <Input
                                 id="country"
-                                placeholder="e.g. Sri Lanka, Thailand"
+                                placeholder="e.g. Thailand, India, Maldives"
                                 value={country}
                                 onChange={(e) => setCountry(e.target.value)}
                                 required
@@ -438,7 +438,7 @@ export default function DestinationForm({ destination, isEditing = false }: Form
                             </div>
                             <Input
                                 id="slug"
-                                placeholder="e.g. ella, bangkok"
+                                placeholder="e.g. bangkok, jaipur"
                                 value={slug}
                                 onChange={handleSlugChange}
                                 required
@@ -450,7 +450,7 @@ export default function DestinationForm({ destination, isEditing = false }: Form
                             <Label htmlFor="tagline">Tagline</Label>
                             <Input
                                 id="tagline"
-                                placeholder="e.g. Misty peaks and emerald tea hills"
+                                placeholder="e.g. Ancient temples and turquoise island waters"
                                 value={tagline}
                                 onChange={(e) => setTagline(e.target.value)}
                             />

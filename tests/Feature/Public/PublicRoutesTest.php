@@ -105,7 +105,7 @@ test('all placeholder public routes return 200', function () {
         ['GET', '/our-destinations', 'Our Destinations'],
         ['GET', '/our-tours', 'Our Tours'],
         ['GET', '/our-tours/sri-lanka-round-trip', 'Tour Details'],
-        ['GET', '/memories', 'Memories'],
+        ['GET', '/about', 'About Us'],
         ['GET', '/travel-guides', 'Travel Guides'],
         ['GET', '/contact', 'Contact Us'],
         ['POST', '/contact', 'Contact Us'],
@@ -123,6 +123,17 @@ test('all placeholder public routes return 200', function () {
             ->missing('auth')
         );
     }
+});
+
+test('get /memories returns 301 redirect to /about#memories', function () {
+    $response = $this->get('/memories');
+    $response->assertStatus(301);
+    $response->assertRedirect('/about#memories');
+});
+
+test('guest get /about returns 200', function () {
+    $response = $this->get('/about');
+    $response->assertStatus(200);
 });
 
 test('dev styleguide returns 404 when APP_ENV=production', function () {
@@ -203,18 +214,18 @@ test('homepage whatsapp link uses config value', function () {
 
 test('homepage renders featured packages and destinations when available', function () {
     $destination = \App\Models\Destination::create([
-        'city_region' => 'Ella',
-        'country' => 'Sri Lanka',
-        'description' => 'Misty mountains and waterfalls',
+        'city_region' => 'Bangkok',
+        'country' => 'Thailand',
+        'description' => 'Vibrant canals and ornate palaces',
         'listing_state' => \App\Models\Destination::LISTING_STATE_LIVE,
         'status' => 'active',
-        'slug' => 'ella',
+        'slug' => 'bangkok',
     ]);
 
     \App\Models\TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Ella Highlands Adventure',
-        'description' => 'Experience scenic trails and railway bridges.',
+        'package_name' => 'Bangkok City Explorer',
+        'description' => 'Experience temples and street food.',
         'duration_days' => 4,
         'duration_nights' => 3,
         'price' => 450,
@@ -223,7 +234,7 @@ test('homepage renders featured packages and destinations when available', funct
         'is_featured' => true,
         'is_active' => true,
         'status' => 'active',
-        'slug' => 'ella-highlands-adventure',
+        'slug' => 'bangkok-city-explorer',
     ]);
 
     $response = $this->get('/');
@@ -233,8 +244,52 @@ test('homepage renders featured packages and destinations when available', funct
         ->component('Public/Home')
         ->has('featuredPackages', 1)
         ->has('destinations', 1)
-        ->where('featuredPackages.0.title', 'Ella Highlands Adventure')
-        ->where('destinations.0.name', 'Ella')
+        ->where('featuredPackages.0.title', 'Bangkok City Explorer')
+        ->where('destinations.0.name', 'Bangkok')
     );
+});
+
+test('staff routes redirect guests to login', function () {
+    $staffRoutes = [
+        '/admin',
+        '/customers',
+        '/documents',
+        '/tours',
+        '/bookings',
+        '/payments',
+        '/employees',
+        '/settings',
+    ];
+
+    foreach ($staffRoutes as $route) {
+        $response = $this->get($route);
+        $response->assertRedirect('/login');
+    }
+    $this->assertGuest();
+});
+
+test('the rendered navbar does not contain Enquire Now or Memories', function () {
+    $layoutFile = resource_path('js/components/layouts/PublicLayout.tsx');
+    expect(file_exists($layoutFile))->toBeTrue();
+
+    $layoutContent = file_get_contents($layoutFile);
+
+    // Assert that the navbar items and header actions do not contain "Enquire Now" or "Memories"
+    expect($layoutContent)->not->toContain("'Memories'");
+    expect($layoutContent)->not->toContain('"Memories"');
+    expect($layoutContent)->not->toContain('Enquire Now');
+
+    // Assert that the remaining navbar items are preserved
+    expect($layoutContent)->toContain("'Destinations'");
+    expect($layoutContent)->toContain("'/our-destinations'");
+    expect($layoutContent)->toContain("'Tours'");
+    expect($layoutContent)->toContain("'/our-tours'");
+    expect($layoutContent)->toContain("'Contact'");
+    expect($layoutContent)->toContain("'/contact'");
+
+    // Verify GET / returns 200 and HTML response does not see Enquire Now
+    $response = $this->get('/');
+    $response->assertStatus(200);
+    $response->assertDontSee('Enquire Now');
 });
 

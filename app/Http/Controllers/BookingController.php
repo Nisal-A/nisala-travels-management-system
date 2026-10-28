@@ -232,6 +232,10 @@ class BookingController extends Controller
             $nextId = $latest ? $latest->id + 1 : 1;
             $bookingRef = 'NT-'.date('Y').'-'.str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
 
+            $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
+            $bookingCurrency = \App\Enums\Currency::tryFrom($package->currency ?? 'LKR') ?? \App\Enums\Currency::LKR;
+            $bookingExchangeRate = $exchangeService->latest($bookingCurrency);
+
             $booking = Booking::create([
                 'booking_reference' => $bookingRef,
                 'customer_id' => $validated['customer_id'],
@@ -250,6 +254,7 @@ class BookingController extends Controller
                 'paid_amount' => $paidAmount,
                 'balance_amount' => $balanceAmount,
                 'currency' => $package->currency ?? 'LKR',
+                'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
                 'booking_status' => BookingStatus::Pending,
                 'payment_status' => $paymentStatus,
                 'notes' => $validated['notes'] ?? null,
@@ -304,17 +309,31 @@ class BookingController extends Controller
 
             // Record First Payment if requested
             if ($recordPayment && $initialPaymentAmount > 0) {
+                $paymentAmountLkr = $exchangeService->convertToLkr((string) $initialPaymentAmount, $bookingCurrency);
+
                 $payment = Payment::create([
                     'booking_id' => $booking->id,
                     'customer_id' => $booking->customer_id,
                     'amount' => $initialPaymentAmount,
                     'currency' => $booking->currency,
+                    'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
+                    'amount_lkr' => (string) $paymentAmountLkr,
                     'payment_method' => $validated['payment_method'] ?? 'cash',
                     'payment_date' => $validated['booking_date'] ?? now()->toDateString(),
                     'reference_number' => $validated['payment_reference'] ?? ('RCP-'.strtoupper(Str::random(8))),
                     'recorded_by' => $request->user()->id,
                     'notes' => 'Initial payment recorded during booking creation',
                     'status' => PaymentStatus::Completed,
+                ]);
+
+                $generator = app(\App\Services\NumberGenerator::class);
+                $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->timezone('Asia/Colombo')->format('Y') : (int) now('Asia/Colombo')->format('Y');
+                $receiptNumber = $generator->receipt($year);
+
+                \App\Models\PaymentReceipt::create([
+                    'payment_id' => $payment->id,
+                    'receipt_number' => $receiptNumber,
+                    'generated_by' => $request->user()->id,
                 ]);
 
                 DB::afterCommit(fn () => event(new PaymentReceived($payment)));

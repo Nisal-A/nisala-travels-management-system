@@ -20,6 +20,7 @@ use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
+    $this->seed(\Database\Seeders\ReportPermissionSeeder::class);
 });
 
 // ------------------------------------------------------------------
@@ -129,6 +130,7 @@ test('staff can access staff-permitted routes', function (string $route) {
     '/documents',
     '/tours',
     '/bookings',
+    '/reports',
 ]);
 
 test('staff cannot access restricted routes', function (string $route) {
@@ -142,7 +144,6 @@ test('staff cannot access restricted routes', function (string $route) {
     '/settings',
     '/employees',
     '/payments',
-    '/reports',
 ]);
 
 // ------------------------------------------------------------------

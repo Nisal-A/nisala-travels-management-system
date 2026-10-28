@@ -26,15 +26,14 @@ class GlobalSearchController extends Controller
 
         // Customers
         if (Gate::allows('viewAny', Customer::class)) {
-            $customers = Customer::where('first_name', 'like', "%{$query}%")
-                ->orWhere('last_name', 'like', "%{$query}%")
+            $customers = Customer::where('full_name', 'like', "%{$query}%")
                 ->orWhere('email', 'like', "%{$query}%")
                 ->orWhere('phone', 'like', "%{$query}%")
                 ->limit(5)
                 ->get()
                 ->map(fn ($c) => [
                     'id' => $c->id,
-                    'title' => "{$c->first_name} {$c->last_name}",
+                    'title' => $c->full_name,
                     'subtitle' => $c->email,
                     'url' => route('customers.show', $c->id),
                     'group' => 'Customers',
@@ -50,15 +49,15 @@ class GlobalSearchController extends Controller
         if (Gate::allows('viewAny', Booking::class)) {
             $bookings = Booking::where('booking_reference', 'like', "%{$query}%")
                 ->orWhereHas('customer', function ($q) use ($query) {
-                    $q->where('first_name', 'like', "%{$query}%")
-                        ->orWhere('last_name', 'like', "%{$query}%");
+                    $q->where('full_name', 'like', "%{$query}%");
                 })
+                ->with('customer')
                 ->limit(5)
                 ->get()
                 ->map(fn ($b) => [
                     'id' => $b->id,
                     'title' => $b->booking_reference,
-                    'subtitle' => $b->customer ? "{$b->customer->first_name} {$b->customer->last_name}" : '',
+                    'subtitle' => $b->customer ? $b->customer->full_name : '',
                     'url' => route('bookings.show', $b->id),
                     'group' => 'Bookings',
                     'icon' => 'CalendarCheck',
@@ -71,13 +70,16 @@ class GlobalSearchController extends Controller
 
         // Payments
         if (Gate::allows('viewAny', Payment::class)) {
-            $payments = Payment::where('receipt_number', 'like', "%{$query}%")
+            $payments = Payment::whereHas('receipt', function ($q) use ($query) {
+                    $q->where('receipt_number', 'like', "%{$query}%");
+                })
                 ->orWhere('reference_number', 'like', "%{$query}%")
+                ->with('receipt')
                 ->limit(5)
                 ->get()
                 ->map(fn ($p) => [
                     'id' => $p->id,
-                    'title' => $p->receipt_number ?: $p->reference_number ?: "RCP-{$p->id}",
+                    'title' => $p->receipt?->receipt_number ?? ($p->reference_number ?: "RCP-{$p->id}"),
                     'subtitle' => number_format($p->amount, 2).' '.$p->currency,
                     // No direct show route for payments yet, but let's assume one or just link to booking
                     'url' => route('bookings.show', $p->booking_id),
@@ -92,12 +94,12 @@ class GlobalSearchController extends Controller
 
         // Tour Packages
         if (Gate::allows('viewAny', TourPackage::class)) {
-            $tours = TourPackage::where('name', 'like', "%{$query}%")
+            $tours = TourPackage::where('package_name', 'like', "%{$query}%")
                 ->limit(5)
                 ->get()
                 ->map(fn ($t) => [
                     'id' => $t->id,
-                    'title' => $t->name,
+                    'title' => $t->package_name,
                     'subtitle' => $t->duration_days.' days',
                     'url' => route('tours.show', $t->id),
                     'group' => 'Tours',

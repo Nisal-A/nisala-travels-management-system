@@ -174,11 +174,11 @@ test('TourPackage::publicListed() returns active, is_active packages whose desti
     ]);
 
     $comingSoonDest = Destination::create([
-        'country' => 'Sri Lanka',
-        'city_region' => 'Colombo',
+        'country' => 'Maldives',
+        'city_region' => 'Male',
         'status' => 'active',
         'listing_state' => 'coming_soon',
-        'slug' => 'sri-lanka-cs',
+        'slug' => 'maldives-cs',
     ]);
 
     $hiddenDest = Destination::create([

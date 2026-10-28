@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
@@ -19,6 +20,8 @@ class Payment extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'exchange_rate_to_lkr' => 'decimal:6',
+            'amount_lkr' => 'decimal:2',
             'payment_date' => 'date',
             'payment_method' => PaymentMethod::class,
             'status' => PaymentStatus::class,
@@ -53,10 +56,18 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'recorded_by');
     }
 
+    /**
+     * The receipt generated for this payment.
+     */
+    public function receipt(): HasOne
+    {
+        return $this->hasOne(PaymentReceipt::class);
+    }
+
     // Filterable configuration
     public function getSearchableColumns()
     {
-        return ['receipt_number', 'reference_number', 'customer.full_name', 'customer.first_name', 'customer.last_name', 'booking.booking_reference'];
+        return ['receipt.receipt_number', 'reference_number', 'customer.full_name', 'booking.booking_reference'];
     }
 
     public function getFilterableColumns()

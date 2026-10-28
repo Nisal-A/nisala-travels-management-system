@@ -717,11 +717,13 @@ export default function TourPackageForm({
                                     <SelectValue placeholder="Select Destination" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {destinations.map((d) => (
-                                        <SelectItem key={d.id} value={String(d.id)}>
-                                            {d.city_region}, {d.country}
-                                        </SelectItem>
-                                    ))}
+                                    {destinations
+                                        .filter((d) => d.slug !== 'maldives' && d.status !== 'coming_soon' && (d as any).listing_state !== 'coming_soon')
+                                        .map((d) => (
+                                            <SelectItem key={d.id} value={String(d.id)}>
+                                                {d.city_region}, {d.country}
+                                            </SelectItem>
+                                        ))}
                                 </SelectContent>
                             </Select>
                             {serverErrors.destination_id && (
@@ -1306,7 +1308,7 @@ export default function TourPackageForm({
                                             <Input
                                                 value={row.title}
                                                 onChange={(e) => updateItineraryRow(idx, 'title', e.target.value)}
-                                                placeholder="Day Title / Activity (e.g. Arrival & Sigiriya Rock)"
+                                                placeholder="Day Title / Activity (e.g. Arrival & Grand Palace)"
                                             />
                                         </div>
                                         <Button

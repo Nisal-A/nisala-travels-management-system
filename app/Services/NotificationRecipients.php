@@ -33,12 +33,12 @@ class NotificationRecipients
         // Assuming Customer might have a user_id or User has a customer_id,
         // let's try to find a user by email matching the customer.
         // The instructions: "returns... the customer's user by customer_id. If a customer has no user account, fall back to the customer's email via an on-demand notification."
-        $user = User::where('email', $customer->email)->first();
+        $user = $customer->user ?? User::where('email', $customer->email)->first();
 
         if ($user) {
             return $user;
         }
 
-        return Notification::route('mail', $customer->email);
+        return $customer;
     }
 }

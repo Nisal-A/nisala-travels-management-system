@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Currency;
 use App\Jobs\RevalidateNextJs;
 use App\Models\AppSetting;
+use App\Models\ExchangeRate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,16 +24,28 @@ class SettingsController extends Controller
 
         // 1. General Settings
         $general = [
-            'company_name' => AppSetting::get('company_name', config('company.name', 'Nisala Travels')),
-            'name' => AppSetting::get('name', config('company.name', 'Nisala Travels')),
-            'company_phone' => AppSetting::get('company_phone', config('company.phone', '+94 71 995 1812')),
-            'phone' => AppSetting::get('phone', config('company.phone', '+94 71 995 1812')),
+            'company_name' => AppSetting::get('company_name', config('travel.company.name', 'Nisala Travels')),
+            'name' => AppSetting::get('name', config('travel.company.name', 'Nisala Travels')),
+            'company_phone' => AppSetting::get('company_phone', config('travel.company.phone', '071 9951812 and 076 1277010')),
+            'phone' => AppSetting::get('phone', config('travel.company.phone', '071 9951812 and 076 1277010')),
+            'phones' => AppSetting::get('phones', config('travel.company.phones', '071 9951812 and 076 1277010')),
+            'company_phones' => AppSetting::get('company_phones', config('travel.company.phones', '071 9951812 and 076 1277010')),
             'company_whatsapp_number' => AppSetting::get('company_whatsapp_number', config('company.whatsapp_number', '+94 76 127 7010')),
             'whatsapp_number' => AppSetting::get('whatsapp_number', config('company.whatsapp_number', '+94 76 127 7010')),
-            'company_support_email' => AppSetting::get('company_support_email', config('company.support_email', 'support@nisalatravels.com')),
-            'support_email' => AppSetting::get('support_email', config('company.support_email', 'support@nisalatravels.com')),
-            'company_address' => AppSetting::get('company_address', config('company.address', 'Air port road, Hingurakgoda.')),
-            'address' => AppSetting::get('address', config('company.address', 'Air port road, Hingurakgoda.')),
+            'company_support_email' => AppSetting::get('company_support_email', config('travel.company.email', 'info@example.com')),
+            'support_email' => AppSetting::get('support_email', config('travel.company.email', 'info@example.com')),
+            'email' => AppSetting::get('email', config('travel.company.email', 'info@example.com')),
+            'company_email' => AppSetting::get('company_email', config('travel.company.email', 'info@example.com')),
+            'company_address' => AppSetting::get('company_address', config('travel.company.address', 'Airport Road, Hingurakgoda, Sri Lanka')),
+            'address' => AppSetting::get('address', config('travel.company.address', 'Airport Road, Hingurakgoda, Sri Lanka')),
+            'website' => AppSetting::get('website', config('travel.company.website', 'www.nisalatravels.com')),
+            'company_website' => AppSetting::get('company_website', config('travel.company.website', 'www.nisalatravels.com')),
+            'registration_number' => AppSetting::get('registration_number', config('travel.company.registration_number', '')),
+            'company_registration_number' => AppSetting::get('company_registration_number', config('travel.company.registration_number', '')),
+            'bank_details' => AppSetting::get('bank_details', config('travel.company.bank_details', 'Example Bank, Example Branch, Nisala Travels, 0000000000')),
+            'company_bank_details' => AppSetting::get('company_bank_details', config('travel.company.bank_details', 'Example Bank, Example Branch, Nisala Travels, 0000000000')),
+            'logo_path' => AppSetting::get('logo_path', config('travel.company.logo_path', 'public/images/nisala-travels-full-logo.png')),
+            'company_logo_path' => AppSetting::get('company_logo_path', config('travel.company.logo_path', 'public/images/nisala-travels-full-logo.png')),
             'company_office_hours' => AppSetting::get('company_office_hours', config('company.office_hours', 'Mon - Sat: 8:30 AM - 5:30 PM')),
             'office_hours' => AppSetting::get('office_hours', config('company.office_hours', 'Mon - Sat: 8:30 AM - 5:30 PM')),
         ];
@@ -53,6 +67,29 @@ class SettingsController extends Controller
             ?? (env('NEXTJS_REVALIDATE_URL') ? preg_replace('#/api/revalidate.*$#', '', env('NEXTJS_REVALIDATE_URL')) : null)
             ?? 'http://localhost:3000';
 
+        // 5. Exchange Rates
+        $exchangeRates = [];
+        $supportedCurrencies = config('currency.supported', ['LKR', 'USD', 'INR', 'THB']);
+        foreach ($supportedCurrencies as $code) {
+            $currencyEnum = Currency::tryFrom($code);
+            if (! $currencyEnum || $code === 'LKR') {
+                continue;
+            }
+
+            $latest = ExchangeRate::where('currency', $code)
+                ->orderByDesc('fetched_at')
+                ->first();
+
+            $exchangeRates[] = [
+                'currency' => $code,
+                'label' => $currencyEnum->label(),
+                'symbol' => $currencyEnum->symbol(),
+                'rate_to_lkr' => $latest ? $latest->getRawOriginal('rate_to_lkr') : null,
+                'fetched_at' => $latest?->fetched_at?->toIso8601String(),
+                'source' => $latest?->source,
+            ];
+        }
+
         return Inertia::render('Settings/Index', [
             'general' => $general,
             'notificationSettingsUrl' => $notificationSettingsUrl,
@@ -63,6 +100,7 @@ class SettingsController extends Controller
                 'publicSiteUrl' => $publicSiteUrl,
                 'public_site_url' => $publicSiteUrl,
             ],
+            'exchangeRates' => $exchangeRates,
         ]);
     }
 
@@ -76,8 +114,20 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'company_name' => 'nullable|string|max:255',
             'name' => 'nullable|string|max:255',
-            'company_phone' => 'nullable|string|max:50',
-            'phone' => 'nullable|string|max:50',
+            'company_phone' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'phones' => 'nullable|string|max:255',
+            'company_phones' => 'nullable|string|max:255',
+            'website' => 'nullable|string|max:255',
+            'company_website' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'company_email' => 'nullable|email|max:255',
+            'registration_number' => 'nullable|string|max:255',
+            'company_registration_number' => 'nullable|string|max:255',
+            'bank_details' => 'nullable|string|max:1000',
+            'company_bank_details' => 'nullable|string|max:1000',
+            'logo_path' => 'nullable|string|max:255',
+            'company_logo_path' => 'nullable|string|max:255',
             'company_whatsapp_number' => 'nullable|string|max:50',
             'whatsapp_number' => 'nullable|string|max:50',
             'company_support_email' => 'nullable|email|max:255',
@@ -90,6 +140,13 @@ class SettingsController extends Controller
 
         $fields = [
             'company_name' => $validated['company_name'] ?? $validated['name'] ?? null,
+            'address' => $validated['company_address'] ?? $validated['address'] ?? null,
+            'phones' => $validated['company_phones'] ?? $validated['phones'] ?? $validated['company_phone'] ?? $validated['phone'] ?? null,
+            'website' => $validated['company_website'] ?? $validated['website'] ?? null,
+            'email' => $validated['company_email'] ?? $validated['email'] ?? $validated['company_support_email'] ?? $validated['support_email'] ?? null,
+            'registration_number' => $validated['company_registration_number'] ?? $validated['registration_number'] ?? null,
+            'bank_details' => $validated['company_bank_details'] ?? $validated['bank_details'] ?? null,
+            'logo_path' => $validated['company_logo_path'] ?? $validated['logo_path'] ?? null,
             'company_phone' => $validated['company_phone'] ?? $validated['phone'] ?? null,
             'company_whatsapp_number' => $validated['company_whatsapp_number'] ?? $validated['whatsapp_number'] ?? null,
             'company_support_email' => $validated['company_support_email'] ?? $validated['support_email'] ?? null,
@@ -99,7 +156,7 @@ class SettingsController extends Controller
 
         foreach ($fields as $key => $val) {
             if ($val !== null) {
-                AppSetting::set($key, $val, 'general');
+                AppSetting::set($key, $val, 'company');
             }
         }
 
@@ -127,5 +184,42 @@ class SettingsController extends Controller
         }
 
         return back()->with('success', 'Public website cache cleared successfully.');
+    }
+
+    /**
+     * Store manual exchange rates.
+     */
+    public function storeExchangeRates(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+
+        $supported = config('currency.supported', ['LKR', 'USD', 'INR', 'THB']);
+        $rules = [];
+        foreach ($supported as $code) {
+            if ($code === 'LKR') {
+                continue;
+            }
+            $rules["rates.{$code}"] = ['nullable', 'numeric', 'min:0.000001'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $now = now();
+        $rates = $validated['rates'] ?? [];
+
+        foreach ($rates as $code => $rateValue) {
+            if ($rateValue === null || $rateValue === '') {
+                continue;
+            }
+
+            ExchangeRate::create([
+                'currency' => $code,
+                'rate_to_lkr' => $rateValue,
+                'source' => 'manual',
+                'fetched_at' => $now,
+            ]);
+        }
+
+        return back()->with('success', 'Exchange rates updated successfully.');
     }
 }

@@ -15,8 +15,10 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -36,7 +38,7 @@ Route::get('/', [PublicController::class, 'home'])->name('home');
 
 Route::get('/our-destinations', fn () => Inertia::render('Public/Placeholder', [
     'title' => 'Our Destinations',
-    'description' => 'Explore our handpicked travel destinations across Sri Lanka, India, and beyond.',
+    'description' => 'Explore our handpicked travel destinations across Thailand, India, and the Maldives.',
 ]))->name('public.destinations');
 
 Route::get('/our-tours', fn () => Inertia::render('Public/Placeholder', [
@@ -50,10 +52,11 @@ Route::get('/our-tours/{slug}', fn (string $slug) => Inertia::render('Public/Pla
     'slug' => $slug,
 ]))->name('public.tours.show');
 
-Route::get('/memories', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Memories',
-    'description' => 'Relive the magical moments and reviews from our travellers\' journeys.',
-]))->name('public.memories');
+Route::redirect('/memories', '/about#memories', 301);
+Route::get('/about', fn () => Inertia::render('Public/Placeholder', [
+    'title' => 'About Us',
+    'description' => 'Learn about Nisala Travels, our story, and our journey.',
+]))->name('public.about');
 
 Route::get('/travel-guides', fn () => Inertia::render('Public/Placeholder', [
     'title' => 'Travel Guides',
@@ -159,6 +162,7 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index');
             Route::match(['put', 'post'], '/', [SettingsController::class, 'update'])->name('update');
             Route::post('/clear-cache', [SettingsController::class, 'clearPublicCache'])->name('clear-cache');
+            Route::post('/exchange-rates', [SettingsController::class, 'storeExchangeRates'])->name('exchange-rates.store');
             Route::get('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'index'])->name('notifications.index');
             Route::put('/notifications', [\App\Http\Controllers\NotificationSettingsController::class, 'update'])->name('notifications.update');
         });
@@ -225,10 +229,26 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:super_admin,manager,finance')->group(function () {
         // Payments Management (NT-011)
         Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+    });
 
-        Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
-        });
+    // ==============================
+    // Reports (super_admin, manager, staff, finance)
+    // ==============================
+    Route::middleware('role:super_admin,manager,staff,finance')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/{report}', [ReportController::class, 'show'])->name('show');
+        Route::get('/{report}/data', [ReportController::class, 'data'])->name('data');
+        Route::get('/{report}/export/{format}', [ReportController::class, 'export'])->name('export');
+    });
+
+    // ==============================
+    // Staff Profile (super_admin, manager, staff, finance)
+    // ==============================
+    Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
+        Route::get('/profile', [StaffProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [StaffProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [StaffProfileController::class, 'updatePassword'])->name('profile.password.update');
+        Route::delete('/profile/sessions', [StaffProfileController::class, 'logoutOtherBrowserSessions'])->name('profile.sessions.destroy');
     });
 
     // ==============================

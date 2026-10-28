@@ -20,16 +20,16 @@
         </tr>
         <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong>Payment Method:</strong></td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">{{ ucfirst($payment->payment_method) }}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">{{ ucfirst($payment->payment_method instanceof \BackedEnum ? $payment->payment_method->value : (string) $payment->payment_method) }}</td>
         </tr>
         <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong>Receipt Number:</strong></td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">{{ $payment->reference_number ?? $payment->id }}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">{{ $payment->receipt?->receipt_number ?? "RCP-{$payment->id}" }}</td>
         </tr>
         @if($payment->booking)
         <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;"><strong>Remaining Balance:</strong></td>
-            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;"><strong>{{ number_format(($payment->booking->total_price - $payment->booking->paid_amount), 2) }} {{ $payment->booking->currency }}</strong></td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;"><strong>{{ number_format(($payment->booking->balance_amount ?? ($payment->booking->final_amount - $payment->booking->paid_amount)), 2) }} {{ $payment->booking->currency }}</strong></td>
         </tr>
         @endif
     </table>

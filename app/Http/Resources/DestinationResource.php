@@ -12,7 +12,7 @@ class DestinationResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isComingSoon = $this->listing_state === Destination::LISTING_STATE_COMING_SOON;
+        $isComingSoon = $this->listing_state === Destination::LISTING_STATE_COMING_SOON || $this->status === 'coming_soon';
 
         $tourCount = $isComingSoon
             ? 0
@@ -34,7 +34,7 @@ class DestinationResource extends JsonResource
             'slug' => $this->slug,
             'name' => $this->city_region,
             'country' => $this->country,
-            'listing_state' => $this->listing_state,
+            'listing_state' => $this->listing_state ?? ($isComingSoon ? 'coming_soon' : 'live'),
             'tagline' => $this->tagline,
             'overview' => $this->description,
             'hero_image_url' => $this->formatImageUrl($this->hero_image),

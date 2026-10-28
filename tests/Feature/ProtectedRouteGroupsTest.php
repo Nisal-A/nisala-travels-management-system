@@ -91,8 +91,8 @@ dataset('route_access_matrix', [
     // Payments — super_admin, manager, finance
     'payments' => ['/payments', ['super_admin', 'manager', 'finance'], ['staff', 'customer']],
 
-    // Reports — super_admin, manager, finance
-    'reports' => ['/reports', ['super_admin', 'manager', 'finance'], ['staff', 'customer']],
+    // Reports — super_admin, manager, staff, finance
+    'reports' => ['/reports', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
 
     // Customer Portal — customer only
     'portal' => ['/portal', ['customer'], ['super_admin', 'manager', 'staff', 'finance']],
@@ -207,7 +207,7 @@ test('staff cannot access admin, employee management, financial areas, or portal
     $staff = createUser('staff');
 
     $restrictedRoutes = ['/admin', '/settings', '/employees',
-        '/payments', '/reports', '/portal'];
+        '/payments', '/portal'];
 
     foreach ($restrictedRoutes as $url) {
         $response = $this->actingAs($staff)->get($url);
@@ -220,7 +220,7 @@ test('staff cannot access admin, employee management, financial areas, or portal
 test('staff can access operational areas', function () {
     $staff = createUser('staff');
 
-    foreach (['/customers', '/documents', '/tours', '/bookings'] as $url) {
+    foreach (['/customers', '/documents', '/tours', '/bookings', '/reports'] as $url) {
         $response = $this->actingAs($staff)->get($url);
 
         expect($response->status())
@@ -338,8 +338,11 @@ test('staff navigation includes operational items but not financial or admin', f
     expect($mainLabels)->toContain('Bookings');
     expect($mainLabels)->not->toContain('Payments');
 
-    // No management section for staff
-    expect($navigation)->not->toHaveKey('management');
+    // Staff now has Reports in the management section
+    expect($navigation)->toHaveKey('management');
+    $managementLabels = array_column($navigation['management'], 'label');
+    expect($managementLabels)->toContain('Reports');
+    expect($managementLabels)->not->toContain('Settings');
 });
 
 // =========================================================================

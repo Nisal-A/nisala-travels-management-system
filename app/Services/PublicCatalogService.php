@@ -15,7 +15,7 @@ class PublicCatalogService
     public function destinations(): Collection
     {
         $remember = function () {
-            $destinations = Destination::where('status', 'active')
+            $destinations = Destination::whereIn('status', ['active', 'coming_soon'])
                 ->whereIn('listing_state', [
                     Destination::LISTING_STATE_LIVE,
                     Destination::LISTING_STATE_COMING_SOON,
@@ -25,7 +25,7 @@ class PublicCatalogService
                 ->get();
 
             foreach ($destinations as $destination) {
-                if ($destination->listing_state === Destination::LISTING_STATE_COMING_SOON) {
+                if ($destination->listing_state === Destination::LISTING_STATE_COMING_SOON || $destination->status === 'coming_soon') {
                     $destination->tour_count = 0;
                     $destination->places = [];
                     $destination->common_inclusions = [];
@@ -150,7 +150,7 @@ class PublicCatalogService
 
     /**
      * Get public listed tours with optional filters.
-     * Note: Packages on Sri Lanka or unlisted destinations are strictly excluded.
+     * Note: Only tours from live listed destinations are included.
      */
     public function tours(array $filters = []): Collection
     {

@@ -26,8 +26,8 @@ function validLeadPayload(array $overrides = []): array
 {
     return array_merge([
         'interest' => 'A specific tour',
-        'tour_slug' => 'sigiriya-heritage-tour',
-        'destination_slug' => 'sri-lanka',
+        'tour_slug' => 'thailand-heritage-tour',
+        'destination_slug' => 'thailand',
         'start_date' => now()->addDays(7)->format('Y-m-d'),
         'end_date' => now()->addDays(14)->format('Y-m-d'),
         'flexible_dates' => false,
@@ -49,16 +49,16 @@ function validLeadPayload(array $overrides = []): array
 function createLeadTourAndDestination(): array
 {
     $destination = Destination::create([
-        'slug' => 'sri-lanka',
-        'country' => 'Sri Lanka',
-        'city_region' => 'Cultural Triangle',
+        'slug' => 'thailand',
+        'country' => 'Thailand',
+        'city_region' => 'Bangkok & Central',
         'status' => 'active',
     ]);
 
     $tour = TourPackage::create([
         'destination_id' => $destination->id,
-        'package_name' => 'Sigiriya Heritage Tour',
-        'slug' => 'sigiriya-heritage-tour',
+        'package_name' => 'Thailand Heritage Tour',
+        'slug' => 'thailand-heritage-tour',
         'price' => 120000,
         'status' => 'active',
         'is_active' => true,

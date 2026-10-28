@@ -24,7 +24,7 @@ class PaymentController extends Controller
         Gate::authorize('viewAny', Payment::class);
 
         $perPage = $request->input('per_page', 10);
-        $payments = Payment::with(['customer', 'booking', 'recordedBy'])
+        $payments = Payment::with(['customer', 'booking', 'recordedBy', 'receipt'])
             ->filterAndSort($request->all())
             ->paginate($perPage)
             ->withQueryString();
@@ -60,17 +60,34 @@ class PaymentController extends Controller
         try {
             DB::beginTransaction();
 
+            $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
+            $currency = \App\Enums\Currency::tryFrom($booking->currency) ?? \App\Enums\Currency::LKR;
+            $exchangeRate = $exchangeService->latest($currency);
+            $amountLkr = $exchangeService->convertToLkr((string) $validated['amount'], $currency);
+
             $payment = Payment::create([
                 'booking_id' => $booking->id,
                 'customer_id' => $booking->customer_id,
                 'amount' => $validated['amount'],
                 'currency' => $booking->currency,
+                'exchange_rate_to_lkr' => (string) $exchangeRate,
+                'amount_lkr' => (string) $amountLkr,
                 'payment_method' => $validated['payment_method'],
                 'payment_date' => $validated['payment_date'],
                 'reference_number' => $validated['reference_number'] ?? null,
                 'recorded_by' => $request->user()->id,
                 'notes' => $validated['notes'] ?? null,
                 'status' => PaymentStatus::Completed,
+            ]);
+
+            $generator = app(\App\Services\NumberGenerator::class);
+            $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->format('Y') : (int) now()->format('Y');
+            $receiptNumber = $generator->receipt($year);
+
+            \App\Models\PaymentReceipt::create([
+                'payment_id' => $payment->id,
+                'receipt_number' => $receiptNumber,
+                'generated_by' => $request->user()->id,
             ]);
 
             // Automatically update the booking's paid and balance amounts

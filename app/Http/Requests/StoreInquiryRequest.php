@@ -50,7 +50,7 @@ class StoreInquiryRequest extends FormRequest
                 'nullable',
                 'string',
                 Rule::exists('destinations', 'slug')
-                    ->where('status', 'active')
+                    ->whereIn('status', ['active', 'coming_soon'])
                     ->whereNull('deleted_at'),
             ],
             'start_date' => ['nullable', 'date', 'after_or_equal:today'],

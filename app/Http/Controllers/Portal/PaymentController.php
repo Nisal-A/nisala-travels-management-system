@@ -21,7 +21,7 @@ class PaymentController extends Controller
         $customer = $request->user()->customer;
 
         $query = Payment::where('customer_id', $customer->id)
-            ->with('booking.tourPackage');
+            ->with(['booking.tourPackage', 'receipt']);
 
         if ($request->filled('booking_id')) {
             $query->where('booking_id', $request->booking_id);
@@ -114,10 +114,10 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        $payment->load('booking.customer', 'booking.tourPackage');
+        $payment->load('receipt', 'booking.customer', 'booking.tourPackage');
 
-        // Derive receipt number: from payment_receipts relation, reference_number, or payment ID
-        $receiptNumber = $payment->reference_number ?? 'RCP-'.str_pad($payment->id, 6, '0', STR_PAD_LEFT);
+        // Derive receipt number: from receipt relation, falling back to RCP- + id only
+        $receiptNumber = $payment->receipt?->receipt_number ?? 'RCP-'.$payment->id;
 
         $pdf = Pdf::loadView('portal.receipt', [
             'payment' => $payment,
