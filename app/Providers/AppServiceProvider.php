@@ -9,9 +9,16 @@ use App\Models\TourPackage;
 use App\Observers\DestinationObserver;
 use App\Observers\TourPackageObserver;
 use App\Services\NotificationService;
+use App\Models\PackageCostLine;
+use App\Models\Refund;
+use App\Models\Supplier;
+use App\Policies\PackageCostLinePolicy;
+use App\Policies\RefundPolicy;
+use App\Policies\SupplierPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,5 +53,9 @@ class AppServiceProvider extends ServiceProvider
 
         TourPackage::observe(TourPackageObserver::class);
         Destination::observe(DestinationObserver::class);
+
+        Gate::policy(Supplier::class, SupplierPolicy::class);
+        Gate::policy(PackageCostLine::class, PackageCostLinePolicy::class);
+        Gate::policy(Refund::class, RefundPolicy::class);
     }
 }

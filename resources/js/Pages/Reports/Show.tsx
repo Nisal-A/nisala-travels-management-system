@@ -60,6 +60,8 @@ export interface ReportDataResponse<T = Record<string, unknown>> {
     summary: ReportSummaryTile[];
 }
 
+export type ReportRow = Record<string, unknown> & { id: number | string };
+
 export interface ReportShowProps {
     report: ReportDescriptor;
     initialData: ReportDataResponse;
@@ -228,20 +230,21 @@ export default function ReportShow({
         window.location.href = exportUrl;
     };
 
-    const handlePresetChange = (preset: string) => {
-        setActivePreset(preset);
+    const handlePresetChange = (preset: string | null) => {
+        const p = preset || '';
+        setActivePreset(p);
 
-        if (preset === 'custom') {
+        if (p === 'custom') {
             applyFilterUpdates({ preset: 'custom' });
             return;
         }
 
-        const range = getDatePresetRange(preset);
+        const range = getDatePresetRange(p);
         if (range) {
             setDateFrom(range.date_from);
             setDateTo(range.date_to);
             applyFilterUpdates({
-                preset,
+                preset: p,
                 date_from: range.date_from,
                 date_to: range.date_to,
             });
@@ -264,7 +267,7 @@ export default function ReportShow({
         });
     };
 
-    const handleFilterChange = (filterName: string, value: string) => {
+    const handleFilterChange = (filterName: string, value: string | null) => {
         applyFilterUpdates({ [filterName]: value || null });
     };
 
@@ -285,7 +288,7 @@ export default function ReportShow({
     }, [filters]);
 
     // Build TanStack table columns from report descriptor
-    const tableColumns = useMemo<ColumnDef<Record<string, unknown>>[]>(() => {
+    const tableColumns = useMemo<ColumnDef<ReportRow, unknown>[]>(() => {
         return report.columns.map((col) => ({
             id: col.key,
             accessorKey: col.key,
@@ -459,7 +462,7 @@ export default function ReportShow({
                                 variant="outline"
                                 size="sm"
                                 className="h-9 gap-1.5"
-                                onClick={() => router.reload({ preserveScroll: true })}
+                                onClick={() => router.reload()}
                                 disabled={isLoading}
                             >
                                 <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -628,7 +631,7 @@ export default function ReportShow({
                         <div className="space-y-4">
                             <DataTable
                                 columns={tableColumns}
-                                data={initialData.data as Array<Record<string, unknown> & { id: number | string }>}
+                                data={initialData.data as ReportRow[]}
                                 tableKey={`report_${report.key}`}
                                 total={initialData.total}
                                 from={initialData.from || undefined}

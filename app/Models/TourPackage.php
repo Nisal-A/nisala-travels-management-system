@@ -67,4 +67,12 @@ class TourPackage extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    /**
+     * Get the cost lines for this tour package.
+     */
+    public function costLines()
+    {
+        return $this->hasMany(PackageCostLine::class);
+    }
 }

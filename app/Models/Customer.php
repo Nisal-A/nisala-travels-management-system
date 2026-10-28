@@ -89,6 +89,14 @@ class Customer extends Model
     }
 
     /**
+     * Get the refunds for the customer.
+     */
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
      * Get the inquiries made by the customer.
      */
     public function inquiries()

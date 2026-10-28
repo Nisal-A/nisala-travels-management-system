@@ -26,6 +26,8 @@ import {
     Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import CostLines from './Partials/CostLines';
+import { PackageCostLine } from '@/types';
 
 export interface ItineraryItem {
     day: number | string;
@@ -101,6 +103,8 @@ interface FormProps {
     tiers: Record<string, TierConfig>;
     allowed_by_destination: Record<string, string[]>;
     isEditing?: boolean;
+    cost_lines?: PackageCostLine[];
+    suppliers?: { id: number; name: string; supplier_code: string; default_currency?: string }[];
 }
 
 interface GalleryItem {
@@ -140,9 +144,15 @@ export default function TourPackageForm({
     tiers = {},
     allowed_by_destination = {},
     isEditing = false,
+    cost_lines,
+    suppliers,
 }: FormProps) {
     const page = usePage();
     const serverErrors = (page.props.errors as Record<string, string>) || {};
+    const pageProps = page.props as any;
+    const resolvedCostLines = cost_lines || pageProps.cost_lines;
+    const resolvedSuppliers = suppliers || pageProps.suppliers;
+    const showCosts = resolvedCostLines !== undefined || resolvedSuppliers !== undefined;
 
     const [isDirty, setIsDirty] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1669,6 +1679,15 @@ export default function TourPackageForm({
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Section: Costs (Super Admin, Manager, Finance only) */}
+            {showCosts && (
+                <CostLines
+                    tourId={tour?.id}
+                    initialCostLines={resolvedCostLines}
+                    suppliers={resolvedSuppliers}
+                />
+            )}
 
             {/* Sticky Bottom Actions Bar */}
             <div className="sticky bottom-4 z-10 bg-card/95 backdrop-blur border shadow-lg rounded-xl p-4 flex items-center justify-between">

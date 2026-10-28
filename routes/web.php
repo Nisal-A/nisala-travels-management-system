@@ -11,14 +11,17 @@ use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PackageCostLineController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffProfileController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TourPackageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -229,6 +232,19 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:super_admin,manager,finance')->group(function () {
         // Payments Management (NT-011)
         Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+
+        // Suppliers Management
+        Route::resource('suppliers', SupplierController::class);
+
+        // Package Cost Lines Management
+        Route::resource('package-cost-lines', PackageCostLineController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('tours/{tour}/cost-lines', [PackageCostLineController::class, 'forTour'])->name('tours.cost-lines.index');
+
+        // Refunds Management
+        Route::resource('refunds', RefundController::class)->only(['index', 'create', 'store', 'show']);
+        Route::patch('refunds/{refund}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
+        Route::patch('refunds/{refund}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
+        Route::patch('refunds/{refund}/mark-paid', [RefundController::class, 'markPaid'])->name('refunds.mark-paid');
     });
 
     // ==============================

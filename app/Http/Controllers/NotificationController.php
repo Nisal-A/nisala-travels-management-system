@@ -11,7 +11,12 @@ class NotificationController extends Controller
     {
         return match ($group) {
             'Bookings' => ['App\Notifications\BookingConfirmedNotification', 'App\Notifications\TripReminderNotification'],
-            'Payments' => ['App\Notifications\PaymentReceivedNotification', 'App\Notifications\PaymentOverdueNotification', 'App\Notifications\PaymentReceivedStaffNotification'],
+            'Payments' => [
+                'App\Notifications\PaymentReceivedNotification',
+                'App\Notifications\PaymentOverdueNotification',
+                'App\Notifications\PaymentReceivedStaffNotification',
+                'App\Notifications\RefundStatusNotification',
+            ],
             'Documents' => ['App\Notifications\DocumentRejectedNotification', 'App\Notifications\DocumentVerifiedNotification', 'App\Notifications\DocumentUploadedNotification'],
             'Leads' => ['App\Notifications\NewInquiryNotification', 'App\Notifications\InquirySubmittedNotification'],
             default => [],

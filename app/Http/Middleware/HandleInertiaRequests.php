@@ -167,12 +167,22 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
-        // Payments — super_admin, manager, finance
+        // Payments, Refunds & Suppliers — super_admin, manager, finance
         if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Finance->value])) {
             $main[] = [
                 'label' => 'Payments',
                 'route' => 'payments.index',
                 'icon' => 'CreditCard',
+            ];
+            $main[] = [
+                'label' => 'Refunds',
+                'route' => 'refunds.index',
+                'icon' => 'RotateCcw',
+            ];
+            $main[] = [
+                'label' => 'Suppliers',
+                'route' => 'suppliers.index',
+                'icon' => 'Building2',
             ];
         }
 
