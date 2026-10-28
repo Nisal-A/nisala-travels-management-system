@@ -41,5 +41,18 @@ return [
         'notes' => env('PAYMENT_NOTES', 'Please mention your Booking Reference in the transfer reference and email the receipt to info@example.com.'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Report Thresholds & Configurations
+    |--------------------------------------------------------------------------
+    */
+
+    'reports' => [
+        'upcoming_tours' => [
+            'low_seats_threshold_percentage' => (float) env('UPCOMING_TOURS_LOW_SEATS_THRESHOLD', 20.0),
+            'starting_soon_days' => (int) env('UPCOMING_TOURS_STARTING_SOON_DAYS', 7),
+        ],
+    ],
+
 ];
 

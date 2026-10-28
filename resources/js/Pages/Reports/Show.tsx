@@ -318,6 +318,24 @@ export default function ReportShow({
                     return <StatusBadge status={String(val)} />;
                 }
 
+                if (col.key === 'seats_left' && (row.original as Record<string, unknown>).seats_badge) {
+                    return (
+                        <div className="flex items-center justify-end gap-2">
+                            <span className="tabular-nums font-medium">{String(val)}</span>
+                            <StatusBadge status={String((row.original as Record<string, unknown>).seats_badge)} />
+                        </div>
+                    );
+                }
+
+                if (col.key === 'start_date' && (row.original as Record<string, unknown>).is_starting_soon) {
+                    return (
+                        <div className="flex items-center gap-2">
+                            <span className="tabular-nums">{String(val).split('T')[0]}</span>
+                            <StatusBadge status="Starting Soon" />
+                        </div>
+                    );
+                }
+
                 if (col.format === 'date') {
                     return <span className="tabular-nums">{String(val).split('T')[0]}</span>;
                 }
@@ -341,7 +359,17 @@ export default function ReportShow({
                 >
                     <span className="text-xs text-muted-foreground font-medium">{col.label}:</span>
                     <span className="font-medium text-foreground text-right text-xs">
-                        {col.format === 'money' ? (
+                        {col.key === 'seats_left' && row.seats_badge ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                                <span className="tabular-nums">{String(row[col.key] ?? '—')}</span>
+                                <StatusBadge status={String(row.seats_badge)} />
+                            </div>
+                        ) : col.key === 'start_date' && row.is_starting_soon ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                                <span className="tabular-nums">{String(row[col.key] ?? '—').split('T')[0]}</span>
+                                <StatusBadge status="Starting Soon" />
+                            </div>
+                        ) : col.format === 'money' ? (
                             <MoneyText
                                 amount={parseFloat(String(row[col.key] || 0)) || 0}
                                 currency={(col.currency as 'LKR' | 'USD') || 'LKR'}

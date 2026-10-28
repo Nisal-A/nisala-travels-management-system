@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\User;
 use App\Reports\Financial\IncomeExpensesReport;
 use App\Reports\Operational\BookingRegisterReport;
+use App\Reports\Operational\UpcomingToursReport;
 use Illuminate\Support\Collection;
 
 /**
@@ -34,6 +35,7 @@ class ReportRegistry
     protected function registerDefaults(): void
     {
         $this->register(new BookingRegisterReport());
+        $this->register(new UpcomingToursReport());
         $this->register(new IncomeExpensesReport());
     }
 
