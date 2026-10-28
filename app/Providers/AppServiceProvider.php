@@ -31,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Currency\ExchangeRateProvider::class,
             fn () => new (config('currency.provider', \App\Services\Currency\ManualRateProvider::class))
         );
+
+        $this->app->singleton(\App\Reports\ReportRegistry::class);
     }
 
     /**

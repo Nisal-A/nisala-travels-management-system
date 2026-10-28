@@ -185,8 +185,8 @@ class HandleInertiaRequests extends Middleware
 
         // Employees is now in the user dropdown, not the sidebar nav
 
-        // Reports — super_admin, manager, finance
-        if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Finance->value])) {
+        // Reports — super_admin, manager, staff, finance
+        if ($user->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Staff->value, UserRole::Finance->value])) {
             $management[] = [
                 'label' => 'Reports',
                 'route' => 'reports.index',

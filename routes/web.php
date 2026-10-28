@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffProfileController;
@@ -228,10 +229,15 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:super_admin,manager,finance')->group(function () {
         // Payments Management (NT-011)
         Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+    });
 
-        Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/', fn () => Inertia::render('Reports/Index'))->name('index');
-        });
+    // ==============================
+    // Reports (super_admin, manager, staff, finance)
+    // ==============================
+    Route::middleware('role:super_admin,manager,staff,finance')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/{report}', [ReportController::class, 'show'])->name('show');
+        Route::get('/{report}/data', [ReportController::class, 'data'])->name('data');
     });
 
     // ==============================
