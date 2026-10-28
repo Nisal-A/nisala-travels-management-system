@@ -82,4 +82,24 @@ class ReportController extends Controller
             'summary' => $summary,
         ]);
     }
+
+    /**
+     * Export Report Endpoint — streams CSV/Excel or renders PDF with A4 letterhead, row cap, and activity logging.
+     */
+    public function export(Request $request, string $report, string $format, ReportRegistry $registry, \App\Reports\Export\ReportExporter $exporter): mixed
+    {
+        $reportInstance = $registry->get($report);
+
+        if (! $reportInstance) {
+            abort(404, 'Report not found.');
+        }
+
+        if (! $registry->userCanAccess($request->user(), $reportInstance)) {
+            abort(403, 'Unauthorized to access this report.');
+        }
+
+        $filters = $request->query();
+
+        return $exporter->export($reportInstance, $format, $filters, $request->user());
+    }
 }

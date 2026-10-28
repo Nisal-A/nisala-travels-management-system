@@ -16,6 +16,18 @@ interface SettingsIndexProps {
         name?: string;
         company_phone?: string;
         phone?: string;
+        phones?: string;
+        company_phones?: string;
+        website?: string;
+        company_website?: string;
+        email?: string;
+        company_email?: string;
+        registration_number?: string;
+        company_registration_number?: string;
+        bank_details?: string;
+        company_bank_details?: string;
+        logo_path?: string;
+        company_logo_path?: string;
         company_whatsapp_number?: string;
         whatsapp_number?: string;
         company_support_email?: string;

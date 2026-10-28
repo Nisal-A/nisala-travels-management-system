@@ -153,7 +153,10 @@ class BookingRegisterReport extends BaseReport
         return $query;
     }
 
-    public function query(array $filters): LengthAwarePaginator
+    /**
+     * Get the query builder instance with all filters and sorting applied.
+     */
+    public function queryBuilder(array $filters)
     {
         $query = $this->buildQuery($filters);
 
@@ -168,23 +171,38 @@ class BookingRegisterReport extends BaseReport
             $query->orderBy('booking_date', 'desc');
         }
 
+        return $query;
+    }
+
+    /**
+     * Transform a single Booking model into a report row array.
+     */
+    public function transformRow(mixed $record): array
+    {
+        /** @var Booking $booking */
+        $booking = $record;
+
+        return [
+            'id' => $booking->id,
+            'booking_reference' => $booking->booking_reference,
+            'customer_name' => $booking->customer?->full_name ?? '—',
+            'tour_package_name' => $booking->tourPackage?->package_name ?? '—',
+            'booking_date' => $booking->booking_date?->format('Y-m-d') ?? '—',
+            'booking_status' => $booking->booking_status instanceof BookingStatus ? $booking->booking_status->value : (string) $booking->booking_status,
+            'final_amount' => (string) $booking->final_amount,
+            'paid_amount' => (string) $booking->paid_amount,
+            'balance_amount' => (string) $booking->balance_amount,
+        ];
+    }
+
+    public function query(array $filters): LengthAwarePaginator
+    {
+        $query = $this->queryBuilder($filters);
+
         $perPage = (int) ($filters['per_page'] ?? 15);
         $paginator = $query->paginate(max(1, min($perPage, 100)));
 
-        // Transform items to predictable row objects
-        $paginator->through(function (Booking $booking) {
-            return [
-                'id' => $booking->id,
-                'booking_reference' => $booking->booking_reference,
-                'customer_name' => $booking->customer?->full_name ?? '—',
-                'tour_package_name' => $booking->tourPackage?->package_name ?? '—',
-                'booking_date' => $booking->booking_date?->format('Y-m-d') ?? '—',
-                'booking_status' => $booking->booking_status instanceof BookingStatus ? $booking->booking_status->value : (string) $booking->booking_status,
-                'final_amount' => (string) $booking->final_amount,
-                'paid_amount' => (string) $booking->paid_amount,
-                'balance_amount' => (string) $booking->balance_amount,
-            ];
-        });
+        $paginator->through(fn ($booking) => $this->transformRow($booking));
 
         return $paginator;
     }

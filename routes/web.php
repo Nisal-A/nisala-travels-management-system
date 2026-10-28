@@ -238,6 +238,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/{report}', [ReportController::class, 'show'])->name('show');
         Route::get('/{report}/data', [ReportController::class, 'data'])->name('data');
+        Route::get('/{report}/export/{format}', [ReportController::class, 'export'])->name('export');
     });
 
     // ==============================

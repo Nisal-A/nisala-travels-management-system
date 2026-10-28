@@ -69,6 +69,32 @@ abstract class BaseReport
     abstract public function columns(): array;
 
     /**
+     * Determine whether this report prefers landscape orientation on PDF export.
+     * Defaults to true if the table has 6 or more columns.
+     */
+    public function isLandscape(): bool
+    {
+        return count($this->columns()) >= 6;
+    }
+
+    /**
+     * Get the query builder instance for this report with filters and sorting applied.
+     *
+     * @param array<string, mixed> $filters
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    abstract public function queryBuilder(array $filters);
+
+    /**
+     * Transform a single raw database record or model instance into an associative array
+     * matching the report column definitions.
+     *
+     * @param mixed $record
+     * @return array<string, mixed>
+     */
+    abstract public function transformRow(mixed $record): array;
+
+    /**
      * Execute the query for the report table given user-supplied filters.
      *
      * @param array<string, mixed> $filters

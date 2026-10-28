@@ -62,10 +62,12 @@ namespace App\Models {
                 // In case of database connection issue or migration phase, proceed to fallback
             }
 
-            // Fallback to config('company.*') or config($key)
+            // Fallback to config('company.*'), config('travel.company.*') or config($key)
             $configCandidates = array_unique([
-                'company.' . $noPrefix,
                 'company.' . $clean,
+                'company.' . $noPrefix,
+                'travel.company.' . $clean,
+                'travel.company.' . $noPrefix,
                 $key,
             ]);
 
@@ -160,6 +162,65 @@ namespace App\Models {
                 'facebook' => static::get('facebook', config('company.facebook')),
                 'youtube' => static::get('youtube', config('company.youtube')),
             ];
+        }
+
+        /**
+         * Return the full company profile required for PDF letterheads, vouchers, and exports.
+         *
+         * @return array{
+         *     company_name: string,
+         *     address: string,
+         *     phones: string,
+         *     website: string,
+         *     email: string,
+         *     registration_number: string,
+         *     bank_details: string,
+         *     logo_path: string
+         * }
+         */
+        public static function getCompanyProfile(): array
+        {
+            $dbName = static::getDbValue(['company_name', 'name']);
+            $dbAddress = static::getDbValue(['company_address', 'address']);
+            $dbPhones = static::getDbValue(['company_phones', 'phones', 'company_phone', 'phone']);
+            $dbWebsite = static::getDbValue(['company_website', 'website']);
+            $dbEmail = static::getDbValue(['company_email', 'email', 'company_support_email', 'support_email']);
+            $dbReg = static::getDbValue(['company_registration_number', 'registration_number']);
+            $dbBank = static::getDbValue(['company_bank_details', 'bank_details']);
+            $dbLogo = static::getDbValue(['company_logo_path', 'logo_path']);
+
+            return [
+                'company_name' => (string) ($dbName ?? config('travel.company.name', 'Nisala Travels')),
+                'address' => (string) ($dbAddress ?? config('travel.company.address', 'Airport Road, Hingurakgoda, Sri Lanka')),
+                'phones' => (string) ($dbPhones ?? config('travel.company.phones', '071 9951812 and 076 1277010')),
+                'website' => (string) ($dbWebsite ?? config('travel.company.website', 'www.nisalatravels.com')),
+                'email' => (string) ($dbEmail ?? config('travel.company.email', 'info@example.com')),
+                'registration_number' => (string) ($dbReg ?? config('travel.company.registration_number', '')),
+                'bank_details' => (string) ($dbBank ?? config('travel.company.bank_details', 'Example Bank, Example Branch, Nisala Travels, 0000000000')),
+                'logo_path' => (string) ($dbLogo ?? config('travel.company.logo_path', 'public/images/nisala-travels-full-logo.png')),
+            ];
+        }
+
+        /**
+         * Fetch first non-empty setting value from database for candidate keys.
+         */
+        protected static function getDbValue(array $keys): ?string
+        {
+            try {
+                if (Schema::hasTable('app_settings')) {
+                    $setting = static::whereIn('key', $keys)
+                        ->whereNotNull('value')
+                        ->where('value', '!=', '')
+                        ->first();
+
+                    if ($setting !== null) {
+                        return (string) $setting->value;
+                    }
+                }
+            } catch (\Throwable $e) {
+            }
+
+            return null;
         }
     }
 }

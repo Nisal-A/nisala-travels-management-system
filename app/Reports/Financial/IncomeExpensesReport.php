@@ -110,7 +110,10 @@ class IncomeExpensesReport extends BaseReport
         return $query;
     }
 
-    public function query(array $filters): LengthAwarePaginator
+    /**
+     * Get the query builder instance with all filters and sorting applied.
+     */
+    public function queryBuilder(array $filters)
     {
         $query = $this->buildQuery($filters);
 
@@ -124,19 +127,35 @@ class IncomeExpensesReport extends BaseReport
             $query->orderBy('payment_date', 'desc');
         }
 
+        return $query;
+    }
+
+    /**
+     * Transform a single Payment model into a report row array.
+     */
+    public function transformRow(mixed $record): array
+    {
+        /** @var Payment $payment */
+        $payment = $record;
+
+        return [
+            'id' => $payment->id,
+            'payment_date' => $payment->payment_date?->format('Y-m-d') ?? '—',
+            'receipt_number' => $payment->receipt?->receipt_number ?? $payment->receipt_number ?? $payment->reference_number ?? ('RCP-' . $payment->id),
+            'category' => 'Income',
+            'payment_method' => $payment->payment_method ?? 'Bank Transfer',
+            'amount' => (string) $payment->amount,
+        ];
+    }
+
+    public function query(array $filters): LengthAwarePaginator
+    {
+        $query = $this->queryBuilder($filters);
+
         $perPage = (int) ($filters['per_page'] ?? 15);
         $paginator = $query->paginate(max(1, min($perPage, 100)));
 
-        $paginator->through(function (Payment $payment) {
-            return [
-                'id' => $payment->id,
-                'payment_date' => $payment->payment_date?->format('Y-m-d') ?? '—',
-                'receipt_number' => $payment->receipt?->receipt_number ?? $payment->receipt_number ?? $payment->reference_number ?? ('RCP-' . $payment->id),
-                'category' => 'Income',
-                'payment_method' => $payment->payment_method ?? 'Bank Transfer',
-                'amount' => (string) $payment->amount,
-            ];
-        });
+        $paginator->through(fn ($payment) => $this->transformRow($payment));
 
         return $paginator;
     }

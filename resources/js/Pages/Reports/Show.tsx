@@ -17,11 +17,24 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
     BarChart3,
     RotateCcw,
     AlertTriangle,
     Calendar,
     RefreshCw,
+    Download,
+    FileSpreadsheet,
+    FileText,
+    FileCode,
+    ChevronDown,
 } from 'lucide-react';
 import { ReportDescriptor, ReportFilterDef, ReportColumnDef } from './Index';
 
@@ -203,6 +216,18 @@ export default function ReportShow({
         [filters],
     );
 
+    const handleExport = (format: 'csv' | 'excel' | 'pdf') => {
+        const queryParams = new URLSearchParams();
+        Object.entries(filters).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== '') {
+                queryParams.set(k, String(v));
+            }
+        });
+        const qs = queryParams.toString();
+        const exportUrl = `/reports/${report.key}/export/${format}${qs ? `?${qs}` : ''}`;
+        window.location.href = exportUrl;
+    };
+
     const handlePresetChange = (preset: string) => {
         setActivePreset(preset);
 
@@ -359,16 +384,60 @@ export default function ReportShow({
                     title={report.title}
                     description={report.description}
                     actions={
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 gap-1.5"
-                            onClick={() => router.reload({ preserveScroll: true })}
-                            disabled={isLoading}
-                        >
-                            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                            Refresh
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger
+                                    render={
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-9 gap-1.5"
+                                            disabled={isLoading}
+                                        >
+                                            <Download className="h-3.5 w-3.5" />
+                                            Export
+                                            <ChevronDown className="h-3 w-3 opacity-60" />
+                                        </Button>
+                                    }
+                                />
+                                <DropdownMenuContent align="end" className="w-52">
+                                    <DropdownMenuLabel>Export Report</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => handleExport('csv')}
+                                    >
+                                        <FileSpreadsheet className="h-4 w-4 mr-2 text-emerald-600" />
+                                        <span>Export as CSV (.csv)</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => handleExport('excel')}
+                                    >
+                                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span>Export as Excel (.xlsx)</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => handleExport('pdf')}
+                                    >
+                                        <FileCode className="h-4 w-4 mr-2 text-rose-600" />
+                                        <span>Export as PDF (.pdf)</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 gap-1.5"
+                                onClick={() => router.reload({ preserveScroll: true })}
+                                disabled={isLoading}
+                            >
+                                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                                Refresh
+                            </Button>
+                        </div>
                     }
                 />
 
