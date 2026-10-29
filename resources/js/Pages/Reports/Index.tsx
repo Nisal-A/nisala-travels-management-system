@@ -34,7 +34,7 @@ export interface ReportColumnDef {
     label: string;
     sortable?: boolean;
     align?: 'left' | 'center' | 'right';
-    format?: 'text' | 'number' | 'money' | 'date' | 'datetime' | 'badge';
+    format?: 'text' | 'number' | 'money' | 'date' | 'datetime' | 'badge' | 'percentage';
     currency?: string;
 }
 

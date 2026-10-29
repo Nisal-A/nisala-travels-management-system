@@ -5,6 +5,7 @@ namespace App\Reports;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Reports\Financial\IncomeExpensesReport;
+use App\Reports\Financial\TourProfitabilityReport;
 use App\Reports\Operational\BookingRegisterReport;
 use App\Reports\Operational\DocumentStatusReport;
 use App\Reports\Operational\PassengerCountReport;
@@ -41,6 +42,7 @@ class ReportRegistry
         $this->register(new PassengerCountReport());
         $this->register(new DocumentStatusReport());
         $this->register(new IncomeExpensesReport());
+        $this->register(new TourProfitabilityReport());
     }
 
     /**

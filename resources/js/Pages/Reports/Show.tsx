@@ -304,6 +304,14 @@ export default function ReportShow({
                     return <span className="text-muted-foreground">—</span>;
                 }
 
+                if (val === 'Costs not entered') {
+                    return (
+                        <span className="inline-flex items-center text-xs italic text-muted-foreground">
+                            Costs not entered
+                        </span>
+                    );
+                }
+
                 if (col.format === 'money') {
                     const numVal = typeof val === 'number' ? val : parseFloat(String(val));
                     return (
@@ -339,6 +347,14 @@ export default function ReportShow({
                     );
                 }
 
+                if (col.format === 'percentage') {
+                    return (
+                        <span className={col.align === 'right' ? 'block text-right tabular-nums' : 'tabular-nums'}>
+                            {typeof val === 'number' ? `${val}%` : String(val).endsWith('%') ? String(val) : `${val}%`}
+                        </span>
+                    );
+                }
+
                 if (col.format === 'date') {
                     return <span className="tabular-nums">{String(val).split('T')[0]}</span>;
                 }
@@ -362,7 +378,9 @@ export default function ReportShow({
                 >
                     <span className="text-xs text-muted-foreground font-medium">{col.label}:</span>
                     <span className="font-medium text-foreground text-right text-xs">
-                        {col.key === 'seats_left' && row.seats_badge ? (
+                        {row[col.key] === 'Costs not entered' ? (
+                            <span className="text-xs italic text-muted-foreground">Costs not entered</span>
+                        ) : col.key === 'seats_left' && row.seats_badge ? (
                             <div className="flex items-center justify-end gap-1.5">
                                 <span className="tabular-nums">{String(row[col.key] ?? '—')}</span>
                                 <StatusBadge status={String(row.seats_badge)} />
