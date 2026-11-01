@@ -2,14 +2,14 @@ import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { PageHeader } from '@/components/common';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { Supplier } from '@/types';
 
 interface EditSupplierProps {
@@ -31,7 +31,7 @@ export default function EditSupplier({ supplier, types }: EditSupplierProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('suppliers.update', supplier.id));
+        put(route('suppliers.update', { supplier: supplier.id }));
     };
 
     return (
@@ -44,23 +44,20 @@ export default function EditSupplier({ supplier, types }: EditSupplierProps) {
             ]}
         >
             <Head title={`Edit ${supplier.name}`} />
-            <div className="max-w-3xl mx-auto space-y-6">
-                <div className="flex items-center justify-between">
-                    <PageHeader
-                        title={`Edit Supplier (${supplier.supplier_code})`}
-                        description="Update vendor information, contact credentials, or operational status."
-                    />
-                    <Button variant="ghost" asChild>
-                        <Link href={route('suppliers.index')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                        </Link>
-                    </Button>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title={`Edit Supplier (${supplier.supplier_code})`}
+                    description="Update vendor information, contact credentials, or operational status."
+                    breadcrumbs={[
+                        { label: 'Suppliers', href: route('suppliers.index') },
+                        { label: supplier.name },
+                    ]}
+                />
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Supplier Details</CardTitle>
+                            <CardTitle className="text-base font-bold">Supplier Details</CardTitle>
                             <CardDescription>
                                 Modify provider settings below.
                             </CardDescription>
@@ -86,7 +83,7 @@ export default function EditSupplier({ supplier, types }: EditSupplierProps) {
                                     </Label>
                                     <Select
                                         value={data.type}
-                                        onValueChange={(val) => setData('type', val as any)}
+                                        onValueChange={(val) => setData('type', val || 'hotel')}
                                     >
                                         <SelectTrigger id="type" className="w-full">
                                             <SelectValue placeholder="Select type" />
@@ -145,7 +142,7 @@ export default function EditSupplier({ supplier, types }: EditSupplierProps) {
                                     </Label>
                                     <Select
                                         value={data.default_currency}
-                                        onValueChange={(val) => setData('default_currency', val)}
+                                        onValueChange={(val) => setData('default_currency', val || 'LKR')}
                                     >
                                         <SelectTrigger id="default_currency" className="w-full">
                                             <SelectValue placeholder="Select currency" />
@@ -187,18 +184,22 @@ export default function EditSupplier({ supplier, types }: EditSupplierProps) {
                                 />
                                 {errors.notes && <p className="text-xs text-destructive">{errors.notes}</p>}
                             </div>
-
-                            <div className="flex justify-end gap-3 pt-4 border-t">
-                                <Button variant="outline" asChild>
-                                    <Link href={route('suppliers.index')}>Cancel</Link>
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {processing ? 'Saving...' : 'Update Supplier'}
-                                </Button>
-                            </div>
                         </CardContent>
                     </Card>
+
+                    {/* Sticky Action Footer */}
+                    <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-end gap-3 z-10">
+                        <Link
+                            href={route('suppliers.index')}
+                            className={buttonVariants({ variant: 'ghost' })}
+                        >
+                            Cancel
+                        </Link>
+                        <Button type="submit" disabled={processing}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Saving...' : 'Update Supplier'}
+                        </Button>
+                    </div>
                 </form>
             </div>
         </AppLayout>

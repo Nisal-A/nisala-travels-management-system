@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PageHeader } from '@/components/common';
 import BookingStepper from './components/BookingStepper';
 import Step1Customer from './components/Step1Customer';
 import Step2PackageDates from './components/Step2PackageDates';
@@ -387,44 +388,43 @@ export default function Create({
         <AppLayout>
             <Head title={isEditing ? `Edit Booking ${booking?.booking_reference}` : 'New Booking Wizard'} />
 
-            <div className="max-w-6xl mx-auto space-y-6 pb-12">
-                {/* Header with Title and Autosave Status */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                            {isEditing ? `Edit Booking ${booking?.booking_reference}` : 'Create New Booking'}
-                        </h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                            {isEditing
-                                ? 'Update traveler details, pricing, or itinerary.'
-                                : 'Fast 6-step guided booking wizard with automated financial calculations.'}
-                        </p>
-                    </div>
-
-                    {/* Autosave Indicator */}
-                    {!isEditing && (
-                        <div className="flex items-center gap-2 text-xs bg-muted/60 px-3 py-1.5 rounded-full border self-start sm:self-auto">
-                            {draftStatus === 'saving' ? (
-                                <>
-                                    <Cloud className="w-3.5 h-3.5 text-primary animate-pulse" />
-                                    <span className="text-muted-foreground font-medium">Autosaving draft...</span>
-                                </>
-                            ) : draftStatus === 'saved' ? (
-                                <>
-                                    <CloudCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span className="text-emerald-700 dark:text-emerald-400 font-medium">
-                                        Draft saved {lastSavedTime ? `at ${lastSavedTime}` : 'just now'}
-                                    </span>
-                                </>
-                            ) : (
-                                <>
-                                    <Cloud className="w-3.5 h-3.5 text-muted-foreground" />
-                                    <span className="text-muted-foreground">Autosave enabled</span>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
+            <div className="space-y-6 pb-12">
+                <PageHeader
+                    title={isEditing ? `Edit Booking ${booking?.booking_reference}` : 'Create New Booking'}
+                    description={
+                        isEditing
+                            ? 'Update traveler details, pricing, or itinerary.'
+                            : 'Fast 6-step guided booking wizard with automated financial calculations.'
+                    }
+                    breadcrumbs={[
+                        { label: 'Bookings', href: route('bookings.index') },
+                        { label: isEditing ? (booking?.booking_reference || 'Edit') : 'New Booking' },
+                    ]}
+                    actions={
+                        !isEditing ? (
+                            <div className="flex items-center gap-2 text-xs bg-muted/60 px-3 py-1.5 rounded-full border">
+                                {draftStatus === 'saving' ? (
+                                    <>
+                                        <Cloud className="w-3.5 h-3.5 text-primary animate-pulse" />
+                                        <span className="text-muted-foreground font-medium">Autosaving draft...</span>
+                                    </>
+                                ) : draftStatus === 'saved' ? (
+                                    <>
+                                        <CloudCheck className="w-3.5 h-3.5 text-success" />
+                                        <span className="text-success font-medium">
+                                            Draft saved {lastSavedTime ? `at ${lastSavedTime}` : 'just now'}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Cloud className="w-3.5 h-3.5 text-muted-foreground" />
+                                        <span className="text-muted-foreground">Autosave enabled</span>
+                                    </>
+                                )}
+                            </div>
+                        ) : undefined
+                    }
+                />
 
                 {/* Resume Draft Banner */}
                 {showResumeBanner && existingDraft && (
@@ -572,17 +572,25 @@ export default function Create({
                     )}
                 </div>
 
-                {/* Footer Navigation Bar */}
-                <div className="flex items-center justify-between pt-6 border-t border-border">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handlePrev}
-                        disabled={currentStep === 1 || submitting}
-                        className="gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Previous Step
-                    </Button>
+                {/* Sticky Action Footer */}
+                <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-between z-10">
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href={route('bookings.index')}
+                            className={buttonVariants({ variant: 'ghost' })}
+                        >
+                            Cancel
+                        </Link>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handlePrev}
+                            disabled={currentStep === 1 || submitting}
+                            className="gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" /> Previous Step
+                        </Button>
+                    </div>
 
                     <div className="flex items-center gap-3">
                         <span className="text-xs text-muted-foreground hidden sm:inline">Step {currentStep} of 6</span>

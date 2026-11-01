@@ -35,6 +35,7 @@ import {
     Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { StatusBadge } from '@/components/common';
 
 interface DocumentType {
     id: number;
@@ -162,34 +163,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
     };
 
-    const getVerificationBadge = (status: string) => {
-        switch (status) {
-            case 'Verified':
-                return (
-                    <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20">
-                        <CheckCircle className="h-3 w-3 mr-1" /> Verified
-                    </Badge>
-                );
-            case 'Rejected':
-                return (
-                    <Badge
-                        variant="destructive"
-                        className="bg-red-500/15 text-red-600 hover:bg-red-500/25 border-red-500/20"
-                    >
-                        <XCircle className="h-3 w-3 mr-1" /> Rejected
-                    </Badge>
-                );
-            default:
-                return (
-                    <Badge
-                        variant="secondary"
-                        className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 border-amber-500/20"
-                    >
-                        <AlertCircle className="h-3 w-3 mr-1" /> Pending
-                    </Badge>
-                );
-        }
-    };
+
 
     return (
         <Card className="col-span-full border border-border/50 shadow-sm">
@@ -212,10 +186,14 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                             }
                         }}
                     >
-                        <DialogTrigger render={<Button className="gap-2" />}>
-                            <UploadCloud className="h-4 w-4" />
-                            Upload Document
-                        </DialogTrigger>
+                        <DialogTrigger
+                            render={
+                                <Button className="gap-2">
+                                    <UploadCloud className="size-4" />
+                                    <span>Upload Document</span>
+                                </Button>
+                            }
+                        />
                         <DialogContent className="sm:max-w-[500px]">
                             <form onSubmit={handleUpload}>
                                 <DialogHeader>
@@ -390,7 +368,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                             </div>
                                             {doc.expiry_date && (
                                                 <div
-                                                    className={`text-xs mt-1 ${isExpired(doc.expiry_date) ? 'text-destructive font-medium' : isExpiringSoon(doc.expiry_date) ? 'text-amber-600' : 'text-muted-foreground'}`}
+                                                    className={`text-xs mt-1 ${isExpired(doc.expiry_date) ? 'text-destructive font-medium' : isExpiringSoon(doc.expiry_date) ? 'text-warning' : 'text-muted-foreground'}`}
                                                 >
                                                     {isExpired(doc.expiry_date) ? 'Expired: ' : 'Exp: '}
                                                     {new Date(doc.expiry_date).toLocaleDateString()}
@@ -399,7 +377,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
-                                                {getVerificationBadge(doc.verification_status)}
+                                                <StatusBadge type="document" status={doc.verification_status} />
                                                 {doc.verification_status === 'Rejected' && doc.rejection_reason && (
                                                     <div
                                                         className="text-xs text-destructive max-w-[200px] truncate"
@@ -426,11 +404,13 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger
-                                                    render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                    <span className="sr-only">Open menu</span>
-                                                </DropdownMenuTrigger>
+                                                    render={
+                                                        <Button variant="ghost" size="icon" className="size-8">
+                                                            <MoreHorizontal className="size-4" />
+                                                            <span className="sr-only">Open menu</span>
+                                                        </Button>
+                                                    }
+                                                />
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
@@ -461,7 +441,7 @@ export default function CustomerDocuments({ customerId, documents, documentTypes
                                                         <DropdownMenuItem
                                                             onClick={() => setRejectDocId(doc.id)}
                                                             disabled={actionDocId === doc.id}
-                                                            className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600"
+                                                            className="gap-2 cursor-pointer text-warning focus:text-warning"
                                                         >
                                                             <AlertCircle className="h-4 w-4" />
                                                             Reject

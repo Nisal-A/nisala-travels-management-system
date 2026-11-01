@@ -26,6 +26,7 @@ import {
     Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/common';
 import CostLines from './Partials/CostLines';
 import { PackageCostLine } from '@/types';
 
@@ -45,6 +46,7 @@ export interface DestinationOption {
     country: string;
     city_region: string;
     slug: string;
+    status?: string;
 }
 
 export interface TierConfig {
@@ -654,37 +656,19 @@ export default function TourPackageForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-16">
-            {/* Form Top Navigation Bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href={route('tours.index')}
-                        className={buttonVariants({ variant: 'outline', size: 'icon' })}
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            {isEditing ? `Edit ${tour?.package_name || 'Tour Package'}` : 'Create Tour Package'}
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            {isEditing
-                                ? 'Update package pricing, destination tier, itinerary, and content.'
-                                : 'Add a new tour package to your travel catalog.'}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Link href={route('tours.index')} className={buttonVariants({ variant: 'ghost' })}>
-                        Cancel
-                    </Link>
-                    <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
-                        <Save className="mr-2 h-4 w-4" />
-                        {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Package'}
-                    </Button>
-                </div>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <PageHeader
+                title={isEditing ? `Edit ${tour?.package_name || 'Tour Package'}` : 'Create Tour Package'}
+                description={
+                    isEditing
+                        ? 'Update package pricing, destination tier, itinerary, and content.'
+                        : 'Add a new tour package to your travel catalog.'
+                }
+                breadcrumbs={[
+                    { label: 'Tours', href: route('tours.index') },
+                    { label: isEditing ? (tour?.package_name || 'Edit') : 'Create' },
+                ]}
+            />
 
             {/* General Server Error Alert */}
             {Object.keys(serverErrors).length > 0 && (
@@ -1690,10 +1674,10 @@ export default function TourPackageForm({
             )}
 
             {/* Sticky Bottom Actions Bar */}
-            <div className="sticky bottom-4 z-10 bg-card/95 backdrop-blur border shadow-lg rounded-xl p-4 flex items-center justify-between">
+            <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-between z-10">
                 <div className="flex items-center gap-2">
                     {isDirty && (
-                        <Badge variant="outline" className="text-amber-600 bg-amber-500/10 border-amber-500/20">
+                        <Badge variant="outline" className="text-warning bg-warning/10 border-warning/20">
                             Unsaved changes
                         </Badge>
                     )}

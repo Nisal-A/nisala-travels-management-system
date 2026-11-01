@@ -221,7 +221,7 @@ export default function Step1Customer({
                                                     {selectedCustomer.customer_id}
                                                 </span>
                                             )}
-                                            <span className="text-xs bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-medium">
+                                            <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded-full font-medium">
                                                 Active Customer
                                             </span>
                                         </div>

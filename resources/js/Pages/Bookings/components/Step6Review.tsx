@@ -318,12 +318,12 @@ export default function Step6Review({
                             </div>
 
                             {recordPayment && (
-                                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-between">
+                                <div className="p-3 bg-success/10 border border-success/20 rounded-lg flex items-center justify-between">
                                     <div>
-                                        <span className="font-semibold text-emerald-800 dark:text-emerald-300 block">
+                                        <span className="font-semibold text-success block">
                                             Initial Payment Recorded:
                                         </span>
-                                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                                        <span className="text-[11px] text-muted-foreground">
                                             Method: {paymentMethod.toUpperCase()}{' '}
                                             {paymentReference ? `(Ref: ${paymentReference})` : ''}
                                         </span>
@@ -333,7 +333,7 @@ export default function Step6Review({
                                         currency={currency}
                                         size="sm"
                                         weight="bold"
-                                        className="text-emerald-700 dark:text-emerald-300"
+                                        className="text-success"
                                     />
                                 </div>
                             )}
@@ -395,7 +395,7 @@ export default function Step6Review({
                                 )}
 
                                 {discountAmount > 0 && (
-                                    <div className="flex justify-between items-center text-emerald-600 font-medium">
+                                    <div className="flex justify-between items-center text-success font-medium">
                                         <span>Discount:</span>
                                         <span>
                                             -
@@ -403,7 +403,7 @@ export default function Step6Review({
                                                 amount={discountAmount}
                                                 currency={currency}
                                                 size="sm"
-                                                className="text-emerald-600"
+                                                className="text-success"
                                             />
                                         </span>
                                     </div>
@@ -422,7 +422,7 @@ export default function Step6Review({
 
                                 {recordPayment && (
                                     <>
-                                        <div className="flex justify-between items-center text-emerald-600 font-medium pt-1">
+                                        <div className="flex justify-between items-center text-success font-medium pt-1">
                                             <span>Immediate Payment:</span>
                                             <MoneyText amount={paidAmount} currency={currency} size="sm" />
                                         </div>

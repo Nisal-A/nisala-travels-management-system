@@ -34,15 +34,16 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
         e.preventDefault();
 
         if (isEdit && customer) {
-            put(route('customers.update', { customer: customer.id as any }));
+            put(route('customers.update', { customer: customer.id }));
         } else {
             post(route('customers.store'));
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="flex flex-col">
+            <div className="p-6 md:p-8 space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Personal Information */}
                 <div className="space-y-4">
                     <h3 className="text-lg font-medium border-b pb-2">Personal Information</h3>
@@ -249,26 +250,25 @@ export default function CustomerForm({ customer, isEdit = false }: CustomerFormP
                     </div>
                 </div>
             </div>
+            </div>
 
-            <div className="flex items-center justify-end gap-4 border-t pt-6">
+            <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex justify-end gap-3 z-10">
                 <Link
                     href={customer?.id ? route('customers.show', { customer: customer.id }) : route('customers.index')}
-                    className={
-                        buttonVariants({ variant: 'outline' }) + (processing ? ' pointer-events-none opacity-50' : '')
-                    }
+                    className={buttonVariants({ variant: 'ghost' })}
                 >
                     Cancel
                 </Link>
-                <Button type="submit" disabled={processing} className="min-w-[120px]">
+                <Button type="submit" disabled={processing} className="px-6 py-2 font-semibold">
                     {processing ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 size-4 animate-spin" />
                             Saving...
                         </>
                     ) : (
                         <>
-                            <Save className="mr-2 h-4 w-4" />
-                            {isEdit ? 'Update Customer' : 'Create Customer'}
+                            <Save className="mr-2 size-4" />
+                            {isEdit ? 'Save changes' : 'Create Customer'}
                         </>
                     )}
                 </Button>

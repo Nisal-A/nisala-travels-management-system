@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,16 +82,19 @@ export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreate
                     notes: '',
                 });
             }
-        } catch (error: any) {
-            if (error.response?.status === 422 && error.response?.data?.errors) {
+        } catch (error: unknown) {
+            if (isAxiosError(error) && error.response?.status === 422 && error.response?.data?.errors) {
                 const validationErrors: Record<string, string> = {};
-                Object.keys(error.response.data.errors).forEach((key) => {
-                    validationErrors[key] = error.response.data.errors[key][0];
+                const resErrors = error.response.data.errors as Record<string, string[]>;
+                Object.keys(resErrors).forEach((key) => {
+                    validationErrors[key] = resErrors[key][0];
                 });
                 setErrors(validationErrors);
                 toast.error('Please fix the validation errors.');
-            } else {
+            } else if (isAxiosError(error)) {
                 toast.error(error.response?.data?.message || 'Failed to create customer.');
+            } else {
+                toast.error('Failed to create customer.');
             }
         } finally {
             setLoading(false);

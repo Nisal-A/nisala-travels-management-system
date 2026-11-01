@@ -1,9 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
     User,
     Phone,
@@ -17,12 +15,41 @@ import {
     FileText,
     Plane,
     CreditCard as PaymentIcon,
-    ArrowLeft,
     Edit,
     Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { PageHeader, StatusBadge } from '@/components/common';
 import CustomerDocuments from './Partials/CustomerDocuments';
+
+interface CustomerDocumentItem {
+    id: number;
+    document_id: string;
+    customer_id: number;
+    document_type_id: number;
+    original_filename: string;
+    file_size: number;
+    file_extension: string;
+    document_status: string;
+    verification_status: string;
+    rejection_reason: string | null;
+    expiry_date: string | null;
+    notes: string | null;
+    created_at: string;
+    document_type: {
+        id: number;
+        name: string;
+        is_required: boolean;
+        tracks_expiry: boolean;
+    };
+}
+
+interface CustomerDocumentTypeItem {
+    id: number;
+    name: string;
+    is_required: boolean;
+    tracks_expiry: boolean;
+}
 
 interface CustomerShowProps {
     customer: {
@@ -48,8 +75,8 @@ interface CustomerShowProps {
             name: string;
         };
     };
-    documents: any[];
-    documentTypes: any[];
+    documents: CustomerDocumentItem[];
+    documentTypes: CustomerDocumentTypeItem[];
 }
 
 export default function CustomersShow({ customer, documents, documentTypes }: CustomerShowProps) {
@@ -74,199 +101,180 @@ export default function CustomersShow({ customer, documents, documentTypes }: Cu
         >
             <Head title={`${customer.full_name} | Customer Profile`} />
 
-            <div className="max-w-6xl mx-auto space-y-6">
-                {/* Header Actions */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href={route('customers.index')}
-                            className={buttonVariants({ variant: 'outline', size: 'icon' }) + ' h-8 w-8 shrink-0'}
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="sr-only">Back</span>
-                        </Link>
-                        <div>
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-2xl font-bold tracking-tight">{customer.full_name}</h2>
-                                <Badge
-                                    variant={customer.status === 'active' ? 'default' : 'secondary'}
-                                    className={
-                                        customer.status === 'active'
-                                            ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20'
-                                            : ''
-                                    }
+            <div className="space-y-6">
+                <PageHeader
+                    title={customer.full_name}
+                    description={`${customer.customer_id} • Added on ${new Date(customer.created_at).toLocaleDateString()}${customer.creator ? ` by ${customer.creator.name}` : ''}`}
+                    actions={
+                        <div className="flex items-center gap-2">
+                            <StatusBadge status={customer.status} />
+                            {canEdit && (
+                                <Link
+                                    href={route('customers.edit', { customer: customer.id })}
+                                    className={buttonVariants({ variant: 'outline' }) + ' gap-2'}
                                 >
-                                    {customer.status}
-                                </Badge>
-                            </div>
-                            <p className="text-muted-foreground flex items-center gap-2">
-                                <span className="font-mono text-sm">{customer.customer_id}</span>
-                                <span>&bull;</span>
-                                <span className="text-sm">
-                                    Added on {new Date(customer.created_at).toLocaleDateString()}
-                                </span>
-                                {customer.creator && (
-                                    <>
-                                        <span>&bull;</span>
-                                        <span className="text-sm">By {customer.creator.name}</span>
-                                    </>
-                                )}
-                            </p>
+                                    <Edit className="size-4" />
+                                    <span>Edit</span>
+                                </Link>
+                            )}
+                            {canDelete && (
+                                <Button variant="destructive" className="gap-2" onClick={handleDelete}>
+                                    <Trash2 className="size-4" />
+                                    <span>Archive</span>
+                                </Button>
+                            )}
                         </div>
-                    </div>
+                    }
+                />
 
-                    <div className="flex items-center gap-2">
-                        {canEdit && (
-                            <Link
-                                href={route('customers.edit', { customer: customer.id })}
-                                className={buttonVariants({ variant: 'outline' }) + ' gap-2'}
-                            >
-                                <Edit className="h-4 w-4" />
-                                <span>Edit</span>
-                            </Link>
-                        )}
-                        {canDelete && (
-                            <Button variant="destructive" className="gap-2" onClick={handleDelete}>
-                                <Trash2 className="h-4 w-4" />
-                                <span>Archive</span>
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Core Info */}
-                    <div className="md:col-span-1 space-y-6">
-                        <Card>
-                            <CardHeader className="pb-3 border-b border-border/50 bg-muted/20">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <User className="h-4 w-4 text-primary" />
+                    <div className="lg:col-span-1 space-y-6">
+                        <Card className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                            <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <User className="size-4 text-primary" />
                                     Personal Details
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-4 space-y-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground">Full Name</p>
-                                    <p className="font-medium">{customer.full_name}</p>
+                            <CardContent className="p-6 space-y-4">
+                                <div>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                        Full Name
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.full_name}
+                                    </span>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <CreditCard className="h-3 w-3" /> NIC Number
-                                    </p>
-                                    <p className="font-medium">
-                                        {customer.nic || (
-                                            <span className="text-muted-foreground italic">Not provided</span>
-                                        )}
-                                    </p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <CreditCard className="size-3.5" /> NIC Number
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.nic || <span className="text-muted-foreground italic">Not provided</span>}
+                                    </span>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Plane className="h-3 w-3" /> Passport Number
-                                    </p>
-                                    <p className="font-medium">
-                                        {customer.passport_number || (
-                                            <span className="text-muted-foreground italic">Not provided</span>
-                                        )}
-                                    </p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <Plane className="size-3.5" /> Passport Number
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.passport_number || <span className="text-muted-foreground italic">Not provided</span>}
+                                    </span>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                            <Calendar className="h-3 w-3" /> DOB
-                                        </p>
-                                        <p className="font-medium">
-                                            {customer.dob ? new Date(customer.dob).toLocaleDateString() : '-'}
-                                        </p>
+                                <div className="grid grid-cols-2 gap-4 border-t border-border pt-3">
+                                    <div>
+                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                            <Calendar className="size-3.5" /> DOB
+                                        </span>
+                                        <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                            {customer.dob ? new Date(customer.dob).toLocaleDateString() : '—'}
+                                        </span>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                            <User className="h-3 w-3" /> Gender
-                                        </p>
-                                        <p className="font-medium">{customer.gender || '-'}</p>
+                                    <div>
+                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                            <User className="size-3.5" /> Gender
+                                        </span>
+                                        <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                            {customer.gender || '—'}
+                                        </span>
                                     </div>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Globe className="h-3 w-3" /> Nationality
-                                    </p>
-                                    <p className="font-medium">{customer.nationality || '-'}</p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <Globe className="size-3.5" /> Nationality
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.nationality || '—'}
+                                    </span>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardHeader className="pb-3 border-b border-border/50 bg-muted/20">
-                                <CardTitle className="text-base flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-primary" />
+                        <Card className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                            <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                                <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <Phone className="size-4 text-primary" />
                                     Contact Info
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-4 space-y-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Phone className="h-3 w-3" /> Primary Phone
-                                    </p>
-                                    <p className="font-medium">{customer.phone}</p>
+                            <CardContent className="p-6 space-y-4">
+                                <div>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <Phone className="size-3.5" /> Primary Phone
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.phone}
+                                    </span>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <MessageCircle className="h-3 w-3 text-emerald-500" /> WhatsApp
-                                    </p>
-                                    <p className="font-medium">{customer.whatsapp || '-'}</p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <MessageCircle className="size-3.5 text-success" /> WhatsApp
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                        {customer.whatsapp || '—'}
+                                    </span>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <Mail className="h-3 w-3" /> Email Address
-                                    </p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <Mail className="size-3.5" /> Email Address
+                                    </span>
                                     <a
                                         href={`mailto:${customer.email}`}
-                                        className="font-medium text-primary hover:underline"
+                                        className="text-sm font-medium text-primary hover:underline mt-0.5 block truncate"
                                     >
                                         {customer.email}
                                     </a>
                                 </div>
-                                <Separator className="opacity-50" />
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                        <MapPin className="h-3 w-3" /> Address
-                                    </p>
-                                    <p className="font-medium text-sm leading-relaxed">{customer.address || '-'}</p>
+                                <div className="border-t border-border pt-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                        <MapPin className="size-3.5" /> Address
+                                    </span>
+                                    <span className="text-sm font-medium text-foreground mt-0.5 block leading-relaxed">
+                                        {customer.address || '—'}
+                                    </span>
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Right Column - Secondary Info & Modules */}
-                    <div className="md:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-6">
                         {(customer.emergency_contact_name || customer.notes) && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {customer.emergency_contact_name && (
-                                    <Card>
-                                        <CardHeader className="pb-3 border-b border-border/50">
-                                            <CardTitle className="text-base">Emergency Contact</CardTitle>
+                                    <Card className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                                        <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                                            <CardTitle className="text-base font-bold">Emergency Contact</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="p-4 space-y-2">
-                                            <p className="font-medium">{customer.emergency_contact_name}</p>
-                                            <p className="text-muted-foreground flex items-center gap-2">
-                                                <Phone className="h-3 w-3" />{' '}
-                                                {customer.emergency_contact_phone || 'No phone provided'}
-                                            </p>
+                                        <CardContent className="p-6 space-y-2">
+                                            <div>
+                                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                                    Contact Name
+                                                </span>
+                                                <span className="text-sm font-medium text-foreground mt-0.5 block">
+                                                    {customer.emergency_contact_name}
+                                                </span>
+                                            </div>
+                                            <div className="border-t border-border pt-2">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                                                    Phone
+                                                </span>
+                                                <span className="text-sm font-medium text-foreground mt-0.5 flex items-center gap-2">
+                                                    <Phone className="size-3.5" />
+                                                    {customer.emergency_contact_phone || 'No phone provided'}
+                                                </span>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 )}
 
                                 {customer.notes && (
-                                    <Card className={!customer.emergency_contact_name ? 'sm:col-span-2' : ''}>
-                                        <CardHeader className="pb-3 border-b border-border/50">
-                                            <CardTitle className="text-base">Internal Notes</CardTitle>
+                                    <Card className={`rounded-xl border border-border bg-card shadow-sm overflow-hidden ${!customer.emergency_contact_name ? 'sm:col-span-2' : ''}`}>
+                                        <CardHeader className="pb-3 border-b border-border bg-muted/50">
+                                            <CardTitle className="text-base font-bold">Internal Notes</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="p-4">
+                                        <CardContent className="p-6">
                                             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                                 {customer.notes}
                                             </p>
@@ -276,52 +284,52 @@ export default function CustomersShow({ customer, documents, documentTypes }: Cu
                             </div>
                         )}
 
-                        {/* Module Placeholders & Active Modules */}
+                        {/* Customer Activity Modules */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold tracking-tight">Customer Activity</h3>
+                            <h3 className="text-base font-bold tracking-tight text-foreground">Customer Activity</h3>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <CustomerDocuments
                                     customerId={customer.id}
-                                    documents={documents}
-                                    documentTypes={documentTypes}
+                                    documents={documents as any}
+                                    documentTypes={documentTypes as any}
                                 />
 
-                                <Card className="border-dashed bg-muted/10">
+                                <Card className="rounded-xl border border-dashed border-border bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <Plane className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Bookings</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">
+                                        <Plane className="size-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-semibold text-sm text-foreground">Bookings</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">
                                             Bookings and travel history module pending implementation.
                                         </p>
                                     </CardContent>
                                 </Card>
 
-                                <Card className="border-dashed bg-muted/10">
+                                <Card className="rounded-xl border border-dashed border-border bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <PaymentIcon className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Payments</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">
+                                        <PaymentIcon className="size-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-semibold text-sm text-foreground">Payments</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">
                                             Payment and invoicing module pending implementation.
                                         </p>
                                     </CardContent>
                                 </Card>
 
-                                <Card className="border-dashed bg-muted/10">
+                                <Card className="rounded-xl border border-dashed border-border bg-muted/10">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <Clock className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Inquiries</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">
+                                        <Clock className="size-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-semibold text-sm text-foreground">Inquiries</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">
                                             Customer inquiry module pending implementation.
                                         </p>
                                     </CardContent>
                                 </Card>
 
-                                <Card className="border-dashed bg-muted/10 sm:col-span-2">
+                                <Card className="rounded-xl border border-dashed border-border bg-muted/10 sm:col-span-2">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                                        <FileText className="h-8 w-8 text-muted-foreground/50 mb-3" />
-                                        <h4 className="font-medium">Activity & History</h4>
-                                        <p className="text-sm text-muted-foreground mt-1">
+                                        <FileText className="size-8 text-muted-foreground/50 mb-3" />
+                                        <h4 className="font-semibold text-sm text-foreground">Activity & History</h4>
+                                        <p className="text-xs text-muted-foreground mt-1">
                                             System audit and customer activity logging pending implementation.
                                         </p>
                                     </CardContent>

@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
+import { PageHeader } from '@/components/common';
 import EmployeeForm from './Partials/EmployeeForm';
 import { User } from '@/types';
 
@@ -19,12 +20,18 @@ export default function Create({ roles }: CreateProps) {
         >
             <Head title="Create Employee" />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Add New Employee</h1>
-                <p className="text-muted-foreground mt-1">Create a new system user with specific role permissions.</p>
-            </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Add New Employee"
+                    description="Create a new system user with specific role permissions."
+                    breadcrumbs={[
+                        { label: 'Employees', href: route('employees.index') },
+                        { label: 'Create Employee' },
+                    ]}
+                />
 
-            <EmployeeForm roles={roles} />
+                <EmployeeForm roles={roles} />
+            </div>
         </AppLayout>
     );
 }

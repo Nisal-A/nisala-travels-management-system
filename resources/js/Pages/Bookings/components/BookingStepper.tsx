@@ -51,14 +51,14 @@ export default function BookingStepper({ currentStep, onStepClick, completedStep
                                         'w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200 shadow-xs',
                                         isCurrent &&
                                             'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-105',
-                                        isCompleted && !isCurrent && 'bg-emerald-600 text-white hover:bg-emerald-700',
+                                        isCompleted && !isCurrent && 'bg-success text-success-foreground hover:bg-success/90',
                                         !isCurrent &&
                                             !isCompleted &&
                                             'bg-muted text-muted-foreground border border-border',
                                     )}
                                 >
                                     {isCompleted && !isCurrent ? (
-                                        <CheckCircle2 className="w-5 h-5 text-white" />
+                                        <CheckCircle2 className="w-5 h-5 text-success-foreground" />
                                     ) : (
                                         <Icon className="w-5 h-5" />
                                     )}
@@ -86,7 +86,7 @@ export default function BookingStepper({ currentStep, onStepClick, completedStep
                             {idx < STEPS.length - 1 && (
                                 <div className="flex-1 mx-2 mb-6 h-0.5 relative bg-border">
                                     <div
-                                        className="h-full bg-emerald-600 transition-all duration-300"
+                                        className="h-full bg-success transition-all duration-300"
                                         style={{
                                             width: completedSteps.includes(step.id) ? '100%' : '0%',
                                         }}

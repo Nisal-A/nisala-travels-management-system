@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { PageHeader, MoneyText } from '@/components/common';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, AlertCircle, Info, DollarSign } from 'lucide-react';
+import { Save, AlertCircle, Info, DollarSign } from 'lucide-react';
 import { Booking, Payment } from '@/types';
 
 interface CreateRefundProps {
@@ -37,9 +37,10 @@ export default function CreateRefund({ bookings, selectedBooking, selectedBookin
         notes: '',
     });
 
-    const handleBookingSelect = (val: string) => {
-        setBookingId(val);
-        setData('booking_id', val);
+    const handleBookingSelect = (val: string | null) => {
+        const id = val || '';
+        setBookingId(id);
+        setData('booking_id', id);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -60,23 +61,20 @@ export default function CreateRefund({ bookings, selectedBooking, selectedBookin
             ]}
         >
             <Head title="Request Refund" />
-            <div className="max-w-3xl mx-auto space-y-6">
-                <div className="flex items-center justify-between">
-                    <PageHeader
-                        title="Request Refund"
-                        description="Submit a refund request for manager review and approval."
-                    />
-                    <Button variant="ghost" asChild>
-                        <Link href={route('refunds.index')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                        </Link>
-                    </Button>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Request Refund"
+                    description="Submit a refund request for manager review and approval."
+                    breadcrumbs={[
+                        { label: 'Refunds', href: route('refunds.index') },
+                        { label: 'New Request' },
+                    ]}
+                />
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Booking & Customer Details</CardTitle>
+                            <CardTitle className="text-base font-bold">Booking & Customer Details</CardTitle>
                             <CardDescription>
                                 Select the booking to refund. The refund amount cannot exceed total payments received.
                             </CardDescription>
@@ -120,12 +118,12 @@ export default function CreateRefund({ bookings, selectedBooking, selectedBookin
                                         <div>
                                             <span className="text-muted-foreground block">Total Price:</span>
                                             <span className="font-semibold">
-                                                <MoneyText amount={Number(activeBooking.final_amount || activeBooking.total_amount || 0)} currency={currency as any} />
+                                                <MoneyText amount={Number(activeBooking.final_amount || 0)} currency={currency as any} />
                                             </span>
                                         </div>
                                         <div>
                                             <span className="text-muted-foreground block">Paid to Date:</span>
-                                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                            <span className="font-semibold text-success">
                                                 <MoneyText amount={paidAmount} currency={currency as any} />
                                             </span>
                                         </div>
@@ -143,7 +141,7 @@ export default function CreateRefund({ bookings, selectedBooking, selectedBookin
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Refund Terms & Amount</CardTitle>
+                            <CardTitle className="text-base font-bold">Refund Terms & Amount</CardTitle>
                             <CardDescription>
                                 Enter refund amount, cancellation charges, and justification.
                             </CardDescription>
@@ -219,18 +217,22 @@ export default function CreateRefund({ bookings, selectedBooking, selectedBookin
                                     <p className="text-xs text-destructive">{errors.notes}</p>
                                 )}
                             </div>
-
-                            <div className="flex justify-end gap-3 pt-4 border-t">
-                                <Button variant="outline" asChild>
-                                    <Link href={route('refunds.index')}>Cancel</Link>
-                                </Button>
-                                <Button type="submit" disabled={processing || !data.booking_id}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {processing ? 'Submitting...' : 'Submit Refund Request'}
-                                </Button>
-                            </div>
                         </CardContent>
                     </Card>
+
+                    {/* Sticky Action Footer */}
+                    <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-end gap-3 z-10">
+                        <Link
+                            href={route('refunds.index')}
+                            className={buttonVariants({ variant: 'ghost' })}
+                        >
+                            Cancel
+                        </Link>
+                        <Button type="submit" disabled={processing || !data.booking_id}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {processing ? 'Submitting...' : 'Submit Refund Request'}
+                        </Button>
+                    </div>
                 </form>
             </div>
         </AppLayout>
