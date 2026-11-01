@@ -46,7 +46,7 @@ class ReportController extends Controller
 
         $filters = $request->query();
         $tableData = $reportInstance->getData($filters);
-        $summary = $reportInstance->summary($filters);
+        $summary = $reportInstance->cachedSummary($filters, $request->user());
 
         return Inertia::render('Reports/Show', [
             'report' => $reportInstance->toDescriptor(),
@@ -75,7 +75,7 @@ class ReportController extends Controller
 
         $filters = $request->query();
         $tableData = $reportInstance->getData($filters);
-        $summary = $reportInstance->summary($filters);
+        $summary = $reportInstance->cachedSummary($filters, $request->user());
 
         return response()->json([
             ...$tableData,

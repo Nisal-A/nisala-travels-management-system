@@ -40,12 +40,14 @@ test('users can authenticate with valid credentials', function () {
 test('users cannot authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', [
+    $response = $this->from('/login')->post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
     $this->assertGuest();
+    $response->assertSessionHasErrors('email');
+    $response->assertRedirect('/login');
 });
 
 test('users cannot authenticate with nonexistent email', function () {

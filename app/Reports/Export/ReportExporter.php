@@ -171,7 +171,7 @@ class ReportExporter
         $landscape = $report->isLandscape();
         $orientation = $landscape ? 'L' : 'P';
         $columns = $report->columns();
-        $summaryCards = $report->summary($filters);
+        $summaryCards = $report->cachedSummary($filters, $user);
 
         $nowColombo = Carbon::now('Asia/Colombo');
         $generatedAt = $nowColombo->format('Y-m-d h:i A');

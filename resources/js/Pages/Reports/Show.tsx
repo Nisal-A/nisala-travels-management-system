@@ -415,15 +415,16 @@ export default function ReportShow({
                     title={report.title}
                     description={report.description}
                     actions={
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger
                                     render={
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="h-9 gap-1.5"
+                                            className="h-9 gap-1.5 focus-visible:ring-2 focus-visible:ring-ring"
                                             disabled={isLoading}
+                                            aria-label="Export report options"
                                         >
                                             <Download className="h-3.5 w-3.5" />
                                             Export
@@ -438,21 +439,21 @@ export default function ReportShow({
                                         className="cursor-pointer"
                                         onClick={() => handleExport('csv')}
                                     >
-                                        <FileSpreadsheet className="h-4 w-4 mr-2 text-emerald-600" />
+                                        <FileSpreadsheet className="h-4 w-4 mr-2 text-primary" />
                                         <span>Export as CSV (.csv)</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="cursor-pointer"
                                         onClick={() => handleExport('excel')}
                                     >
-                                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                                        <FileText className="h-4 w-4 mr-2 text-primary" />
                                         <span>Export as Excel (.xlsx)</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="cursor-pointer"
                                         onClick={() => handleExport('pdf')}
                                     >
-                                        <FileCode className="h-4 w-4 mr-2 text-rose-600" />
+                                        <FileCode className="h-4 w-4 mr-2 text-primary" />
                                         <span>Export as PDF (.pdf)</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -461,9 +462,10 @@ export default function ReportShow({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-9 gap-1.5"
+                                className="h-9 gap-1.5 focus-visible:ring-2 focus-visible:ring-ring"
                                 onClick={() => router.reload()}
                                 disabled={isLoading}
+                                aria-label="Refresh report data"
                             >
                                 <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                                 Refresh
@@ -524,7 +526,7 @@ export default function ReportShow({
                                         value={activePreset}
                                         onValueChange={handlePresetChange}
                                     >
-                                        <SelectTrigger className="w-[145px] h-9 text-xs">
+                                        <SelectTrigger className="w-[145px] h-9 text-xs" aria-label="Date range preset">
                                             <SelectValue placeholder="Select Range" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -546,7 +548,7 @@ export default function ReportShow({
                                         type="date"
                                         value={dateFrom}
                                         onChange={(e) => setDateFrom(e.target.value)}
-                                        className="w-[135px] h-9 text-xs"
+                                        className="w-full sm:w-[135px] h-9 text-xs"
                                         aria-label="Start date"
                                     />
                                     <span className="text-xs text-muted-foreground">to</span>
@@ -554,7 +556,7 @@ export default function ReportShow({
                                         type="date"
                                         value={dateTo}
                                         onChange={(e) => setDateTo(e.target.value)}
-                                        className="w-[135px] h-9 text-xs"
+                                        className="w-full sm:w-[135px] h-9 text-xs"
                                         aria-label="End date"
                                     />
                                     <Button
@@ -562,6 +564,7 @@ export default function ReportShow({
                                         variant="outline"
                                         className="h-9 text-xs"
                                         onClick={handleApplyCustomDates}
+                                        aria-label="Apply custom dates"
                                     >
                                         Apply
                                     </Button>
@@ -577,7 +580,7 @@ export default function ReportShow({
                                         value={String(filters[filter.name] || '')}
                                         onValueChange={(val) => handleFilterChange(filter.name, val)}
                                     >
-                                        <SelectTrigger className="w-[145px] h-9 text-xs">
+                                        <SelectTrigger className="w-[145px] h-9 text-xs" aria-label={filter.label}>
                                             <SelectValue placeholder={filter.label} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -599,6 +602,7 @@ export default function ReportShow({
                                     size="sm"
                                     className="h-9 text-xs text-muted-foreground hover:text-foreground"
                                     onClick={handleResetFilters}
+                                    aria-label="Reset all filters"
                                 >
                                     <RotateCcw className="h-3.5 w-3.5 mr-1" />
                                     Reset Filters

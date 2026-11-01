@@ -26,7 +26,7 @@ import { EmptyState } from '@/components/common';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-interface DataTableProps<TData extends Record<string, any>, TValue> {
+interface DataTableProps<TData extends Record<string, unknown>, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     mobileCard?: (row: TData) => React.ReactNode;
@@ -36,18 +36,18 @@ interface DataTableProps<TData extends Record<string, any>, TValue> {
     from?: number;
     to?: number;
     searchable?: boolean;
-    filters?: Record<string, any>;
-    savedFilters?: any[]; // For the "Views" dropdown
+    filters?: Record<string, unknown>;
+    savedFilters?: Array<{ id: number | string; name: string; filters: Record<string, unknown> }>; // For the "Views" dropdown
     isLoading?: boolean;
     bulkActions?: {
         label: string;
-        icon?: React.FC<any>;
+        icon?: React.ComponentType<{ className?: string }>;
         variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
         onClick: (selectedIds: (string | number)[]) => void;
     }[];
 }
 
-export function DataTable<TData extends Record<string, any> & { id: number | string }, TValue>({
+export function DataTable<TData extends Record<string, unknown> & { id: number | string }, TValue>({
     columns,
     data,
     mobileCard,
@@ -82,8 +82,8 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
 
     const applyFilters = useCallback(
-        (newParams: any = {}) => {
-            const query = {
+        (newParams: Record<string, unknown> = {}) => {
+            const query: Record<string, unknown> = {
                 ...filters,
                 ...newParams,
             };
@@ -310,12 +310,24 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
             {/* Desktop Table */}
             <div className={`rounded-md border ${mobileCard ? 'hidden md:block' : 'block'}`}>
                 <div className="relative w-full overflow-auto">
-                    <Table>
-                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                    <Table aria-label="Report Data Table">
+                        <TableHeader className="sticky top-0 bg-background z-10 shadow-xs">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id}>
+                                        <TableHead
+                                            key={header.id}
+                                            scope="col"
+                                            aria-sort={
+                                                header.column.getIsSorted() === 'asc'
+                                                    ? 'ascending'
+                                                    : header.column.getIsSorted() === 'desc'
+                                                    ? 'descending'
+                                                    : header.column.getCanSort()
+                                                    ? 'none'
+                                                    : undefined
+                                            }
+                                        >
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(header.column.columnDef.header, header.getContext())}

@@ -2,7 +2,9 @@
 
 namespace App\Reports;
 
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Abstract Base Report
@@ -117,6 +119,53 @@ abstract class BaseReport
      * }>
      */
     abstract public function summary(array $filters): array;
+
+    /**
+     * Generate a cache key for report summary tiles based on report key, user role, and filters.
+     *
+     * @param array<string, mixed> $filters
+     * @param User|null $user
+     * @return string
+     */
+    public function summaryCacheKey(array $filters, ?User $user = null): string
+    {
+        $role = 'guest';
+        if ($user) {
+            $roles = $user->getRoleNames()->sort()->values()->all();
+            $role = !empty($roles) ? implode(',', $roles) : 'user';
+        }
+
+        $normalizedFilters = $filters;
+        ksort($normalizedFilters);
+        $filterHash = md5(serialize($normalizedFilters));
+
+        return "report_summary:{$this->key()}:{$role}:{$filterHash}";
+    }
+
+    /**
+     * Cache only summary tiles for 5 minutes (300 seconds) using the existing database cache store.
+     * Keyed by report, filters and role. Never caches row data.
+     *
+     * @param array<string, mixed> $filters
+     * @param User|null $user
+     * @return array<int, array{
+     *     key: string,
+     *     label: string,
+     *     value: string|int|float,
+     *     format?: 'text'|'number'|'money'|'percentage',
+     *     currency?: string,
+     *     change?: string,
+     *     helpText?: string
+     * }>
+     */
+    public function cachedSummary(array $filters, ?User $user = null): array
+    {
+        $cacheKey = $this->summaryCacheKey($filters, $user);
+
+        return Cache::store('database')->remember($cacheKey, 300, function () use ($filters) {
+            return $this->summary($filters);
+        });
+    }
 
     /**
      * Normalize the queried data into a paginated response payload.

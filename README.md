@@ -74,6 +74,31 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 
 ---
 
+## Scheduler & Background Tasks
+
+The system relies on the Laravel Scheduler for automated exchange rate refreshes and scheduled trip reminders.
+
+Add the following Cron entry to your server:
+
+```bash
+* * * * * cd /path/to/nisala-travels-management-system && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### CLI Maintenance Commands
+
+```bash
+# Refresh multi-currency exchange rates from external provider
+php artisan rates:refresh
+
+# Backfill missing payment receipts for existing completed payments
+php artisan receipts:backfill
+
+# Run automated trip reminders manually
+php artisan notifications:trip-reminders
+```
+
+---
+
 ## Build for Production
 
 ```bash
@@ -144,3 +169,10 @@ php artisan test
 ├── tsconfig.json
 └── package.json
 ```
+
+---
+
+## Documentation
+
+- [Reports Subsystem Architecture & Registry Guide](docs/REPORTS.md)
+
