@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { PageHeader, MoneyText, StatusBadge, EmptyState, ErrorState } from '@/components/common';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
-import { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,8 +35,9 @@ import {
     FileText,
     FileCode,
     ChevronDown,
+    ChevronLeft,
 } from 'lucide-react';
-import { ReportDescriptor, ReportFilterDef, ReportColumnDef } from './Index';
+import type { ReportDescriptor } from './Index';
 
 export interface ReportSummaryTile {
     key: string;
@@ -369,7 +370,7 @@ export default function ReportShow({
     }, [report.columns]);
 
     // Mobile fallback renderer for narrow screens (360px)
-    const mobileCard = (row: Record<string, unknown>) => (
+    const mobileCard = (row: ReportRow) => (
         <Card className="p-4 bg-card border-border space-y-2 text-sm shadow-xs">
             {report.columns.map((col) => (
                 <div
@@ -417,6 +418,49 @@ export default function ReportShow({
         [report.filters],
     );
 
+    const exportDropdown = (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <button
+                        type="button"
+                        disabled={isLoading}
+                        className="h-9 px-3 rounded-md border border-border bg-card text-foreground text-sm font-medium shadow-sm gap-1 hover:bg-muted transition-colors inline-flex items-center focus-visible:outline-none focus-visible:ring-2 ring-ring disabled:opacity-50 cursor-pointer"
+                    >
+                        <Download className="size-4 text-muted-foreground" />
+                        <span>Export</span>
+                        <ChevronDown className="size-3.5 text-muted-foreground opacity-60 ml-0.5" />
+                    </button>
+                }
+            />
+            <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>Export Report</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleExport('csv')}
+                >
+                    <FileSpreadsheet className="size-4 mr-2 text-success" />
+                    <span>Export as CSV (.csv)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleExport('excel')}
+                >
+                    <FileText className="size-4 mr-2 text-info" />
+                    <span>Export as Excel (.xlsx)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleExport('pdf')}
+                >
+                    <FileCode className="size-4 mr-2 text-destructive" />
+                    <span>Export as PDF (.pdf)</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+
     return (
         <AppLayout
             title={report.title}
@@ -428,79 +472,36 @@ export default function ReportShow({
         >
             <Head title={report.title} />
 
-            <div className="w-full max-w-full space-y-6">
-                <PageHeader
-                    title={report.title}
-                    description={report.description}
-                    actions={
-                        <div className="flex items-center gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger
-                                    render={
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-9 gap-1.5"
-                                            disabled={isLoading}
-                                        >
-                                            <Download className="h-3.5 w-3.5" />
-                                            Export
-                                            <ChevronDown className="h-3 w-3 opacity-60" />
-                                        </Button>
-                                    }
-                                />
-                                <DropdownMenuContent align="end" className="w-52">
-                                    <DropdownMenuLabel>Export Report</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={() => handleExport('csv')}
-                                    >
-                                        <FileSpreadsheet className="h-4 w-4 mr-2 text-emerald-600" />
-                                        <span>Export as CSV (.csv)</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={() => handleExport('excel')}
-                                    >
-                                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                                        <span>Export as Excel (.xlsx)</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={() => handleExport('pdf')}
-                                    >
-                                        <FileCode className="h-4 w-4 mr-2 text-rose-600" />
-                                        <span>Export as PDF (.pdf)</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+            <div className="space-y-6">
+                <div>
+                    <Link
+                        href="/reports"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-2 focus-visible:outline-none focus-visible:ring-2 ring-ring rounded"
+                    >
+                        <ChevronLeft className="size-4" />
+                        <span>Reports</span>
+                    </Link>
 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 gap-1.5"
-                                onClick={() => router.reload()}
-                                disabled={isLoading}
-                            >
-                                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                                Refresh
-                            </Button>
-                        </div>
-                    }
-                />
+                    <PageHeader
+                        title={report.title}
+                        description={report.description}
+                    />
+                </div>
 
                 {/* Summary Metric Tiles */}
                 {initialData.summary && initialData.summary.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {initialData.summary.map((tile) => (
-                            <Card key={tile.key} className="p-4 bg-card border-border shadow-xs">
-                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            <div
+                                key={tile.key}
+                                className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-1.5"
+                            >
+                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium truncate">
                                     {tile.label}
                                 </p>
-                                <div className="mt-2 flex items-baseline gap-2">
+                                <div className="flex items-baseline gap-2">
                                     {isLoading ? (
-                                        <Skeleton className="h-8 w-28" />
+                                        <Skeleton className="h-8 w-24" />
                                     ) : tile.format === 'money' ? (
                                         <MoneyText
                                             amount={parseFloat(String(tile.value)) || 0}
@@ -509,11 +510,11 @@ export default function ReportShow({
                                             weight="bold"
                                         />
                                     ) : tile.format === 'percentage' ? (
-                                        <span className="text-2xl font-bold tracking-tight text-foreground">
+                                        <span className="text-2xl font-semibold tracking-tight text-foreground">
                                             {tile.value}%
                                         </span>
                                     ) : (
-                                        <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+                                        <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
                                             {typeof tile.value === 'number'
                                                 ? tile.value.toLocaleString()
                                                 : tile.value}
@@ -521,108 +522,109 @@ export default function ReportShow({
                                     )}
                                 </div>
                                 {tile.helpText && (
-                                    <p className="text-xs text-muted-foreground mt-1.5">{tile.helpText}</p>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">{tile.helpText}</p>
                                 )}
-                            </Card>
+                            </div>
                         ))}
                     </div>
                 )}
 
-                {/* Filter Bar with Presets */}
-                <Card className="p-4 bg-card border-border shadow-xs space-y-3">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-3">
-                            {hasDateRangeFilter && (
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                                        <Calendar className="h-3.5 w-3.5" />
-                                        <span>Preset:</span>
-                                    </div>
-                                    <Select
-                                        value={activePreset}
-                                        onValueChange={handlePresetChange}
-                                    >
-                                        <SelectTrigger className="w-[145px] h-9 text-xs">
-                                            <SelectValue placeholder="Select Range" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="today">Today</SelectItem>
-                                            <SelectItem value="this_week">This Week</SelectItem>
-                                            <SelectItem value="this_month">This Month</SelectItem>
-                                            <SelectItem value="last_month">Last Month</SelectItem>
-                                            <SelectItem value="this_quarter">This Quarter</SelectItem>
-                                            <SelectItem value="this_year">This Year</SelectItem>
-                                            <SelectItem value="custom">Custom Range</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            )}
+                {/* Filter Bar */}
+                <Card className="p-4 sm:p-6 rounded-xl border border-border bg-card shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Calendar className="size-4 text-primary" />
+                            Filters & Date Range
+                        </span>
+                        {hasActiveFilters && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground self-start sm:self-auto cursor-pointer"
+                                onClick={handleResetFilters}
+                            >
+                                <RotateCcw className="size-3.5 mr-1.5" />
+                                Reset
+                            </Button>
+                        )}
+                    </div>
 
-                            {activePreset === 'custom' && (
-                                <div className="flex flex-wrap items-center gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        {hasDateRangeFilter && (
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-muted-foreground">Date Range</label>
+                                <Select value={activePreset} onValueChange={handlePresetChange}>
+                                    <SelectTrigger className="h-9 w-full text-xs">
+                                        <SelectValue placeholder="Select Range" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="today">Today</SelectItem>
+                                        <SelectItem value="this_week">This Week</SelectItem>
+                                        <SelectItem value="this_month">This Month</SelectItem>
+                                        <SelectItem value="last_month">Last Month</SelectItem>
+                                        <SelectItem value="this_quarter">This Quarter</SelectItem>
+                                        <SelectItem value="this_year">This Year</SelectItem>
+                                        <SelectItem value="custom">Custom Range</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        {hasDateRangeFilter && activePreset === 'custom' && (
+                            <>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">From</label>
                                     <Input
                                         type="date"
                                         value={dateFrom}
                                         onChange={(e) => setDateFrom(e.target.value)}
-                                        className="w-[135px] h-9 text-xs"
+                                        className="h-9 text-xs"
                                         aria-label="Start date"
                                     />
-                                    <span className="text-xs text-muted-foreground">to</span>
-                                    <Input
-                                        type="date"
-                                        value={dateTo}
-                                        onChange={(e) => setDateTo(e.target.value)}
-                                        className="w-[135px] h-9 text-xs"
-                                        aria-label="End date"
-                                    />
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-9 text-xs"
-                                        onClick={handleApplyCustomDates}
-                                    >
-                                        Apply
-                                    </Button>
                                 </div>
-                            )}
-
-                            {selectFilters.map((filter) => (
-                                <div key={filter.name} className="flex items-center gap-1.5">
-                                    <span className="text-xs text-muted-foreground font-medium">
-                                        {filter.label}:
-                                    </span>
-                                    <Select
-                                        value={String(filters[filter.name] || '')}
-                                        onValueChange={(val) => handleFilterChange(filter.name, val)}
-                                    >
-                                        <SelectTrigger className="w-[145px] h-9 text-xs">
-                                            <SelectValue placeholder={filter.label} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {filter.options?.map((opt) => (
-                                                <SelectItem key={String(opt.value)} value={String(opt.value)}>
-                                                    {opt.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">To</label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            type="date"
+                                            value={dateTo}
+                                            onChange={(e) => setDateTo(e.target.value)}
+                                            className="h-9 text-xs"
+                                            aria-label="End date"
+                                        />
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-9 text-xs px-3"
+                                            onClick={handleApplyCustomDates}
+                                        >
+                                            Apply
+                                        </Button>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-
-                        {hasActiveFilters && (
-                            <div className="flex items-center justify-end">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-9 text-xs text-muted-foreground hover:text-foreground"
-                                    onClick={handleResetFilters}
-                                >
-                                    <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                                    Reset Filters
-                                </Button>
-                            </div>
+                            </>
                         )}
+
+                        {selectFilters.map((filter) => (
+                            <div key={filter.name} className="space-y-1.5">
+                                <label className="text-xs font-medium text-muted-foreground">{filter.label}</label>
+                                <Select
+                                    value={String(filters[filter.name] || '')}
+                                    onValueChange={(val) => handleFilterChange(filter.name, val)}
+                                >
+                                    <SelectTrigger className="h-9 w-full text-xs">
+                                        <SelectValue placeholder={`All ${filter.label}`} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filter.options?.map((opt) => (
+                                            <SelectItem key={String(opt.value)} value={String(opt.value)}>
+                                                {opt.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ))}
                     </div>
                 </Card>
 
@@ -646,22 +648,35 @@ export default function ReportShow({
                             description="There are currently no records available for this report."
                         />
                     ) : (
-                        <div className="space-y-4">
-                            <DataTable
-                                columns={tableColumns}
-                                data={initialData.data as ReportRow[]}
-                                tableKey={`report_${report.key}`}
-                                total={initialData.total}
-                                from={initialData.from || undefined}
-                                to={initialData.to || undefined}
-                                links={initialData.links}
-                                filters={filters}
-                                savedFilters={savedFilters}
-                                isLoading={isLoading}
-                                mobileCard={mobileCard}
-                                searchable={report.filters.some((f) => f.name === 'search')}
-                            />
-                        </div>
+                        <DataTable
+                            columns={tableColumns}
+                            data={initialData.data as ReportRow[]}
+                            tableKey={`report_${report.key}`}
+                            title={report.title}
+                            actions={
+                                <div className="flex items-center gap-2">
+                                    {exportDropdown}
+                                    <button
+                                        type="button"
+                                        onClick={() => router.reload()}
+                                        disabled={isLoading}
+                                        className="h-9 px-3 rounded-md border border-border bg-card text-foreground text-sm font-medium shadow-sm gap-1 hover:bg-muted transition-colors inline-flex items-center focus-visible:outline-none focus-visible:ring-2 ring-ring disabled:opacity-50 cursor-pointer"
+                                    >
+                                        <RefreshCw className={`size-4 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
+                                        <span className="hidden sm:inline">Refresh</span>
+                                    </button>
+                                </div>
+                            }
+                            total={initialData.total}
+                            from={initialData.from || undefined}
+                            to={initialData.to || undefined}
+                            links={initialData.links}
+                            filters={filters}
+                            savedFilters={savedFilters}
+                            isLoading={isLoading}
+                            mobileCard={mobileCard}
+                            searchable={report.filters.some((f) => f.name === 'search')}
+                        />
                     )
                 )}
             </div>

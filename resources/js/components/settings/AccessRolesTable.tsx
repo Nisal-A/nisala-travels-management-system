@@ -1,5 +1,3 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -8,8 +6,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, Users, Info, Shield, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, Users, Info } from 'lucide-react';
+import { SettingsPanel } from './SettingsPanel';
 
 export interface RoleData {
     id: number;
@@ -53,67 +51,55 @@ const ROLE_METADATA: Record<string, { label: string; description: string; varian
 export function AccessRolesTable({ roles }: AccessRolesTableProps) {
     const totalUsers = roles.reduce((sum, r) => sum + (r.users_count || 0), 0);
 
-    return (
-        <Card className="border shadow-sm">
-            <CardHeader className="pb-4 border-b">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                            <ShieldCheck className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-xl">System Roles & User Distribution</CardTitle>
-                            <CardDescription>
-                                Read-only overview of assigned security roles and total active users in each group.
-                            </CardDescription>
-                        </div>
-                    </div>
-                    <Badge variant="outline" className="gap-1.5 px-3 py-1 font-semibold text-sm">
-                        <Users className="h-4 w-4 text-primary" />
-                        {totalUsers} Total Accounts
-                    </Badge>
-                </div>
-            </CardHeader>
+    const roleMeta = (role: RoleData) =>
+        ROLE_METADATA[role.name] ?? {
+            label: role.name.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+            description: 'Custom system security role.',
+            variant: 'outline' as const,
+        };
 
-            <CardContent className="pt-6 space-y-5">
-                <div className="rounded-xl border overflow-hidden">
+    return (
+        <SettingsPanel
+            title="System Roles & User Distribution"
+            description="Read-only overview of assigned security roles and total active users in each group."
+            icon={ShieldCheck}
+            headerAction={
+                <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                    <Users className="size-3.5" />
+                    {totalUsers} total accounts
+                </span>
+            }
+        >
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b bg-muted/50">
+                    <h3 className="font-bold text-sm text-foreground">Roles</h3>
+                </div>
+
+                {/* Desktop table */}
+                <div className="hidden md:block">
                     <Table>
-                        <TableHeader className="bg-muted/50">
+                        <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[200px]">Role</TableHead>
+                                <TableHead className="w-[180px]">Role</TableHead>
                                 <TableHead>Description</TableHead>
-                                <TableHead className="w-[120px]">Guard</TableHead>
-                                <TableHead className="text-right w-[140px]">Users Count</TableHead>
+                                <TableHead className="w-[100px]">Guard</TableHead>
+                                <TableHead className="text-right w-[100px]">Users</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {roles.map((role) => {
-                                const meta = ROLE_METADATA[role.name] ?? {
-                                    label: role.name.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-                                    description: 'Custom system security role.',
-                                    variant: 'outline' as const,
-                                };
-
+                                const meta = roleMeta(role);
                                 return (
                                     <TableRow key={role.id}>
-                                        <TableCell className="font-semibold">
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant={meta.variant} className="capitalize">
-                                                    {meta.label}
-                                                </Badge>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="font-medium text-foreground">{meta.label}</TableCell>
+                                        <TableCell className="text-sm text-muted-foreground whitespace-normal">
                                             {meta.description}
                                         </TableCell>
                                         <TableCell className="text-xs font-mono text-muted-foreground">
                                             {role.guard_name}
                                         </TableCell>
-                                        <TableCell className="text-right">
-                                            <span className="inline-flex items-center gap-1.5 font-semibold text-sm tabular-nums px-2.5 py-1 rounded-md bg-muted">
-                                                <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                                                {role.users_count}
-                                            </span>
+                                        <TableCell className="text-right font-semibold tabular-nums">
+                                            {role.users_count}
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -122,13 +108,34 @@ export function AccessRolesTable({ roles }: AccessRolesTableProps) {
                     </Table>
                 </div>
 
-                <div className="flex items-start gap-2.5 p-3.5 rounded-lg bg-muted/40 text-xs text-muted-foreground border">
-                    <Info className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
-                    <span>
-                        Role assignments and permissions are strictly enforced via backend middleware. Only authorized super administrators can provision accounts or alter security groups.
-                    </span>
+                {/* Mobile stacked cards */}
+                <div className="md:hidden divide-y">
+                    {roles.map((role) => {
+                        const meta = roleMeta(role);
+                        return (
+                            <div key={role.id} className="p-4 space-y-1">
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="font-medium text-foreground">{meta.label}</span>
+                                    <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
+                                        <Users className="size-3.5 text-muted-foreground" />
+                                        {role.users_count}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{meta.description}</p>
+                                <p className="text-xs font-mono text-muted-foreground">{role.guard_name}</p>
+                            </div>
+                        );
+                    })}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+
+            <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="size-4 shrink-0 mt-0.5" />
+                <span>
+                    Role assignments and permissions are strictly enforced via backend middleware. Only authorized super
+                    administrators can provision accounts or alter security groups.
+                </span>
+            </div>
+        </SettingsPanel>
     );
 }

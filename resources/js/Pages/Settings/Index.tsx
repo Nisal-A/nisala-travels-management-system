@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { SettingsNav } from '@/components/settings/SettingsNav';
+import { PageHeader } from '@/components/common';
+import { SettingsNav, SETTINGS_SECTIONS } from '@/components/settings/SettingsNav';
 import { GeneralSettingsForm } from '@/components/settings/GeneralSettingsForm';
 import { NotificationsCard } from '@/components/settings/NotificationsCard';
 import { AccessRolesTable, type RoleData } from '@/components/settings/AccessRolesTable';
 import { PublicWebsiteSettings } from '@/components/settings/PublicWebsiteSettings';
 import { ExchangeRatesCard, type ExchangeRateData } from '@/components/settings/ExchangeRatesCard';
 import { Toaster } from '@/components/ui/toast';
-import { Settings, SlidersHorizontal } from 'lucide-react';
 
 interface SettingsIndexProps {
     general: {
@@ -55,7 +55,22 @@ export default function SettingsIndex({
     publicWebsite,
     exchangeRates = [],
 }: SettingsIndexProps) {
-    const [activeSection, setActiveSection] = useState('general');
+    const [activeSection, setActiveSection] = useState<string>(() => {
+        const tab = new URLSearchParams(window.location.search).get('tab');
+        return tab && SETTINGS_SECTIONS.some((s) => s.id === tab) ? tab : 'general';
+    });
+
+    const handleSelectSection = (sectionId: string) => {
+        setActiveSection(sectionId);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', sectionId);
+        // Client-side Inertia visit: updates ?tab= without a server round trip.
+        router.replace({
+            url: url.pathname + url.search,
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
 
     const renderActiveSection = () => {
         switch (activeSection) {
@@ -87,41 +102,19 @@ export default function SettingsIndex({
             {/* Toaster for success/error feedback */}
             <Toaster />
 
-            <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b">
-                    <div>
-                        <div className="flex items-center gap-2.5">
-                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                <Settings className="h-5 w-5" />
-                            </div>
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                                System Settings
-                            </h1>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1.5">
-                            Manage company identity, alert routing, user role distributions, and public catalog integrations.
-                        </p>
-                    </div>
-                </div>
+            <div className="space-y-8">
+                <PageHeader
+                    title="Settings"
+                    description="Manage company details, exchange rates and system preferences."
+                />
 
-                {/* Main Content Layout with Left-hand Section List */}
+                {/* Two-column layout: left tab nav, right panel (stacks below md) */}
                 <div className="flex flex-col md:flex-row gap-8 items-start">
-                    {/* Left-hand section navigation list */}
-                    <div className="w-full md:w-64 lg:w-72 shrink-0">
-                        <div className="sticky top-20 rounded-2xl border bg-card p-3 shadow-sm">
-                            <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
-                                <SlidersHorizontal className="h-3.5 w-3.5" />
-                                Configuration
-                            </div>
-                            <SettingsNav
-                                activeSection={activeSection}
-                                onSelectSection={setActiveSection}
-                            />
-                        </div>
-                    </div>
+                    <SettingsNav
+                        activeSection={activeSection}
+                        onSelectSection={handleSelectSection}
+                    />
 
-                    {/* Right-hand content panel */}
                     <div className="w-full flex-1 min-w-0">
                         {renderActiveSection()}
                     </div>

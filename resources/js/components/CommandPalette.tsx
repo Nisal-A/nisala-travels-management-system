@@ -7,7 +7,6 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-    CommandSeparator,
 } from '@/components/ui/command';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -16,17 +15,15 @@ import {
     CalendarCheck,
     Map,
     CreditCard,
-    LayoutDashboard,
-    Settings,
-    UserCog,
     BarChart3,
     Plus,
     Search,
+    type LucideIcon,
 } from 'lucide-react';
 import axios from 'axios';
 
 // Map icon names from backend to Lucide components
-const IconMap: Record<string, React.FC<any>> = {
+const IconMap: Record<string, LucideIcon> = {
     Users: Users,
     CalendarCheck: CalendarCheck,
     CreditCard: CreditCard,
@@ -48,7 +45,9 @@ export function CommandPalette() {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Record<string, SearchResult[]>>({});
     const [loading, setLoading] = useState(false);
-    const { hasRole, user } = useAuth();
+    const { hasRole } = useAuth();
+
+    const isMac = typeof window !== 'undefined' && /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent);
 
     // Quick Actions based on roles
     const quickActions = [];
@@ -65,7 +64,7 @@ export function CommandPalette() {
         const down = (e: KeyboardEvent) => {
             if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                setOpen((open) => !open);
+                setOpen((prev) => !prev);
             }
         };
         document.addEventListener('keydown', down);
@@ -113,15 +112,20 @@ export function CommandPalette() {
     return (
         <>
             <button
+                type="button"
                 onClick={() => setOpen(true)}
-                className="inline-flex items-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground px-4 py-2 relative h-8 w-full justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64"
+                className="relative hidden sm:flex items-center w-64 h-9 rounded-lg bg-muted pl-10 pr-3 text-sm text-muted-foreground transition-colors hover:text-foreground text-left focus-visible:outline-none focus-visible:ring-2 ring-ring cursor-pointer"
             >
-                <Search className="h-4 w-4" />
-                <span className="hidden lg:inline-flex">Search...</span>
-                <span className="inline-flex lg:hidden">Search...</span>
-                <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                    <span className="text-xs">⌘</span>K
-                </kbd>
+                <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <span className="truncate">Search...</span>
+                <span className="hidden md:flex items-center gap-1 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <kbd className="text-[10px] border border-border rounded px-1.5 py-0.5 bg-card font-mono text-muted-foreground leading-none">
+                        {isMac ? '⌘' : 'Ctrl'}
+                    </kbd>
+                    <kbd className="text-[10px] border border-border rounded px-1.5 py-0.5 bg-card font-mono text-muted-foreground leading-none">
+                        K
+                    </kbd>
+                </span>
             </button>
 
             <CommandDialog open={open} onOpenChange={setOpen}>
