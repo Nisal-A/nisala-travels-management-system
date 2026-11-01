@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Plus, Eye, Edit, Trash2, Users } from 'lucide-react';
-import { PageHeader } from '@/components/common';
+import { PageHeader, StatusBadge } from '@/components/common';
 import { useAuth } from '@/hooks/use-auth';
 import { Customer, PaginatedData } from '@/types';
 import { DataTable } from '@/components/data-table/DataTable';
@@ -20,8 +20,8 @@ import { ColumnDef } from '@tanstack/react-table';
 
 interface IndexProps {
     customers: PaginatedData<Customer>;
-    filters: Record<string, any>;
-    savedFilters: any[];
+    filters: Record<string, unknown>;
+    savedFilters: { id: number; name: string; filters: Record<string, unknown> }[];
 }
 
 export default function CustomersIndex({ customers, filters, savedFilters = [] }: IndexProps) {
@@ -99,18 +99,7 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
             header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
             cell: ({ row }) => {
                 const status = row.getValue('status') as string;
-                return (
-                    <Badge
-                        variant={status === 'active' ? 'default' : 'secondary'}
-                        className={
-                            status === 'active'
-                                ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 border-emerald-500/20'
-                                : ''
-                        }
-                    >
-                        {status}
-                    </Badge>
-                );
+                return <StatusBadge status={status} />;
             },
         },
         {
@@ -172,14 +161,7 @@ export default function CustomersIndex({ customers, filters, savedFilters = [] }
                     <span className="font-semibold">{customer.full_name}</span>
                     <span className="text-xs text-muted-foreground">{customer.customer_id}</span>
                 </div>
-                <Badge
-                    variant={customer.status === 'active' ? 'default' : 'secondary'}
-                    className={
-                        customer.status === 'active' ? 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20' : ''
-                    }
-                >
-                    {customer.status}
-                </Badge>
+                <StatusBadge status={customer.status} />
             </div>
             <div className="flex flex-col gap-1 text-sm">
                 <a href={`mailto:${customer.email}`} className="text-primary hover:underline">

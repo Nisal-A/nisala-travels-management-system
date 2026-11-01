@@ -1,19 +1,18 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { RotateCcw, Plus, Eye } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Plus, Eye } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { PageHeader, MoneyText, StatusBadge, EmptyState } from '@/components/common';
+import { PageHeader, MoneyText, StatusBadge } from '@/components/common';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
 import { ColumnDef } from '@tanstack/react-table';
-import { PaginatedData, Refund, RefundStatus } from '@/types';
+import { PaginatedData, Refund } from '@/types';
 
 interface RefundsIndexProps {
     refunds: PaginatedData<Refund>;
-    filters: Record<string, any>;
+    filters: Record<string, unknown>;
     statuses: { value: string; label: string }[];
 }
 
@@ -27,7 +26,7 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
             header: ({ column }) => <DataTableColumnHeader column={column} title="Refund #" />,
             cell: ({ row }) => (
                 <Link
-                    href={route('refunds.show', row.original.id)}
+                    href={route('refunds.show', { refund: row.original.id })}
                     className="font-mono font-medium text-xs text-primary hover:underline"
                 >
                     {row.getValue('refund_number')}
@@ -41,7 +40,7 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
                 const r = row.original;
                 return (
                     <Link
-                        href={route('bookings.show', r.booking_id)}
+                        href={route('bookings.show', { booking: r.booking_id })}
                         className="text-primary hover:underline font-medium text-xs"
                     >
                         {r.booking?.booking_reference || `BKG-${r.booking_id}`}
@@ -68,7 +67,7 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
                 const r = row.original;
                 return (
                     <div className="font-medium whitespace-nowrap">
-                        <MoneyText amount={Number(r.amount)} currency={r.currency as any} />
+                        <MoneyText amount={Number(r.amount)} currency={r.currency as 'LKR' | 'USD' | undefined} />
                         {r.currency !== 'LKR' && (
                             <div className="text-[11px] text-muted-foreground">
                                 <MoneyText amount={Number(r.amount_lkr)} currency="LKR" />
@@ -84,7 +83,7 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
             cell: ({ row }) => {
                 const fee = Number(row.original.cancellation_charge || 0);
                 return fee > 0 ? (
-                    <MoneyText amount={fee} currency={row.original.currency as any} />
+                    <MoneyText amount={fee} currency={row.original.currency as 'LKR' | 'USD' | undefined} />
                 ) : (
                     <span className="text-muted-foreground text-xs">—</span>
                 );
@@ -112,27 +111,31 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
             header: () => <div className="text-right">Actions</div>,
             cell: ({ row }) => (
                 <div className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={route('refunds.show', row.original.id)}>
-                            <Eye className="mr-1.5 h-3.5 w-3.5" /> View
-                        </Link>
-                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        render={
+                            <Link href={route('refunds.show', { refund: row.original.id })}>
+                                <Eye className="mr-1.5 size-3.5" /> View
+                            </Link>
+                        }
+                    />
                 </div>
             ),
         },
     ];
 
     const mobileCard = (r: Refund) => (
-        <div className="rounded-lg border bg-card p-4 shadow-sm flex flex-col gap-2.5">
+        <div className="rounded-lg border border-border bg-card p-4 shadow-sm flex flex-col gap-2.5">
             <div className="flex justify-between items-start">
                 <div className="flex flex-col">
                     <Link
-                        href={route('refunds.show', r.id)}
+                        href={route('refunds.show', { refund: r.id })}
                         className="font-mono text-xs font-semibold text-primary hover:underline"
                     >
                         {r.refund_number}
                     </Link>
-                    <span className="text-sm font-medium">{r.customer?.full_name}</span>
+                    <span className="text-sm font-medium text-foreground">{r.customer?.full_name}</span>
                 </div>
                 <StatusBadge status={r.status} />
             </div>
@@ -140,10 +143,10 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
                 <span>Booking: {r.booking?.booking_reference || `BKG-${r.booking_id}`}</span>
                 <span>{String(r.created_at).split('T')[0]}</span>
             </div>
-            <div className="flex justify-between items-center border-t pt-2 mt-1">
+            <div className="flex justify-between items-center border-t border-border pt-2 mt-1">
                 <div>
                     <div className="font-bold text-foreground">
-                        <MoneyText amount={Number(r.amount)} currency={r.currency as any} />
+                        <MoneyText amount={Number(r.amount)} currency={r.currency as 'LKR' | 'USD' | undefined} />
                     </div>
                     {r.currency !== 'LKR' && (
                         <div className="text-[11px] text-muted-foreground">
@@ -151,11 +154,15 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
                         </div>
                     )}
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={route('refunds.show', r.id)}>
-                        <Eye className="mr-1 h-3.5 w-3.5" /> Details
-                    </Link>
-                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    render={
+                        <Link href={route('refunds.show', { refund: r.id })}>
+                            <Eye className="mr-1 size-3.5" /> Details
+                        </Link>
+                    }
+                />
             </div>
         </div>
     );
@@ -167,41 +174,33 @@ export default function RefundsIndex({ refunds, filters, statuses }: RefundsInde
         >
             <Head title="Refunds" />
             <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <PageHeader
-                        title="Refunds"
-                        description="Track and manage customer refund requests, manager approvals, and settlements."
-                    />
-                    {canRequest && (
-                        <Button asChild className="shrink-0">
-                            <Link href={route('refunds.create')}>
-                                <Plus className="mr-2 h-4 w-4" /> Request Refund
+                <PageHeader
+                    title="Refunds"
+                    description="Track and manage customer refund requests, manager approvals, and settlements."
+                    actions={
+                        canRequest && (
+                            <Link
+                                href={route('refunds.create')}
+                                className={buttonVariants({ variant: 'default' }) + ' shrink-0 gap-2'}
+                            >
+                                <Plus className="size-4" />
+                                <span className="hidden sm:inline">Request Refund</span>
                             </Link>
-                        </Button>
-                    )}
-                </div>
+                        )
+                    }
+                />
 
-                {refunds.data.length === 0 && !filters.search ? (
-                    <EmptyState
-                        icon={RotateCcw}
-                        title="No refunds found"
-                        description="No refund requests have been submitted yet."
-                        actionLabel={canRequest ? 'Request Refund' : undefined}
-                        onAction={canRequest ? () => (window.location.href = route('refunds.create')) : undefined}
-                    />
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={refunds.data}
-                        tableKey="refunds"
-                        total={refunds.total || 0}
-                        links={refunds.links}
-                        from={refunds.from}
-                        to={refunds.to}
-                        filters={filters}
-                        mobileCard={mobileCard}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={refunds.data}
+                    tableKey="refunds"
+                    total={refunds.total || 0}
+                    links={refunds.links}
+                    from={refunds.from}
+                    to={refunds.to}
+                    filters={filters}
+                    mobileCard={mobileCard}
+                />
             </div>
         </AppLayout>
     );
