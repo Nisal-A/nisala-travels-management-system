@@ -75,20 +75,23 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                 <meta name="robots" content="noindex" />
             </Head>
 
-            <div className="relative min-h-svh flex flex-col justify-between font-sans selection:bg-primary/20 selection:text-primary">
+            <div className="relative min-h-svh flex flex-col justify-between overflow-x-hidden font-sans selection:bg-primary/20 selection:text-primary">
                 {/* Background Photo & Dark Gradient Overlay */}
                 <div className="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-                    <img
-                        src="/images/hero/hero-poster.jpg"
-                        alt=""
-                        className="h-full w-full object-cover object-center"
-                    />
+                    <picture>
+                        <source srcSet="/images/hero/hero-poster.webp" type="image/webp" />
+                        <img
+                            src="/images/hero/hero-poster.jpg"
+                            alt=""
+                            className="h-full w-full object-cover object-center"
+                        />
+                    </picture>
                     <div className="absolute inset-0 bg-background/85 backdrop-blur-[2px]" />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/90" />
                 </div>
 
                 {/* Top Desktop Header with Logo */}
-                <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex items-center justify-between">
+                <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex items-center justify-between">
                     <div className="hidden sm:block">
                         <Link
                             href="/"
@@ -104,10 +107,10 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                 </header>
 
                 {/* Main Content Area */}
-                <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:px-6 w-full">
+                <main className="flex-1 flex flex-col items-center justify-center px-4 py-4 sm:py-8 w-full">
                     <div className="w-full max-w-md mx-auto flex flex-col">
                         {/* Mobile Centered Logo */}
-                        <div className="sm:hidden mb-6 flex justify-center">
+                        <div className="sm:hidden mb-4 sm:mb-6 flex justify-center">
                             <Link
                                 href="/"
                                 className="inline-block transition-transform duration-200 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
@@ -121,8 +124,8 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                         </div>
 
                         {/* Frosted Card */}
-                        <Card className="w-full bg-card/90 backdrop-blur-md border border-border/80 shadow-xl rounded-2xl">
-                            <CardHeader className="text-center pb-2 pt-8 px-6 sm:px-8 space-y-1.5">
+                        <Card className="w-full bg-card/90 backdrop-blur-md border border-border/80 dark:border-border/60 shadow-xl rounded-2xl">
+                            <CardHeader className="text-center pb-2 pt-6 sm:pt-8 px-5 sm:px-8 space-y-1.5">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">
                                     Nisala Travels Management System
                                 </p>
@@ -134,8 +137,8 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                 </CardDescription>
                             </CardHeader>
 
-                            <CardContent className="px-6 sm:px-8 pb-8 pt-4">
-                                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                            <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8 pt-4">
+                                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5" noValidate>
                                     {/* Status Flash Message */}
                                     {statusMessage && (
                                         <div
@@ -153,7 +156,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                         <div
                                             id="general-error"
                                             role="alert"
-                                            aria-live="polite"
+                                            aria-live="assertive"
                                             className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
                                         >
                                             <AlertCircle className="size-4 mt-0.5 shrink-0" aria-hidden="true" />
@@ -161,7 +164,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                         </div>
                                     )}
 
-                                    {/* Email Field */}
+                                    {/* 1. Email Field */}
                                     <div className="space-y-1.5">
                                         <Label htmlFor="email" className="text-sm font-medium text-foreground">
                                             Email address
@@ -186,34 +189,24 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                                     isEmailFieldValidation
                                                         ? 'email-error'
                                                         : generalErrorMessage
-                                                            ? 'general-error'
-                                                            : undefined
+                                                          ? 'general-error'
+                                                          : undefined
                                                 }
                                                 className="pl-9 h-10 border-input bg-background/50 focus-visible:ring-ring"
                                             />
                                         </div>
                                         {isEmailFieldValidation && (
-                                            <p id="email-error" className="text-xs text-destructive mt-1">
+                                            <p id="email-error" role="alert" className="text-xs text-destructive mt-1">
                                                 {errors.email}
                                             </p>
                                         )}
                                     </div>
 
-                                    {/* Password Field */}
+                                    {/* 2. Password Field & Show/Hide Button */}
                                     <div className="space-y-1.5">
-                                        <div className="flex items-center justify-between">
-                                            <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                                                Password
-                                            </Label>
-                                            {canResetPassword && (
-                                                <Link
-                                                    href={route('password.request')}
-                                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-                                                >
-                                                    Forgot password?
-                                                </Link>
-                                            )}
-                                        </div>
+                                        <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                                            Password
+                                        </Label>
                                         <div className="relative">
                                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                                                 <Lock className="size-4" aria-hidden="true" />
@@ -238,7 +231,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                                                 aria-pressed={showPassword}
                                                 disabled={processing}
-                                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-r-lg disabled:pointer-events-none"
+                                                className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center size-7 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md disabled:pointer-events-none"
                                             >
                                                 {showPassword ? (
                                                     <EyeOff className="size-4" aria-hidden="true" />
@@ -248,34 +241,45 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                                             </button>
                                         </div>
                                         {errors.password && (
-                                            <p id="password-error" className="text-xs text-destructive mt-1">
+                                            <p id="password-error" role="alert" className="text-xs text-destructive mt-1">
                                                 {errors.password}
                                             </p>
                                         )}
                                     </div>
 
-                                    {/* Remember Me */}
-                                    <div className="flex items-center gap-2.5 pt-0.5">
-                                        <Checkbox
-                                            id="remember"
-                                            name="remember"
-                                            checked={data.remember}
-                                            disabled={processing}
-                                            onCheckedChange={(checked) => setData('remember', Boolean(checked))}
-                                        />
-                                        <Label
-                                            htmlFor="remember"
-                                            className="text-sm font-normal text-muted-foreground cursor-pointer select-none"
-                                        >
-                                            Remember me
-                                        </Label>
+                                    {/* 3. Remember Me & Forgot Password (if present) */}
+                                    <div className="flex items-center justify-between pt-0.5">
+                                        <div className="flex items-center gap-2.5">
+                                            <Checkbox
+                                                id="remember"
+                                                name="remember"
+                                                checked={data.remember}
+                                                disabled={processing}
+                                                onCheckedChange={(checked) => setData('remember', Boolean(checked))}
+                                                className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            />
+                                            <Label
+                                                htmlFor="remember"
+                                                className="text-sm font-normal text-muted-foreground cursor-pointer select-none"
+                                            >
+                                                Remember me
+                                            </Label>
+                                        </div>
+                                        {canResetPassword && (
+                                            <Link
+                                                href={route('password.request')}
+                                                className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                                            >
+                                                Forgot password?
+                                            </Link>
+                                        )}
                                     </div>
 
-                                    {/* Submit Button */}
+                                    {/* 4. Submit Button */}
                                     <Button
                                         type="submit"
                                         disabled={processing}
-                                        className="w-full h-10 gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm motion-reduce:transition-none cursor-pointer"
+                                        className="w-full h-10 gap-2 font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm motion-reduce:transition-none cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                                     >
                                         {processing ? (
                                             <>
@@ -294,7 +298,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                         </Card>
 
                         {/* Back to Website */}
-                        <div className="mt-6 text-center">
+                        <div className="mt-4 sm:mt-6 text-center">
                             <Link
                                 href="/"
                                 className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1"
@@ -307,7 +311,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                 </main>
 
                 {/* Footer */}
-                <footer className="w-full py-6 px-4 text-center text-xs text-muted-foreground">
+                <footer className="w-full py-4 sm:py-6 px-4 text-center text-xs text-muted-foreground">
                     <p>
                         &copy; {currentYear} {siteContent.company.name} &bull; {siteContent.contact.email}
                     </p>
