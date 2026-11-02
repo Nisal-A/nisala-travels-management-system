@@ -230,11 +230,11 @@ export default function Step4Pricing({
                                         Special Discount ({currency})
                                     </Label>
                                     {canDiscount ? (
-                                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                        <span className="text-[10px] text-success font-semibold flex items-center gap-1">
                                             <CheckCircle className="w-3 h-3" /> Authorized
                                         </span>
                                     ) : (
-                                        <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-1">
+                                        <span className="text-[10px] text-warning font-semibold flex items-center gap-1">
                                             <Lock className="w-3 h-3" /> Manager Required
                                         </span>
                                     )}
@@ -296,7 +296,7 @@ export default function Step4Pricing({
                                 )}
 
                                 {discountAmount > 0 && (
-                                    <div className="flex justify-between items-center text-emerald-600 font-medium">
+                                    <div className="flex justify-between items-center text-success font-medium">
                                         <span>Discount:</span>
                                         <span>
                                             -
@@ -304,7 +304,7 @@ export default function Step4Pricing({
                                                 amount={discountAmount}
                                                 currency={currency}
                                                 size="sm"
-                                                className="text-emerald-600"
+                                                className="text-success"
                                             />
                                         </span>
                                     </div>

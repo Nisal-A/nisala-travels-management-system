@@ -19,10 +19,24 @@ import { ColumnDef } from '@tanstack/react-table';
 
 import { PaginatedData, Payment } from '@/types';
 
+interface PaymentCustomer {
+    id?: number;
+    full_name?: string;
+    first_name?: string;
+    last_name?: string;
+}
+
+interface PaymentBooking {
+    id?: number;
+    booking_reference?: string;
+}
+
+type PaymentRecord = Payment & { customer?: PaymentCustomer; booking?: PaymentBooking };
+
 interface PaymentsIndexProps {
-    payments: PaginatedData<Payment & { customer?: any; booking?: any }>;
-    filters: Record<string, any>;
-    savedFilters: any[];
+    payments: PaginatedData<PaymentRecord>;
+    filters: Record<string, unknown>;
+    savedFilters: { id: number; name: string; filters: Record<string, unknown> }[];
 }
 
 export default function PaymentsIndex({ payments, filters, savedFilters = [] }: PaymentsIndexProps) {
@@ -35,7 +49,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
         }
     };
 
-    const columns: ColumnDef<Payment & { customer?: any; booking?: any }>[] = [
+    const columns: ColumnDef<PaymentRecord>[] = [
         {
             accessorKey: 'payment_date',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
@@ -100,7 +114,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
             cell: ({ row }) => {
                 const status = row.getValue('status') as string;
                 return (
-                    <StatusBadge type="payment" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />
+                    <StatusBadge type="payment" status={status.charAt(0).toUpperCase() + status.slice(1)} />
                 );
             },
         },
@@ -139,7 +153,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
         },
     ];
 
-    const mobileCard = (payment: Payment & { customer?: any; booking?: any }) => (
+    const mobileCard = (payment: PaymentRecord) => (
         <div className="rounded-lg border bg-card p-4 shadow-sm flex flex-col gap-3">
             <div className="flex justify-between items-start">
                 <div className="flex flex-col">
@@ -150,7 +164,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
                 </div>
                 <StatusBadge
                     type="payment"
-                    status={(payment.status.charAt(0).toUpperCase() + payment.status.slice(1)) as any}
+                    status={payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                 />
             </div>
             <div className="text-sm">
@@ -167,7 +181,7 @@ export default function PaymentsIndex({ payments, filters, savedFilters = [] }: 
                 </div>
             </div>
             <div className="flex justify-between items-center mt-2 border-t pt-2">
-                <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <div className="font-semibold text-foreground">
                     <MoneyText amount={Number(payment.amount)} currency={payment.currency as 'LKR' | 'USD'} />
                 </div>
                 {canDelete && payment.status !== 'failed' && (

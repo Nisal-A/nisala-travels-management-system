@@ -1,23 +1,31 @@
-import React from 'react';
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { PageHeader, EmptyState } from '@/components/common';
-import { FileText, Construction } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { FileText } from 'lucide-react';
 
 export default function DocumentsIndex() {
     return (
-        <AppLayout>
+        <AppLayout
+            title="Documents"
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Documents' }]}
+        >
             <Head title="Documents" />
-            <PageHeader
-                title="Documents"
-                description="Document management — upload, verify, and manage customer travel documents such as passports, visas, and tickets."
-            />
+            <div className="space-y-6">
+                <PageHeader
+                    title="Documents"
+                    description="Upload, verify, and manage customer travel documents such as passports, visas, and tickets."
+                />
 
-            <EmptyState
-                icon={Construction}
-                title="Under Construction"
-                description="The global document management dashboard is currently being built. You can still manage documents within individual customer profiles."
-            />
+                <Card className="p-6">
+                    <EmptyState
+                        icon={FileText}
+                        title="Document Management"
+                        description="This module is coming soon. You can still manage documents within individual customer profiles."
+                        className="border-none py-8 min-h-[300px]"
+                    />
+                </Card>
+            </div>
         </AppLayout>
     );
 }

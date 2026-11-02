@@ -247,3 +247,74 @@ export interface CustomerDocument {
     expiry_date?: string;
     document_type?: DocumentType;
 }
+
+export type SupplierType = 'hotel' | 'transport' | 'guide' | 'air_ticket' | 'food' | 'other';
+
+export interface Supplier {
+    id: number;
+    supplier_code: string;
+    name: string;
+    type: SupplierType;
+    contact_name?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    default_currency: string;
+    is_active: boolean;
+    notes?: string | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface PackageCostLine {
+    id: number;
+    tour_package_id: number;
+    supplier_id?: number | null;
+    category: SupplierType;
+    description: string;
+    amount: string | number;
+    currency: string;
+    exchange_rate_to_lkr: string | number;
+    amount_lkr: string | number;
+    incurred_on: string;
+    paid_on?: string | null;
+    notes?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    supplier?: Supplier;
+}
+
+export type RefundStatus = 'requested' | 'approved' | 'rejected' | 'paid';
+
+export interface Refund {
+    id: number;
+    refund_number: string;
+    booking_id: number;
+    payment_id?: number | null;
+    customer_id: number;
+    amount: string | number;
+    cancellation_charge: string | number;
+    currency: string;
+    exchange_rate_to_lkr: string | number;
+    amount_lkr: string | number;
+    reason: string;
+    status: RefundStatus;
+    requested_by: number;
+    approved_by?: number | null;
+    approved_at?: string | null;
+    paid_on?: string | null;
+    payment_method?: string | null;
+    notes?: string | null;
+    created_at?: string;
+    updated_at?: string;
+    booking?: Booking;
+    customer?: Customer;
+    requestedBy?: User;
+    approvedBy?: User;
+    payment?: Payment;
+    activityLogs?: {
+        id: number;
+        description: string;
+        created_at: string;
+        causer?: { id: number; name: string };
+    }[];
+}

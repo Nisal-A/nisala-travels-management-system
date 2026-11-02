@@ -1,6 +1,6 @@
 import React from 'react';
-import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { useForm, Link } from '@inertiajs/react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -264,7 +264,7 @@ export default function BookingForm({
                                     </SelectContent>
                                 </Select>
                                 {(errors as Record<string, string>)[`travelers.${index}.traveler_type`] && (
-                                    <p className="text-sm text-red-500">
+                                    <p className="text-sm text-destructive">
                                         {(errors as Record<string, string>)[`travelers.${index}.traveler_type`]}
                                     </p>
                                 )}
@@ -282,7 +282,7 @@ export default function BookingForm({
                                     type="button"
                                     variant="ghost"
                                     size="icon"
-                                    className="md:mt-8 text-red-500"
+                                    className="md:mt-8 text-destructive"
                                     onClick={() => removeTraveler(index)}
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -291,11 +291,17 @@ export default function BookingForm({
                         </div>
                     ))}
                 </CardContent>
-                <CardFooter className="flex justify-end gap-2">
+                <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-end gap-3 z-10">
+                    <Link
+                        href={route('bookings.index')}
+                        className={buttonVariants({ variant: 'ghost' })}
+                    >
+                        Cancel
+                    </Link>
                     <Button type="submit" disabled={processing}>
                         {isEditing ? 'Update Booking' : 'Create Booking'}
                     </Button>
-                </CardFooter>
+                </div>
             </Card>
         </form>
     );

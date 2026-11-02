@@ -11,15 +11,19 @@ use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PackageCostLineController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedFilterController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffProfileController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TourPackageController;
-use Illuminate\Support\Facades\Auth;
+use App\Enums\UserRole;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,15 +31,25 @@ require_once app_path('Models/AppSetting.php');
 
 /*
 |--------------------------------------------------------------------------
-| Root redirect
+| Root Route
 |--------------------------------------------------------------------------
+|
+| The public marketing website is served by the separate Next.js frontend.
+| This app's root simply forwards visitors: guests go to the login page,
+| customers go to the customer portal, and staff/admin go to the dashboard.
+|
 */
-Route::get('/', function () {
-    return Auth::check()
-        ? redirect()->route('dashboard')
-        : redirect()->route('login');
-})->name('home');
+Route::get('/', function (Request $request) {
+    $user = $request->user();
 
+    if (! $user) {
+        return redirect()->route('login');
+    }
+
+    return $user->hasRole(UserRole::Customer->value)
+        ? redirect()->route('portal.dashboard')
+        : redirect()->route('dashboard');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
@@ -187,6 +201,19 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('role:super_admin,manager,finance')->group(function () {
         // Payments Management (NT-011)
         Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+
+        // Suppliers Management
+        Route::resource('suppliers', SupplierController::class);
+
+        // Package Cost Lines Management
+        Route::resource('package-cost-lines', PackageCostLineController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('tours/{tour}/cost-lines', [PackageCostLineController::class, 'forTour'])->name('tours.cost-lines.index');
+
+        // Refunds Management
+        Route::resource('refunds', RefundController::class)->only(['index', 'create', 'store', 'show']);
+        Route::patch('refunds/{refund}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
+        Route::patch('refunds/{refund}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
+        Route::patch('refunds/{refund}/mark-paid', [RefundController::class, 'markPaid'])->name('refunds.mark-paid');
     });
 
     // ==============================

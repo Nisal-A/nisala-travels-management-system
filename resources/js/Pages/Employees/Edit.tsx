@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
+import { PageHeader } from '@/components/common';
 import EmployeeForm from './Partials/EmployeeForm';
 import { User } from '@/types';
 
@@ -15,17 +16,23 @@ export default function Edit({ employee, roles }: EditProps) {
             breadcrumbs={[
                 { label: 'Dashboard', href: route('dashboard') },
                 { label: 'Employees', href: route('employees.index') },
-                { label: 'Edit Employee' },
+                { label: `Edit ${employee.name}` },
             ]}
         >
             <Head title={`Edit Employee - ${employee.name}`} />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Edit Employee</h1>
-                <p className="text-muted-foreground mt-1">Update details and access permissions for {employee.name}.</p>
-            </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Edit Employee"
+                    description={`Update details and access permissions for ${employee.name}.`}
+                    breadcrumbs={[
+                        { label: 'Employees', href: route('employees.index') },
+                        { label: employee.name },
+                    ]}
+                />
 
-            <EmployeeForm employee={employee} roles={roles} isEditing={true} />
+                <EmployeeForm employee={employee} roles={roles} isEditing={true} />
+            </div>
         </AppLayout>
     );
 }

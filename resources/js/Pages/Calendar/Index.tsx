@@ -33,7 +33,7 @@ import {
     Plane,
     AlertTriangle,
 } from 'lucide-react';
-// UI Components
+import { PageHeader, MoneyText, StatusBadge } from '@/components/common';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -63,10 +63,10 @@ const localizer = dateFnsLocalizer({
 // ────────────────────────────────────────────────────────────────────────────
 
 const EVENT_TYPES = [
-    { id: 'departures', label: 'Departures', color: 'bg-blue-500', textClass: 'text-blue-500', hex: '#3b82f6' },
-    { id: 'returns', label: 'Returns', color: 'bg-emerald-500', textClass: 'text-emerald-500', hex: '#10b981' },
-    { id: 'balance', label: 'Balance Due', color: 'bg-rose-500', textClass: 'text-rose-500', hex: '#f43f5e' },
-    { id: 'visa', label: 'Visa Deadlines', color: 'bg-amber-500', textClass: 'text-amber-500', hex: '#f59e0b' },
+    { id: 'departures', label: 'Departures', color: 'bg-info', textClass: 'text-info', hex: 'var(--color-info, #0284c7)' },
+    { id: 'returns', label: 'Returns', color: 'bg-success', textClass: 'text-success', hex: 'var(--color-success, #16a34a)' },
+    { id: 'balance', label: 'Balance Due', color: 'bg-destructive', textClass: 'text-destructive', hex: 'var(--color-destructive, #dc2626)' },
+    { id: 'visa', label: 'Visa Deadlines', color: 'bg-warning', textClass: 'text-warning', hex: 'var(--color-warning, #d97706)' },
 ] as const;
 
 type EventType = (typeof EVENT_TYPES)[number]['id'];
@@ -148,20 +148,7 @@ function CalendarSkeleton() {
 // Status Badge
 // ────────────────────────────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: string }) {
-    const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-        pending: { variant: 'secondary', label: 'Pending' },
-        confirmed: { variant: 'default', label: 'Confirmed' },
-        completed: { variant: 'outline', label: 'Completed' },
-        cancelled: { variant: 'destructive', label: 'Cancelled' },
-    };
-    const config = variants[status?.toLowerCase()] ?? { variant: 'secondary' as const, label: status };
-    return (
-        <Badge variant={config.variant} className="text-[0.65rem] capitalize">
-            {config.label}
-        </Badge>
-    );
-}
+
 
 // ────────────────────────────────────────────────────────────────────────────
 // Main Calendar Page
@@ -307,9 +294,9 @@ export default function CalendarPage() {
                                         <Users className="h-3 w-3" /> {event.booking.travelers} Pax
                                     </div>
                                     {event.booking.balance > 0 && (
-                                        <div className="flex items-center gap-1.5 text-rose-500 font-medium">
-                                            <CreditCard className="h-3 w-3" /> Rs.{' '}
-                                            {Number(event.booking.balance).toLocaleString()} due
+                                        <div className="flex items-center gap-1.5 text-destructive font-medium">
+                                            <CreditCard className="size-3" />{' '}
+                                            <MoneyText amount={Number(event.booking.balance)} currency="LKR" size="sm" weight="medium" /> due
                                         </div>
                                     )}
                                 </div>
@@ -416,21 +403,18 @@ export default function CalendarPage() {
 
             <div className="flex flex-col h-[calc(100vh-8rem)] min-h-[600px] gap-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Calendar & Departures</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                            Manage your agency's schedule, departures, and deadlines.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-4 py-2.5 rounded-lg border border-blue-100 dark:border-blue-800 transition-colors">
-                        <Plane className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                            Departures this week: <strong className="text-base ml-0.5">{departuresThisWeek}</strong>
-                        </span>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Calendar & Departures"
+                    description="Manage your agency's schedule, departures, and deadlines."
+                    actions={
+                        <div className="flex items-center gap-2 bg-info/10 text-info border border-info/20 px-3.5 py-1.5 rounded-lg transition-colors">
+                            <Plane className="size-4" />
+                            <span className="text-sm font-medium">
+                                Departures this week: <strong className="text-base ml-0.5 font-bold">{departuresThisWeek}</strong>
+                            </span>
+                        </div>
+                    }
+                />
 
                 <div className="flex flex-col lg:flex-row gap-6 flex-1 h-full min-h-0">
                     {/* Filters Sidebar */}
@@ -534,7 +518,7 @@ export default function CalendarPage() {
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <div
                                         className={cn(
-                                            'px-2.5 py-1 text-xs font-semibold rounded-md text-white',
+                                            'px-2.5 py-1 text-xs font-semibold rounded-md text-primary-foreground',
                                             EVENT_TYPES.find((t) => t.id === selectedEvent.type)?.color,
                                         )}
                                     >
@@ -593,13 +577,13 @@ export default function CalendarPage() {
                                     </div>
 
                                     {selectedEvent.booking.balance > 0 && (
-                                        <div className="flex items-center justify-between p-4 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 rounded-lg border border-rose-200 dark:border-rose-900/50">
+                                        <div className="flex items-center justify-between p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/20">
                                             <div className="flex items-center gap-2 font-medium">
-                                                <AlertTriangle className="h-5 w-5" />
+                                                <AlertTriangle className="size-5" />
                                                 Outstanding Balance
                                             </div>
                                             <div className="text-lg font-bold">
-                                                Rs. {Number(selectedEvent.booking.balance).toLocaleString()}
+                                                <MoneyText amount={Number(selectedEvent.booking.balance)} currency="LKR" size="lg" weight="bold" />
                                             </div>
                                         </div>
                                     )}

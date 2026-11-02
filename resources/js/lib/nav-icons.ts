@@ -10,6 +10,8 @@ import {
     Settings,
     Bell,
     Calendar,
+    Building2,
+    RotateCcw,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -30,6 +32,8 @@ const iconMap: Record<string, LucideIcon> = {
     Settings,
     Bell,
     Calendar,
+    Building2,
+    RotateCcw,
 };
 
 export function getNavIcon(name: string): LucideIcon {

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { router } from '@inertiajs/react';
-import { ArrowRightLeft, Clock, Save, Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/toast';
+import { useForm } from '@inertiajs/react';
+import { ArrowRightLeft, CheckCircle2, Info } from 'lucide-react';
+import type { PageProps } from '@/types';
+import { SettingsPanel, settingsInputClass } from './SettingsPanel';
 
 export interface ExchangeRateData {
     currency: string;
@@ -21,28 +21,46 @@ interface ExchangeRatesCardProps {
 }
 
 export function ExchangeRatesCard({ exchangeRates }: ExchangeRatesCardProps) {
-    const [rates, setRates] = useState<Record<string, string>>(() => {
-        const initial: Record<string, string> = {};
-        exchangeRates.forEach((r) => {
-            initial[r.currency] = r.rate_to_lkr ?? '';
-        });
-        return initial;
+    const { data, setData, post, processing, errors, isDirty, reset, clearErrors, recentlySuccessful } = useForm<{
+        rates: Record<string, string>;
+    }>({
+        rates: (() => {
+            const initial: Record<string, string> = {};
+            exchangeRates.forEach((r) => {
+                initial[r.currency] = r.rate_to_lkr ?? '';
+            });
+            return initial;
+        })(),
     });
-    const [saving, setSaving] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setSaving(true);
 
-        router.post(
-            route('settings.exchange-rates.store'),
-            { rates },
-            {
-                preserveScroll: true,
-                onFinish: () => setSaving(false),
+        // Same payload as before: { rates: { USD: '...', ... } }
+        post(route('settings.exchange-rates.store'), {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const flash = (page.props as PageProps).flash;
+                toast.add({
+                    title: 'Exchange rates saved',
+                    description: flash?.success ?? 'New rate entries were recorded.',
+                    type: 'success',
+                });
             },
-        );
+        });
     };
+
+    const handleCancel = () => {
+        reset();
+        clearErrors();
+    };
+
+    const setRate = (currency: string, value: string) => {
+        setData('rates', { ...data.rates, [currency]: value });
+    };
+
+    const rateError = (currency: string): string | undefined =>
+        (errors as Record<string, string | undefined>)[`rates.${currency}`];
 
     const formatDate = (iso: string | null) => {
         if (!iso) return 'Never';
@@ -54,110 +72,138 @@ export function ExchangeRatesCard({ exchangeRates }: ExchangeRatesCardProps) {
         });
     };
 
+    const currentRate = (rate: ExchangeRateData) =>
+        rate.rate_to_lkr
+            ? `Rs ${Number(rate.rate_to_lkr).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`
+            : 'No rate set';
+
+    const rateInput = (rate: ExchangeRateData, idPrefix: string) => {
+        const error = rateError(rate.currency);
+        return (
+            <>
+                <Input
+                    id={`${idPrefix}-${rate.currency}`}
+                    type="number"
+                    step="0.000001"
+                    min="0.000001"
+                    placeholder="e.g. 320.50"
+                    value={data.rates[rate.currency] ?? ''}
+                    onChange={(e) => setRate(rate.currency, e.target.value)}
+                    aria-invalid={!!error}
+                    className={`${settingsInputClass} w-full md:w-40 tabular-nums`}
+                />
+                {error && <p className="mt-1 text-xs font-medium text-destructive">{error}</p>}
+            </>
+        );
+    };
+
     return (
-        <Card className="border shadow-sm">
-            <CardHeader className="pb-4 border-b">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                        <ArrowRightLeft className="h-5 w-5" />
+        <SettingsPanel
+            title="Exchange Rates"
+            description="All rates represent 1 unit of the foreign currency in LKR."
+            icon={ArrowRightLeft}
+            onSubmit={handleSubmit}
+            footer={{
+                isDirty,
+                processing,
+                onCancel: handleCancel,
+                status: recentlySuccessful ? (
+                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                        <CheckCircle2 className="size-3.5 text-success" />
+                        Rates saved
+                    </span>
+                ) : (
+                    'Changes are saved as new rate entries and do not overwrite history.'
+                ),
+            }}
+        >
+            {exchangeRates.length === 0 ? (
+                <p className="rounded-xl border bg-muted/50 py-8 text-center text-sm text-muted-foreground">
+                    No foreign currencies configured.
+                </p>
+            ) : (
+                <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b bg-muted/50">
+                        <h3 className="font-bold text-sm text-foreground">Current rates</h3>
                     </div>
-                    <div>
-                        <CardTitle className="text-xl">Exchange Rates</CardTitle>
-                        <CardDescription>
-                            Manage currency exchange rates to LKR. All rates represent 1 unit of the foreign currency in LKR.
-                        </CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
 
-            <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-5 pt-6">
-                    {/* Current Rates Display */}
-                    <div className="rounded-xl border bg-card p-5 space-y-4">
-                        <h3 className="font-semibold text-base flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-primary" />
-                            Current Rates
-                        </h3>
-
-                        <div className="grid gap-4">
-                            {exchangeRates.map((rate) => (
-                                <div
-                                    key={rate.currency}
-                                    className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border bg-muted/20"
-                                >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <Badge variant="outline" className="py-1 px-3 font-mono text-sm shrink-0">
-                                            {rate.currency}
-                                        </Badge>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-medium truncate">
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground border-b">
+                                <tr>
+                                    <th className="px-6 py-3 font-semibold">Currency</th>
+                                    <th className="px-6 py-3 font-semibold text-right">Current rate</th>
+                                    <th className="px-6 py-3 font-semibold">Last updated</th>
+                                    <th className="px-6 py-3 font-semibold">Rate to LKR</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {exchangeRates.map((rate) => (
+                                    <tr key={rate.currency} className="hover:bg-muted/50 transition-colors align-top">
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-foreground">{rate.currency}</div>
+                                            <div className="text-xs text-muted-foreground">
                                                 {rate.label} ({rate.symbol})
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {rate.rate_to_lkr
-                                                    ? `1 ${rate.currency} = Rs ${Number(rate.rate_to_lkr).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`
-                                                    : 'No rate set'}
-                                            </p>
-                                            {rate.fetched_at && (
-                                                <p className="text-xs text-muted-foreground/70 mt-0.5">
-                                                    Updated: {formatDate(rate.fetched_at)}
-                                                    {rate.source ? ` (${rate.source})` : ''}
-                                                </p>
-                                            )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-semibold tabular-nums text-foreground whitespace-nowrap">
+                                            {currentRate(rate)}
+                                        </td>
+                                        <td className="px-6 py-4 text-xs text-muted-foreground">
+                                            {formatDate(rate.fetched_at)}
+                                            {rate.source ? <div>{rate.source}</div> : null}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <Label htmlFor={`rate-${rate.currency}`} className="sr-only">
+                                                {rate.currency} rate to LKR
+                                            </Label>
+                                            {rateInput(rate, 'rate')}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile stacked cards */}
+                    <div className="md:hidden divide-y">
+                        {exchangeRates.map((rate) => (
+                            <div key={rate.currency} className="p-4 space-y-3">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="font-medium text-foreground">{rate.currency}</div>
+                                        <div className="text-xs text-muted-foreground truncate">
+                                            {rate.label} ({rate.symbol})
                                         </div>
                                     </div>
-
-                                    <div className="sm:w-48 shrink-0">
-                                        <Label htmlFor={`rate-${rate.currency}`} className="text-xs text-muted-foreground mb-1 block">
-                                            Rate to LKR
-                                        </Label>
-                                        <Input
-                                            id={`rate-${rate.currency}`}
-                                            type="number"
-                                            step="0.000001"
-                                            min="0.000001"
-                                            placeholder="e.g. 320.50"
-                                            value={rates[rate.currency] ?? ''}
-                                            onChange={(e) =>
-                                                setRates((prev) => ({
-                                                    ...prev,
-                                                    [rate.currency]: e.target.value,
-                                                }))
-                                            }
-                                        />
+                                    <div className="text-right text-sm font-semibold tabular-nums text-foreground">
+                                        {currentRate(rate)}
                                     </div>
                                 </div>
-                            ))}
-
-                            {exchangeRates.length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    No foreign currencies configured.
+                                <p className="text-xs text-muted-foreground">
+                                    Updated: {formatDate(rate.fetched_at)}
+                                    {rate.source ? ` (${rate.source})` : ''}
                                 </p>
-                            )}
-                        </div>
+                                <div>
+                                    <Label htmlFor={`rate-m-${rate.currency}`} className="text-sm font-medium mb-1 block">
+                                        Rate to LKR
+                                    </Label>
+                                    {rateInput(rate, 'rate-m')}
+                                </div>
+                            </div>
+                        ))}
                     </div>
+                </div>
+            )}
 
-                    {/* Info note */}
-                    <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-                        <strong>Note:</strong> LKR is the base currency (always 1.000000). Rates are refreshed automatically at 06:00 and 14:00 Asia/Colombo.
-                        Enter values above to manually override rates.
-                    </div>
-                </CardContent>
-
-                <CardFooter className="flex items-center justify-between border-t bg-muted/20 px-6 py-4">
-                    <span className="text-xs text-muted-foreground">
-                        Changes are saved as new rate entries and do not overwrite history.
-                    </span>
-                    <Button type="submit" className="gap-2 shadow-sm" disabled={saving}>
-                        {saving ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Save className="h-4 w-4" />
-                        )}
-                        Save Rates
-                    </Button>
-                </CardFooter>
-            </form>
-        </Card>
+            <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="size-4 shrink-0 mt-0.5" />
+                <p>
+                    LKR is the base currency (always 1.000000). Rates are refreshed automatically at 06:00 and 14:00
+                    Asia/Colombo. Enter values above to manually override rates.
+                </p>
+            </div>
+        </SettingsPanel>
     );
 }

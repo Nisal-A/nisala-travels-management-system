@@ -25,8 +25,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatusBadge } from '@/components/common/status-badge';
-import { MoneyText } from '@/components/common/money-text';
+import { PageHeader, StatusBadge, MoneyText } from '@/components/common';
 import { toast } from 'sonner';
 import { Booking, Customer, Employee, Payment, PaymentSchedule, BookingNote, ActivityLog } from '@/types';
 import {
@@ -294,116 +293,82 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
             <Head title={`Booking ${booking.booking_reference}`} />
 
             <div className="space-y-6 pb-12">
-                {/* Header: Reference, Customer, StatusBadge, Primary Actions */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
-                    <div className="space-y-1.5">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-mono text-foreground flex items-center gap-2">
-                                {booking.booking_reference}
-                            </h1>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleCopyRef}
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                title="Copy reference"
-                            >
-                                <Copy className="w-4 h-4" />
-                            </Button>
+                <PageHeader
+                    title={booking.booking_reference}
+                    description={`Customer: ${customerFullName} • Created on ${new Date(booking.created_at || '').toLocaleDateString()}`}
+                    breadcrumbs={[
+                        { label: 'Bookings', href: route('bookings.index') },
+                        { label: booking.booking_reference },
+                    ]}
+                    actions={
+                        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
                             <StatusBadge
                                 type="booking"
                                 status={statusFormatted}
                                 className="text-sm px-3 py-1 font-semibold"
                             />
-                        </div>
 
-                        {/* Customer Link & Meta */}
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                            {booking.customer && (
-                                <Link
-                                    href={route('customers.show', { customer: booking.customer.id })}
-                                    className="flex items-center gap-1.5 font-medium text-primary hover:underline"
+                            {permissions.canRecordPayment && Number(booking.balance_amount) > 0 && (
+                                <Button
+                                    onClick={() => setIsPaymentModalOpen(true)}
+                                    className="gap-2 font-semibold shadow-xs"
                                 >
-                                    <User className="w-3.5 h-3.5" />
-                                    {customerFullName} ({booking.customer.customer_id || 'Client'})
-                                    <ExternalLink className="w-3 h-3" />
+                                    <DollarSign className="w-4 h-4" /> Record Payment
+                                </Button>
+                            )}
+
+                            {permissions.canUpdate && booking.booking_status !== 'cancelled' && (
+                                <Link
+                                    href={route('bookings.edit', { booking: booking.id })}
+                                    className={buttonVariants({ variant: 'outline', className: 'gap-1.5' })}
+                                >
+                                    <Edit className="w-4 h-4" /> Edit
                                 </Link>
                             )}
-                            <span className="flex items-center gap-1">
-                                <Calendar className="w-3.5 h-3.5" /> Created on{' '}
-                                {new Date(booking.created_at || '').toLocaleDateString()}
-                            </span>
-                            {booking.tour_package && (
-                                <span className="flex items-center gap-1 font-medium text-foreground">
-                                    <MapPin className="w-3.5 h-3.5 text-primary" /> {booking.tour_package.name}
-                                </span>
-                            )}
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger
+                                    render={
+                                        <Button variant="outline" size="icon">
+                                            <MoreHorizontal className="w-4 h-4" />
+                                        </Button>
+                                    }
+                                />
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem onClick={() => window.print()} className="gap-2">
+                                        <Printer className="w-4 h-4" /> Print Summary
+                                    </DropdownMenuItem>
+
+                                    {permissions.canUpdate && (
+                                        <DropdownMenuItem onClick={() => setIsAssignModalOpen(true)} className="gap-2">
+                                            <UserCheck className="w-4 h-4" /> Assign Staff Handler
+                                        </DropdownMenuItem>
+                                    )}
+
+                                    <DropdownMenuSeparator />
+
+                                    {permissions.canCancel && ['pending', 'confirmed'].includes(booking.booking_status) && (
+                                        <DropdownMenuItem
+                                            onClick={() => openStatusConfirmation('cancelled')}
+                                            className="gap-2 text-destructive focus:text-destructive"
+                                        >
+                                            <XCircle className="w-4 h-4" /> Cancel Booking
+                                        </DropdownMenuItem>
+                                    )}
+
+                                    {permissions.canCancel && (
+                                        <DropdownMenuItem
+                                            onClick={handleDelete}
+                                            className="gap-2 text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="w-4 h-4" /> Archive Booking
+                                        </DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                    </div>
-
-                    {/* Actions Menu */}
-                    <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-                        {permissions.canRecordPayment && Number(booking.balance_amount) > 0 && (
-                            <Button
-                                onClick={() => setIsPaymentModalOpen(true)}
-                                className="gap-2 font-semibold shadow-xs"
-                            >
-                                <DollarSign className="w-4 h-4" /> Record Payment
-                            </Button>
-                        )}
-
-                        {permissions.canUpdate && booking.booking_status !== 'cancelled' && (
-                            <Link
-                                href={route('bookings.edit', { booking: booking.id })}
-                                className={buttonVariants({ variant: 'outline', className: 'gap-1.5' })}
-                            >
-                                <Edit className="w-4 h-4" /> Edit
-                            </Link>
-                        )}
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger
-                                render={
-                                    <Button variant="outline" size="icon">
-                                        <MoreHorizontal className="w-4 h-4" />
-                                    </Button>
-                                }
-                            />
-                            <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={() => window.print()} className="gap-2">
-                                    <Printer className="w-4 h-4" /> Print Summary
-                                </DropdownMenuItem>
-
-                                {permissions.canUpdate && (
-                                    <DropdownMenuItem onClick={() => setIsAssignModalOpen(true)} className="gap-2">
-                                        <UserCheck className="w-4 h-4" /> Assign Staff Handler
-                                    </DropdownMenuItem>
-                                )}
-
-                                <DropdownMenuSeparator />
-
-                                {permissions.canCancel && ['pending', 'confirmed'].includes(booking.booking_status) && (
-                                    <DropdownMenuItem
-                                        onClick={() => openStatusConfirmation('cancelled')}
-                                        className="gap-2 text-destructive focus:text-destructive"
-                                    >
-                                        <XCircle className="w-4 h-4" /> Cancel Booking
-                                    </DropdownMenuItem>
-                                )}
-
-                                {permissions.canCancel && (
-                                    <DropdownMenuItem
-                                        onClick={handleDelete}
-                                        className="gap-2 text-destructive focus:text-destructive"
-                                    >
-                                        <Trash2 className="w-4 h-4" /> Archive Booking
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
+                    }
+                />
 
                 {/* Status Stepper with Interactive Transition Actions */}
                 <div className="bg-card border rounded-xl p-4 sm:p-5 shadow-xs space-y-4">
@@ -419,7 +384,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                     <Button
                                         size="sm"
                                         onClick={() => openStatusConfirmation('confirmed')}
-                                        className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-700 text-xs font-semibold"
+                                        className="h-8 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold"
                                     >
                                         <CheckCircle2 className="w-3.5 h-3.5" /> Advance: Confirm Booking
                                     </Button>
@@ -429,7 +394,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                     <Button
                                         size="sm"
                                         onClick={() => openStatusConfirmation('completed')}
-                                        className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold"
+                                        className="h-8 gap-1.5 bg-success hover:bg-success/90 text-success-foreground text-xs font-semibold"
                                     >
                                         <CheckCircle2 className="w-3.5 h-3.5" /> Advance: Mark as Completed
                                     </Button>
@@ -463,7 +428,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                     className={cn(
                                         'p-3 rounded-lg border text-center transition-all flex flex-col items-center justify-center gap-1',
                                         step.completed
-                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                                            ? 'bg-success/10 border-success/30 text-success'
                                             : step.active
                                               ? 'bg-primary/10 border-primary/40 text-primary font-semibold ring-1 ring-primary/20'
                                               : 'bg-muted/40 border-border text-muted-foreground opacity-60',
@@ -471,7 +436,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                 >
                                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mb-0.5">
                                         {step.completed ? (
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                            <CheckCircle2 className="w-5 h-5 text-success" />
                                         ) : (
                                             <span>{idx + 1}</span>
                                         )}
@@ -488,25 +453,25 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                     {/* Left: Tabbed Detailed Views */}
                     <div className="lg:col-span-2 space-y-6">
                         <Tabs defaultValue="overview" className="w-full">
-                            <TabsList className="w-full justify-start overflow-x-auto h-11 p-1 bg-muted/60 border">
-                                <TabsTrigger value="overview" className="gap-1.5 text-xs">
+                            <TabsList className="w-full justify-start overflow-x-auto h-auto p-0 bg-transparent border-b border-border rounded-none gap-2">
+                                <TabsTrigger value="overview" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <Shield className="w-3.5 h-3.5" /> Overview
                                 </TabsTrigger>
-                                <TabsTrigger value="travelers" className="gap-1.5 text-xs">
+                                <TabsTrigger value="travelers" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <Users className="w-3.5 h-3.5" /> Travelers ({travelersWithDocs.length})
                                 </TabsTrigger>
-                                <TabsTrigger value="documents" className="gap-1.5 text-xs">
+                                <TabsTrigger value="documents" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <FileCheck2 className="w-3.5 h-3.5" /> Documents Checklist
                                 </TabsTrigger>
-                                <TabsTrigger value="payments" className="gap-1.5 text-xs">
+                                <TabsTrigger value="payments" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <CreditCard className="w-3.5 h-3.5" /> Payments & Ledger (
                                     {booking.payments?.length || 0})
                                 </TabsTrigger>
-                                <TabsTrigger value="notes" className="gap-1.5 text-xs">
+                                <TabsTrigger value="notes" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <MessageSquare className="w-3.5 h-3.5" /> Notes Timeline (
                                     {booking.booking_notes?.length || 0})
                                 </TabsTrigger>
-                                <TabsTrigger value="activity" className="gap-1.5 text-xs">
+                                <TabsTrigger value="activity" className="gap-1.5 text-xs data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none px-3 py-2 font-medium">
                                     <Activity className="w-3.5 h-3.5" /> Activity
                                 </TabsTrigger>
                             </TabsList>
@@ -766,7 +731,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                             {t.checklist.passport_info === 'valid' ? (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                    className="bg-success/10 text-success border-success/30 text-[10px]"
                                                                 >
                                                                     Valid ({t.passport_number})
                                                                 </Badge>
@@ -780,7 +745,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                             ) : (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                    className="bg-warning/10 text-warning border-warning/30 text-[10px]"
                                                                 >
                                                                     Missing Passport No
                                                                 </Badge>
@@ -790,14 +755,14 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                             {t.checklist.passport_doc === 'verified' ? (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                    className="bg-success/10 text-success border-success/30 text-[10px]"
                                                                 >
                                                                     Verified
                                                                 </Badge>
                                                             ) : t.checklist.passport_doc === 'pending' ? (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                    className="bg-warning/10 text-warning border-warning/30 text-[10px]"
                                                                 >
                                                                     Pending Review
                                                                 </Badge>
@@ -814,14 +779,14 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                             {t.checklist.visa_doc === 'verified' ? (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]"
+                                                                    className="bg-success/10 text-success border-success/30 text-[10px]"
                                                                 >
                                                                     Verified
                                                                 </Badge>
                                                             ) : t.checklist.visa_doc === 'pending' ? (
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]"
+                                                                    className="bg-warning/10 text-warning border-warning/30 text-[10px]"
                                                                 >
                                                                     Pending
                                                                 </Badge>
@@ -906,7 +871,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                             <TableCell className="text-xs uppercase font-medium">
                                                                 {p.payment_method}
                                                             </TableCell>
-                                                            <TableCell className="text-xs text-right font-semibold text-emerald-600">
+                                                            <TableCell className="text-xs text-right font-semibold text-success">
                                                                 +
                                                                 <MoneyText
                                                                     amount={Number(p.amount)}
@@ -981,11 +946,11 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                                     className={cn(
                                                                         'capitalize text-[10px]',
                                                                         s.status === 'paid' &&
-                                                                            'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+                                                                            'bg-success/10 text-success border-success/30',
                                                                         s.status === 'overdue' &&
                                                                             'bg-destructive/10 text-destructive border-destructive/30',
                                                                         s.status === 'unpaid' &&
-                                                                            'bg-amber-500/10 text-amber-600 border-amber-500/30',
+                                                                            'bg-warning/10 text-warning border-warning/30',
                                                                     )}
                                                                 >
                                                                     {s.status}
@@ -1082,7 +1047,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                         className={cn(
                                                             'text-[10px] capitalize',
                                                             note.type === 'status_change' &&
-                                                                'bg-blue-500/10 text-blue-600 border-blue-500/30',
+                                                                'bg-info/10 text-info border-info/30',
                                                             note.type === 'system' && 'bg-muted text-muted-foreground',
                                                             note.type === 'note' &&
                                                                 'bg-primary/10 text-primary border-primary/30',
@@ -1183,7 +1148,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                         <Card className="border-border shadow-xs">
                             <CardHeader className="bg-primary/5 border-b p-4">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                    <CardTitle className="text-base font-bold flex items-center gap-2">
                                         <DollarSign className="w-4 h-4 text-primary" /> Financial Summary
                                     </CardTitle>
                                     <Badge
@@ -1191,10 +1156,10 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                         className={cn(
                                             'text-xs capitalize font-medium',
                                             Number(booking.balance_amount) <= 0
-                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                                ? 'bg-success/10 text-success border-success/30'
                                                 : Number(booking.paid_amount) > 0
-                                                  ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
-                                                  : 'bg-amber-500/10 text-amber-600 border-amber-500/30',
+                                                  ? 'bg-info/10 text-info border-info/30'
+                                                  : 'bg-warning/10 text-warning border-warning/30',
                                         )}
                                     >
                                         {booking.payment_status ||
@@ -1231,7 +1196,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                 )}
 
                                 {Number(booking.discount_amount) > 0 && (
-                                    <div className="flex justify-between items-center text-emerald-600 font-medium">
+                                    <div className="flex justify-between items-center text-success font-medium">
                                         <span>Authorized Discount:</span>
                                         <span>
                                             -
@@ -1239,7 +1204,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                                 amount={Number(booking.discount_amount)}
                                                 currency={currency}
                                                 size="sm"
-                                                className="text-emerald-600"
+                                                className="text-success"
                                             />
                                         </span>
                                     </div>
@@ -1257,7 +1222,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                 </div>
 
                                 <div className="pt-2 border-t space-y-2">
-                                    <div className="flex justify-between items-center text-emerald-600 font-semibold">
+                                    <div className="flex justify-between items-center text-success font-semibold">
                                         <span>Total Paid:</span>
                                         <MoneyText
                                             amount={Number(booking.paid_amount || 0)}
@@ -1275,7 +1240,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                             weight="bold"
                                             className={cn(
                                                 Number(booking.balance_amount) <= 0
-                                                    ? 'text-emerald-600'
+                                                    ? 'text-success'
                                                     : 'text-destructive font-mono',
                                             )}
                                         />
@@ -1284,7 +1249,7 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                                     {/* Progress bar */}
                                     <div className="w-full bg-muted h-2 rounded-full overflow-hidden mt-1">
                                         <div
-                                            className="bg-emerald-600 h-full rounded-full transition-all duration-300"
+                                            className="bg-success h-full rounded-full transition-all duration-300"
                                             style={{
                                                 width: `${Math.min(
                                                     100,
@@ -1313,13 +1278,13 @@ export default function Show({ booking, travelersWithDocs, activityLogs, employe
                         {/* Next Due Date Card */}
                         <Card className="border-border shadow-xs">
                             <CardHeader className="p-4 pb-2">
-                                <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                <CardTitle className="text-base font-bold flex items-center gap-1.5">
                                     <CalendarClock className="w-4 h-4 text-primary" /> Next Payment Due
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-4 pt-1 text-xs space-y-1">
                                 {Number(booking.balance_amount) <= 0 ? (
-                                    <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-2">
+                                    <div className="p-2.5 bg-success/10 border border-success/20 rounded-lg text-success font-semibold flex items-center gap-2">
                                         <CheckCircle2 className="w-4 h-4" /> Fully Paid — No Pending Dues
                                     </div>
                                 ) : (

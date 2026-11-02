@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Requests\StoreTourPackageRequest;
 use App\Http\Requests\UpdateTourPackageRequest;
 use App\Models\Destination;
+use App\Models\Supplier;
 use App\Models\TourPackage;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -52,15 +54,21 @@ class TourPackageController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $destinations = Destination::orderBy('country')->orderBy('city_region')->get();
 
-        return Inertia::render('Tours/Create', [
+        $props = [
             'destinations' => $destinations,
             'tiers' => config('tour_tiers.tiers', []),
             'allowed_by_destination' => config('tour_tiers.allowed_by_destination', []),
-        ]);
+        ];
+
+        if ($request->user() && $request->user()->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Finance->value])) {
+            $props['suppliers'] = Supplier::where('is_active', true)->orderBy('name')->get(['id', 'name', 'supplier_code', 'default_currency']);
+        }
+
+        return Inertia::render('Tours/Create', $props);
     }
 
     public function store(StoreTourPackageRequest $request)
@@ -92,17 +100,25 @@ class TourPackageController extends Controller
         return redirect()->route('tours.edit', $tour);
     }
 
-    public function edit(TourPackage $tour)
+    public function edit(TourPackage $tour, Request $request)
     {
         $tour->load('destination');
         $destinations = Destination::orderBy('country')->orderBy('city_region')->get();
 
-        return Inertia::render('Tours/Edit', [
+        $props = [
             'tour' => $tour,
             'destinations' => $destinations,
             'tiers' => config('tour_tiers.tiers', []),
             'allowed_by_destination' => config('tour_tiers.allowed_by_destination', []),
-        ]);
+        ];
+
+        if ($request->user() && $request->user()->hasAnyRole([UserRole::SuperAdmin->value, UserRole::Manager->value, UserRole::Finance->value])) {
+            $tour->load(['costLines.supplier']);
+            $props['cost_lines'] = $tour->costLines;
+            $props['suppliers'] = Supplier::where('is_active', true)->orderBy('name')->get(['id', 'name', 'supplier_code', 'default_currency']);
+        }
+
+        return Inertia::render('Tours/Edit', $props);
     }
 
     public function update(UpdateTourPackageRequest $request, TourPackage $tour)

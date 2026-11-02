@@ -1,8 +1,7 @@
-import { Deferred, Head, Link } from '@inertiajs/react';
+import { Deferred, Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { PageHeader, StatusBadge, MoneyText, EmptyState, ErrorState } from '@/components/common';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Users,
@@ -14,17 +13,18 @@ import {
     Activity,
     CheckCircle2,
     Clock,
-    ArrowRight,
     CircleDot,
     Bookmark,
     AlertTriangle,
+    PlaneTakeoff,
+    ChevronRight,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 /**
  * Dashboard — Staff Home
  *
- * Displays KPI tiles, recent activity feed, and a tasks-due panel.
+ * Displays KPI tiles, recent activity feed, tasks-due panel, and upcoming departures.
  * Tiles are role-ordered: Finance sees payment-focused first, Sales sees leads first.
  * Uses Inertia deferred loading with skeleton placeholders for perceived instant load.
  */
@@ -67,6 +67,17 @@ interface TaskItem {
     link?: string;
 }
 
+interface UpcomingDepartureItem {
+    id: string | number;
+    reference?: string;
+    tour_name?: string;
+    customer_name?: string;
+    departure_date?: string;
+    status?: string;
+    balance_amount?: number;
+    link?: string;
+}
+
 interface OfficeStats {
     todaysBookings?: TrendData;
     pendingPayments?: PaymentTrend;
@@ -75,6 +86,7 @@ interface OfficeStats {
     tileOrder?: string[];
     recentActivity?: ActivityItem[];
     tasks?: TaskItem[];
+    upcomingDepartures?: UpcomingDepartureItem[];
 }
 
 interface DashboardProps {
@@ -84,21 +96,22 @@ interface DashboardProps {
         myDocuments?: number | null;
         myPayments?: number | null;
     };
+    upcomingDepartures?: UpcomingDepartureItem[];
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// StatCard Component
+// StatCard Component (Summary Tile style)
 // ────────────────────────────────────────────────────────────────────────────
 
 interface StatCardProps {
     title: string;
-    value: string;
+    value: ReactNode;
     description: string;
     icon: ReactNode;
     trend?: 'up' | 'down';
-    trendValue?: string | number;
+    trendValue?: ReactNode;
     linkTo?: string;
-    accentColor?: string;
+    iconTint: string;
 }
 
 function StatCard({
@@ -109,84 +122,57 @@ function StatCard({
     trend,
     trendValue,
     linkTo,
-    accentColor = 'primary',
+    iconTint,
 }: StatCardProps) {
-    const accentClasses: Record<string, { bg: string; icon: string; hover: string }> = {
-        primary: {
-            bg: 'from-primary/[0.06] to-primary/[0.02]',
-            icon: 'bg-primary/10 text-primary group-hover:bg-primary/15',
-            hover: 'hover:shadow-primary/5',
-        },
-        blue: {
-            bg: 'from-blue-500/[0.06] to-blue-500/[0.02]',
-            icon: 'bg-blue-500/10 text-blue-500 group-hover:bg-blue-500/15',
-            hover: 'hover:shadow-blue-500/5',
-        },
-        emerald: {
-            bg: 'from-emerald-500/[0.06] to-emerald-500/[0.02]',
-            icon: 'bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500/15',
-            hover: 'hover:shadow-emerald-500/5',
-        },
-        amber: {
-            bg: 'from-amber-500/[0.06] to-amber-500/[0.02]',
-            icon: 'bg-amber-500/10 text-amber-500 group-hover:bg-amber-500/15',
-            hover: 'hover:shadow-amber-500/5',
-        },
-        rose: {
-            bg: 'from-rose-500/[0.06] to-rose-500/[0.02]',
-            icon: 'bg-rose-500/10 text-rose-500 group-hover:bg-rose-500/15',
-            hover: 'hover:shadow-rose-500/5',
-        },
-    };
-
-    const accent = accentClasses[accentColor] ?? accentClasses.primary;
-
-    const content = (
-        <Card
-            className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${accent.hover} hover:-translate-y-0.5 h-full border-border/60`}
-        >
-            <div
-                className={`absolute inset-0 bg-gradient-to-br ${accent.bg} opacity-0 transition-opacity group-hover:opacity-100`}
-            />
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-                <div className={`rounded-lg p-2.5 transition-colors ${accent.icon}`}>{icon}</div>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold tracking-tight">{value}</div>
-                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+    const cardContent = (
+        <div className="flex flex-col justify-between h-full">
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
+                    {title}
+                </span>
+                <div className={`size-8 rounded-lg grid place-items-center shrink-0 ${iconTint}`}>
+                    {icon}
+                </div>
+            </div>
+            <div className="mt-3">
+                <div className="text-2xl font-semibold tracking-tight text-foreground truncate">
+                    {value}
+                </div>
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
                     {trend && trendValue !== undefined && trendValue !== 0 && (
                         <span
-                            className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium ${
+                            className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium border ${
                                 trend === 'up'
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                                    ? 'bg-success/10 text-success border-success/20'
+                                    : 'bg-destructive/10 text-destructive border-destructive/20'
                             }`}
                         >
-                            {trend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                            {trend === 'up' ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
                             {trendValue}
                         </span>
                     )}
-                    <span>{description}</span>
+                    <span className="truncate">{description}</span>
                 </div>
-                {linkTo && (
-                    <div className="mt-3 flex items-center text-xs font-medium text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0">
-                        View all <ArrowRight className="ml-1 h-3 w-3" />
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 
     if (linkTo) {
         return (
-            <Link href={linkTo} className="block h-full">
-                {content}
+            <Link
+                href={linkTo}
+                className="group block rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 ring-ring"
+            >
+                {cardContent}
             </Link>
         );
     }
 
-    return content;
+    return (
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            {cardContent}
+        </div>
+    );
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -195,47 +181,41 @@ function StatCard({
 
 function StatCardSkeleton() {
     return (
-        <Card className="h-full border-border/60">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-9 rounded-lg" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="size-8 rounded-lg" />
+            </div>
+            <div className="mt-3">
+                <Skeleton className="h-8 w-20 mb-2" />
                 <Skeleton className="h-3.5 w-32" />
-            </CardContent>
-        </Card>
-    );
-}
-
-function ActivityFeedSkeleton() {
-    return (
-        <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex gap-4">
-                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-3 w-20" />
-                    </div>
-                </div>
-            ))}
+            </div>
         </div>
     );
 }
 
-function TasksPanelSkeleton() {
+function CardSkeleton() {
     return (
-        <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
-                    <Skeleton className="h-4 w-4 mt-1 rounded" />
-                    <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-3.5 w-24" />
-                    </div>
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col h-[480px]">
+            <div className="px-6 py-4 border-b border-border bg-muted/50 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="size-4 rounded" />
+                    <Skeleton className="h-4 w-28" />
                 </div>
-            ))}
+                <Skeleton className="h-3 w-16" />
+            </div>
+            <div className="p-6 space-y-4 flex-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                        <Skeleton className="size-8 rounded-lg shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-3.5 w-3/4" />
+                            <Skeleton className="h-2.5 w-1/3" />
+                        </div>
+                        <Skeleton className="h-5 w-16 rounded-full shrink-0" />
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
@@ -243,51 +223,107 @@ function TasksPanelSkeleton() {
 function DashboardLoadingSkeleton() {
     return (
         <div className="space-y-8">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[1, 2, 3, 4].map((i) => (
                     <StatCardSkeleton key={i} />
                 ))}
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4 flex flex-col h-[420px] border-border/60">
-                    <CardHeader>
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-48 mt-1" />
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                        <ActivityFeedSkeleton />
-                    </CardContent>
-                </Card>
-                <Card className="col-span-3 flex flex-col h-[420px] border-border/60">
-                    <CardHeader>
-                        <Skeleton className="h-5 w-24" />
-                        <Skeleton className="h-4 w-44 mt-1" />
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                        <TasksPanelSkeleton />
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
             </div>
         </div>
     );
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Activity Feed Icons
-// ────────────────────────────────────────────────────────────────────────────
+// Activity Feed Configs
+// ────────────────────────────────────────────────────────────────────
 
-const activityIcons: Record<string, { icon: ReactNode; bg: string }> = {
-    new_booking: { icon: <CalendarCheck className="h-4 w-4" />, bg: 'bg-blue-500/10 text-blue-500' },
-    payment_received: { icon: <CreditCard className="h-4 w-4" />, bg: 'bg-emerald-500/10 text-emerald-500' },
-    document_uploaded: { icon: <FileText className="h-4 w-4" />, bg: 'bg-amber-500/10 text-amber-500' },
-    lead_submitted: { icon: <Users className="h-4 w-4" />, bg: 'bg-purple-500/10 text-purple-500' },
+interface ActivityConfig {
+    icon: ReactNode;
+    tint: string;
+    badgeType?: string;
+    badgeStatus: string;
+}
+
+const activityConfigs: Record<string, ActivityConfig> = {
+    new_booking: {
+        icon: <CalendarCheck className="size-4" />,
+        tint: 'bg-info/10 text-info border border-info/20',
+        badgeType: 'booking',
+        badgeStatus: 'Confirmed',
+    },
+    payment_received: {
+        icon: <CreditCard className="size-4" />,
+        tint: 'bg-success/10 text-success border border-success/20',
+        badgeType: 'payment',
+        badgeStatus: 'Paid',
+    },
+    document_uploaded: {
+        icon: <FileText className="size-4" />,
+        tint: 'bg-warning/10 text-warning border border-warning/20',
+        badgeType: 'document',
+        badgeStatus: 'Pending Review',
+    },
+    lead_submitted: {
+        icon: <Users className="size-4" />,
+        tint: 'bg-primary/10 text-primary border border-primary/20',
+        badgeType: 'alert',
+        badgeStatus: 'Available',
+    },
 };
+
+function renderActivityTitle(activity: ActivityItem): ReactNode {
+    if (activity.type === 'payment_received') {
+        const match = activity.title.match(/Payment of LKR\s+([\d,.]+)\s+received from\s+(.*)/i);
+        if (match) {
+            const amount = parseFloat(match[1].replace(/,/g, ''));
+            return (
+                <span>
+                    Payment of{' '}
+                    <MoneyText
+                        amount={amount}
+                        currency="LKR"
+                        weight="semibold"
+                        className="font-semibold text-foreground"
+                    />{' '}
+                    received from {match[2]}
+                </span>
+            );
+        }
+    }
+    return activity.title;
+}
+
+function renderTaskTitle(task: TaskItem): ReactNode {
+    if (task.type === 'payment') {
+        const match = task.title.match(/Collect balance LKR\s+([\d,.]+)\s+from\s+(.*)/i);
+        if (match) {
+            const amount = parseFloat(match[1].replace(/,/g, ''));
+            return (
+                <span>
+                    Collect balance{' '}
+                    <MoneyText
+                        amount={amount}
+                        currency="LKR"
+                        weight="semibold"
+                        className="font-semibold text-foreground"
+                    />{' '}
+                    from {match[2]}
+                </span>
+            );
+        }
+    }
+    return task.title;
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Main Dashboard Component
 // ────────────────────────────────────────────────────────────────────────────
 
-export default function Dashboard({ officeStats, customerStats }: DashboardProps) {
+export default function Dashboard({ officeStats, customerStats, upcomingDepartures }: DashboardProps) {
     const { user, hasRole } = useAuth();
     const isOffice = hasRole('super_admin', 'manager', 'staff', 'finance');
     const isCustomer = hasRole('customer');
@@ -295,6 +331,12 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
     const isSales = hasRole('staff', 'manager', 'super_admin');
 
     const [checkedTasks, setCheckedTasks] = useState<Set<string>>(new Set());
+    const [hasActivityError, setHasActivityError] = useState(false);
+    const [hasTasksError, setHasTasksError] = useState(false);
+    const [hasDeparturesError, setHasDeparturesError] = useState(false);
+
+    const firstName = user?.name ? user.name.split(' ')[0] : undefined;
+    const departures = officeStats?.upcomingDepartures ?? upcomingDepartures ?? [];
 
     const toggleTask = (taskId: string) => {
         setCheckedTasks((prev) => {
@@ -321,11 +363,11 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                         title="Today's Bookings"
                         value={stats.todaysBookings.count.toString()}
                         description="vs yesterday"
-                        icon={<CalendarCheck className="h-4 w-4" />}
+                        icon={<CalendarCheck className="size-4" />}
                         trend={stats.todaysBookings.trend}
                         trendValue={stats.todaysBookings.diff}
                         linkTo="/bookings"
-                        accentColor="blue"
+                        iconTint="bg-info/10 text-info border border-info/20"
                     />
                 ) : null,
 
@@ -334,13 +376,27 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                     <StatCard
                         key="pendingPayments"
                         title="Pending Payments"
-                        value={`Rs. ${Number(stats.pendingPayments.total).toLocaleString()}`}
+                        value={
+                            <MoneyText
+                                amount={Number(stats.pendingPayments.total)}
+                                size="2xl"
+                                weight="semibold"
+                                className="text-2xl font-semibold text-foreground"
+                            />
+                        }
                         description={`${stats.pendingPayments.count} bookings with balances`}
-                        icon={<CreditCard className="h-4 w-4" />}
+                        icon={<CreditCard className="size-4" />}
                         trend={stats.pendingPayments.trend}
-                        trendValue={`Rs. ${Number(stats.pendingPayments.diff).toLocaleString()}`}
+                        trendValue={
+                            <MoneyText
+                                amount={Number(stats.pendingPayments.diff)}
+                                size="sm"
+                                weight="medium"
+                                className="text-[10px]"
+                            />
+                        }
                         linkTo="/payments"
-                        accentColor="rose"
+                        iconTint="bg-success/10 text-success border border-success/20"
                     />
                 ) : null,
 
@@ -351,11 +407,11 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                         title="New Leads"
                         value={stats.newLeads.count.toString()}
                         description="in the last 7 days"
-                        icon={<Users className="h-4 w-4" />}
+                        icon={<Users className="size-4" />}
                         trend={stats.newLeads.trend}
                         trendValue={stats.newLeads.diff}
                         linkTo="/customers"
-                        accentColor="emerald"
+                        iconTint="bg-primary/10 text-primary border border-primary/20"
                     />
                 ) : null,
 
@@ -366,11 +422,11 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                         title="Document Actions"
                         value={stats.pendingDocuments.count.toString()}
                         description={`${stats.pendingDocuments.expiring} expiring · ${stats.pendingDocuments.pendingVerification} pending`}
-                        icon={<FileText className="h-4 w-4" />}
+                        icon={<FileText className="size-4" />}
                         trend={stats.pendingDocuments.trend}
                         trendValue={stats.pendingDocuments.diff}
                         linkTo="/documents"
-                        accentColor="amber"
+                        iconTint="bg-warning/10 text-warning border border-warning/20"
                     />
                 ) : null,
         };
@@ -387,22 +443,25 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
             <Head title="Dashboard" />
 
             <div className="space-y-8">
-                {/* Welcome Section */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h2>
-                        <p className="text-muted-foreground">
-                            {isCustomer
-                                ? "Here's an overview of your travel activity."
-                                : "Here's what's happening in your travel agency today."}
+                {/* PageHeader with optional greeting */}
+                <div className="space-y-2">
+                    {firstName && (
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Welcome back, {firstName}
                         </p>
-                    </div>
-                    {isOffice && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <CircleDot className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
-                            <span>Live data · refreshes every 60s</span>
-                        </div>
                     )}
+                    <PageHeader
+                        title="Dashboard"
+                        description="Overview of today's bookings, payments, documents and leads."
+                        actions={
+                            isOffice ? (
+                                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full border border-border">
+                                    <CircleDot className="size-3 text-success animate-pulse" />
+                                    <span>Live data · refreshes every 60s</span>
+                                </div>
+                            ) : undefined
+                        }
+                    />
                 </div>
 
                 {/* Office Dashboard */}
@@ -410,164 +469,287 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
                     <Deferred data="officeStats" fallback={<DashboardLoadingSkeleton />}>
                         <div className="space-y-8">
                             {/* KPI Tiles */}
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 {officeStats && buildTiles(officeStats)}
                             </div>
 
-                            {/* Activity Feed + Tasks */}
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                                {/* Recent Activity Feed */}
-                                <Card className="col-span-4 flex flex-col h-[420px] border-border/60">
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between">
-                                            <CardTitle className="flex items-center gap-2 text-base">
-                                                <Activity className="h-4.5 w-4.5 text-primary" />
-                                                Recent Activity
-                                            </CardTitle>
-                                            <Badge variant="secondary" className="text-[0.65rem] font-medium">
-                                                Last 15 events
-                                            </Badge>
-                                        </div>
-                                        <CardDescription>Latest actions across the platform.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex-1 overflow-y-auto pr-2">
-                                        {!officeStats?.recentActivity || officeStats.recentActivity.length === 0 ? (
-                                            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-                                                <Activity className="mb-2 h-8 w-8 opacity-30" />
-                                                <p className="text-sm font-medium">No recent activity</p>
-                                                <p className="text-xs mt-1">
-                                                    Activity will appear here as events occur.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-1">
-                                                {officeStats.recentActivity.map((activity, index) => {
-                                                    const config =
-                                                        activityIcons[activity.type] ?? activityIcons.new_booking;
-                                                    return (
-                                                        <Link
-                                                            key={activity.id}
-                                                            href={activity.link ?? '#'}
-                                                            className="flex gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/50 group"
-                                                        >
-                                                            <div className="mt-0.5 shrink-0">
-                                                                <div
-                                                                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${config.bg}`}
-                                                                >
-                                                                    {config.icon}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex flex-col flex-1 min-w-0">
-                                                                <p className="text-sm font-medium leading-tight truncate group-hover:text-foreground">
-                                                                    {activity.title}
-                                                                </p>
-                                                                <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                                                    <Clock className="h-3 w-3" /> {activity.time}
-                                                                </span>
-                                                            </div>
-                                                            <ArrowRight className="h-4 w-4 mt-1 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
-                                                        </Link>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                            {/* Recent Activity / Due Tasks / Upcoming Departures Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Recent Activity Card */}
+                                <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col h-[480px]">
+                                    <div className="px-4 sm:px-6 py-4 border-b border-border bg-muted/50 flex items-center justify-between shrink-0">
+                                        <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
+                                            <Activity className="size-4 text-primary" />
+                                            <span>Recent Activity</span>
+                                        </h3>
+                                        <Link
+                                            href="/bookings"
+                                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 ring-ring rounded"
+                                        >
+                                            <span>View all</span>
+                                            <ChevronRight className="size-3.5" />
+                                        </Link>
+                                    </div>
 
-                                {/* Tasks Due Panel */}
-                                <Card className="col-span-3 flex flex-col h-[420px] border-border/60">
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between">
-                                            <CardTitle className="flex items-center gap-2 text-base">
-                                                <CheckCircle2 className="h-4.5 w-4.5 text-primary" />
-                                                Tasks Due
-                                            </CardTitle>
+                                    {hasActivityError ? (
+                                        <ErrorState
+                                            icon={AlertTriangle}
+                                            title="Failed to load activity"
+                                            description="Could not load the latest activity feed."
+                                            retryLabel="Retry"
+                                            onRetry={() => {
+                                                setHasActivityError(false);
+                                                router.reload({ only: ['officeStats'] });
+                                            }}
+                                            className="border-none rounded-none py-12 flex-1"
+                                        />
+                                    ) : !officeStats?.recentActivity || officeStats.recentActivity.length === 0 ? (
+                                        <EmptyState
+                                            icon={Activity}
+                                            title="No recent activity"
+                                            description="Activity will appear here as bookings and events occur."
+                                            className="border-none py-12 flex-1"
+                                        />
+                                    ) : (
+                                        <div className="divide-y divide-border overflow-y-auto flex-1">
+                                            {officeStats.recentActivity.map((activity) => {
+                                                const config =
+                                                    activityConfigs[activity.type] ?? activityConfigs.new_booking;
+                                                return (
+                                                    <Link
+                                                        key={activity.id}
+                                                        href={activity.link ?? '#'}
+                                                        className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 hover:bg-muted/50 transition-colors group"
+                                                    >
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div
+                                                                className={`size-8 rounded-lg grid place-items-center shrink-0 ${config.tint}`}
+                                                            >
+                                                                {config.icon}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                                                                    {renderActivityTitle(activity)}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                                                    <Clock className="size-3" />
+                                                                    <span>{activity.time}</span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <StatusBadge
+                                                                type={config.badgeType}
+                                                                status={config.badgeStatus}
+                                                            />
+                                                            <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block" />
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Tasks Due Card */}
+                                <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col h-[480px]">
+                                    <div className="px-4 sm:px-6 py-4 border-b border-border bg-muted/50 flex items-center justify-between shrink-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
+                                                <CheckCircle2 className="size-4 text-primary" />
+                                                <span>Tasks Due</span>
+                                            </h3>
                                             {overdueCount > 0 && (
-                                                <Badge
-                                                    variant="destructive"
-                                                    className="text-[0.65rem] font-medium gap-1"
-                                                >
-                                                    <AlertTriangle className="h-3 w-3" />
-                                                    {overdueCount} overdue
-                                                </Badge>
+                                                <StatusBadge
+                                                    status={`${overdueCount} overdue`}
+                                                    className="bg-destructive/10 text-destructive border-destructive/20 ml-1"
+                                                />
                                             )}
                                         </div>
-                                        <CardDescription>Upcoming deadlines and follow-ups.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex-1 overflow-y-auto pr-2">
-                                        {!officeStats?.tasks || officeStats.tasks.length === 0 ? (
-                                            <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-                                                <CheckCircle2 className="mb-2 h-8 w-8 opacity-30" />
-                                                <p className="text-sm font-medium">You're all caught up!</p>
-                                                <p className="text-xs mt-1">No pending tasks right now.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {officeStats.tasks.map((task) => {
-                                                    const isChecked = checkedTasks.has(task.id);
-                                                    const taskTypeIcon =
-                                                        task.type === 'payment' ? (
-                                                            <CreditCard className="h-3.5 w-3.5" />
-                                                        ) : task.type === 'document' ? (
-                                                            <FileText className="h-3.5 w-3.5" />
-                                                        ) : (
-                                                            <Bookmark className="h-3.5 w-3.5" />
-                                                        );
+                                        <Link
+                                            href="/bookings"
+                                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 ring-ring rounded"
+                                        >
+                                            <span>View all</span>
+                                            <ChevronRight className="size-3.5" />
+                                        </Link>
+                                    </div>
 
-                                                    return (
-                                                        <div
-                                                            key={task.id}
-                                                            className={`flex items-start gap-3 rounded-lg border p-3 transition-all duration-200 ${
-                                                                isChecked
-                                                                    ? 'bg-muted/30 border-border/40 opacity-60'
-                                                                    : task.is_overdue
-                                                                      ? 'border-rose-500/30 bg-rose-500/[0.03] hover:bg-rose-500/[0.06]'
-                                                                      : 'border-border/60 hover:bg-muted/50'
-                                                            }`}
-                                                        >
+                                    {hasTasksError ? (
+                                        <ErrorState
+                                            icon={AlertTriangle}
+                                            title="Failed to load tasks"
+                                            description="Could not load your pending tasks."
+                                            retryLabel="Retry"
+                                            onRetry={() => {
+                                                setHasTasksError(false);
+                                                router.reload({ only: ['officeStats'] });
+                                            }}
+                                            className="border-none rounded-none py-12 flex-1"
+                                        />
+                                    ) : !officeStats?.tasks || officeStats.tasks.length === 0 ? (
+                                        <EmptyState
+                                            icon={CheckCircle2}
+                                            title="You're all caught up!"
+                                            description="No pending tasks or deadlines right now."
+                                            className="border-none py-12 flex-1"
+                                        />
+                                    ) : (
+                                        <div className="divide-y divide-border overflow-y-auto flex-1">
+                                            {officeStats.tasks.map((task) => {
+                                                const isChecked = checkedTasks.has(task.id);
+                                                const taskTypeIcon =
+                                                    task.type === 'payment' ? (
+                                                        <CreditCard className="size-3.5 text-muted-foreground" />
+                                                    ) : task.type === 'document' ? (
+                                                        <FileText className="size-3.5 text-muted-foreground" />
+                                                    ) : (
+                                                        <Bookmark className="size-3.5 text-muted-foreground" />
+                                                    );
+
+                                                return (
+                                                    <div
+                                                        key={task.id}
+                                                        className={`flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 hover:bg-muted/50 transition-colors ${
+                                                            isChecked ? 'opacity-50 bg-muted/20' : ''
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-3 min-w-0">
                                                             <input
                                                                 type="checkbox"
                                                                 checked={isChecked}
                                                                 onChange={() => toggleTask(task.id)}
-                                                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                                                className="size-4 rounded border-border text-primary focus:ring-ring cursor-pointer shrink-0"
+                                                                aria-label={`Mark task as completed: ${task.title}`}
                                                             />
-                                                            <div className="grid gap-1 flex-1 min-w-0">
+                                                            <div className="min-w-0">
                                                                 <Link
                                                                     href={task.link ?? '#'}
-                                                                    className={`text-sm font-medium leading-tight hover:underline ${isChecked ? 'line-through' : ''}`}
+                                                                    className={`text-sm font-medium text-foreground hover:text-primary transition-colors block truncate ${
+                                                                        isChecked
+                                                                            ? 'line-through text-muted-foreground'
+                                                                            : ''
+                                                                    }`}
                                                                 >
-                                                                    {task.title}
+                                                                    {renderTaskTitle(task)}
                                                                 </Link>
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    {task.is_overdue ? (
-                                                                        <Badge
-                                                                            variant="destructive"
-                                                                            className="text-[0.6rem] px-1.5 py-0 h-4 gap-0.5"
-                                                                        >
-                                                                            <AlertTriangle className="h-2.5 w-2.5" />
-                                                                            Overdue
-                                                                        </Badge>
-                                                                    ) : (
-                                                                        <Badge
-                                                                            variant="secondary"
-                                                                            className="text-[0.6rem] px-1.5 py-0 h-4"
-                                                                        >
-                                                                            Upcoming
-                                                                        </Badge>
-                                                                    )}
-                                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                                        {taskTypeIcon}
-                                                                        {task.due}
-                                                                    </span>
-                                                                </div>
+                                                                <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                                                    {taskTypeIcon}
+                                                                    <span>Due {task.due}</span>
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            {task.is_overdue ? (
+                                                                <StatusBadge
+                                                                    status="Overdue"
+                                                                    className="bg-destructive/10 text-destructive border-destructive/20"
+                                                                />
+                                                            ) : (
+                                                                <StatusBadge
+                                                                    status="Pending"
+                                                                    className="bg-warning/10 text-warning border-warning/20"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Upcoming Departures Card */}
+                                <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden flex flex-col h-[480px] md:col-span-2 lg:col-span-1">
+                                    <div className="px-4 sm:px-6 py-4 border-b border-border bg-muted/50 flex items-center justify-between shrink-0">
+                                        <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
+                                            <PlaneTakeoff className="size-4 text-primary" />
+                                            <span>Upcoming Departures</span>
+                                        </h3>
+                                        <Link
+                                            href="/bookings"
+                                            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 ring-ring rounded"
+                                        >
+                                            <span>View all</span>
+                                            <ChevronRight className="size-3.5" />
+                                        </Link>
+                                    </div>
+
+                                    {hasDeparturesError ? (
+                                        <ErrorState
+                                            icon={AlertTriangle}
+                                            title="Failed to load departures"
+                                            description="Could not load upcoming departures data."
+                                            retryLabel="Retry"
+                                            onRetry={() => {
+                                                setHasDeparturesError(false);
+                                                router.reload({ only: ['officeStats'] });
+                                            }}
+                                            className="border-none rounded-none py-12 flex-1"
+                                        />
+                                    ) : departures.length === 0 ? (
+                                        <EmptyState
+                                            icon={PlaneTakeoff}
+                                            title="No upcoming departures"
+                                            description="No departures scheduled for the upcoming period."
+                                            className="border-none py-12 flex-1"
+                                        />
+                                    ) : (
+                                        <div className="divide-y divide-border overflow-y-auto flex-1">
+                                            {departures.map((departure) => (
+                                                <div
+                                                    key={departure.id}
+                                                    className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3.5 hover:bg-muted/50 transition-colors group"
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="size-8 rounded-lg grid place-items-center shrink-0 bg-info/10 text-info border border-info/20">
+                                                            <PlaneTakeoff className="size-4" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <Link
+                                                                href={departure.link ?? `/bookings/${departure.id}`}
+                                                                className="text-sm font-medium text-foreground hover:text-primary transition-colors block truncate"
+                                                            >
+                                                                {departure.tour_name ??
+                                                                    departure.reference ??
+                                                                    `Booking #${departure.id}`}
+                              </Link>
+                                                            <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                                                                {departure.customer_name && (
+                                                                    <span className="truncate">
+                                                                        {departure.customer_name}
+                                                                    </span>
+                                                                )}
+                                                                {departure.departure_date && (
+                                                                    <span className="flex items-center gap-1 shrink-0">
+                                                                        <Clock className="size-3" />{' '}
+                                                                        {departure.departure_date}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        {departure.balance_amount !== undefined &&
+                                                            departure.balance_amount > 0 && (
+                                                                <MoneyText
+                                                                    amount={Number(departure.balance_amount)}
+                                                                    currency="LKR"
+                                                                    weight="medium"
+                                                                    size="sm"
+                                                                    className="text-xs text-muted-foreground hidden sm:inline"
+                                                                />
+                                                            )}
+                                                        <StatusBadge
+                                                            type="booking"
+                                                            status={departure.status ?? 'Confirmed'}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </Deferred>
@@ -575,30 +757,34 @@ export default function Dashboard({ officeStats, customerStats }: DashboardProps
 
                 {/* Customer Portal Dashboard */}
                 {isCustomer && customerStats && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         <StatCard
                             title="My Bookings"
                             value={customerStats.myBookings?.toString() ?? '—'}
                             description="Total bookings"
-                            icon={<CalendarCheck className="h-4 w-4" />}
+                            icon={<CalendarCheck className="size-4" />}
                             linkTo="/portal/bookings"
-                            accentColor="blue"
+                            iconTint="bg-info/10 text-info border border-info/20"
                         />
                         <StatCard
                             title="My Documents"
                             value={customerStats.myDocuments?.toString() ?? '—'}
                             description="Uploaded documents"
-                            icon={<FileText className="h-4 w-4" />}
+                            icon={<FileText className="size-4" />}
                             linkTo="/portal/documents"
-                            accentColor="amber"
+                            iconTint="bg-warning/10 text-warning border border-warning/20"
                         />
                         <StatCard
                             title="My Payments"
-                            value={customerStats.myPayments?.toString() ?? '—'}
+                            value={
+                                customerStats.myPayments !== null && customerStats.myPayments !== undefined
+                                    ? customerStats.myPayments.toString()
+                                    : '—'
+                            }
                             description="Payment records"
-                            icon={<CreditCard className="h-4 w-4" />}
+                            icon={<CreditCard className="size-4" />}
                             linkTo="/portal/payments"
-                            accentColor="emerald"
+                            iconTint="bg-success/10 text-success border border-success/20"
                         />
                     </div>
                 )}

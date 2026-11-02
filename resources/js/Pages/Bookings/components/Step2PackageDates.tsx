@@ -145,7 +145,7 @@ export default function Step2PackageDates({
                                     </span>
                                     <Badge
                                         variant="outline"
-                                        className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs"
+                                        className="bg-success/10 text-success border-success/20 text-xs"
                                     >
                                         <ShieldCheck className="w-3 h-3 mr-1" /> Active
                                     </Badge>
@@ -163,7 +163,7 @@ export default function Step2PackageDates({
                             <div className="flex items-center gap-2 bg-background px-3 py-2 rounded-lg border text-xs font-medium">
                                 <Users className="w-4 h-4 text-primary" />
                                 <span>Availability Status:</span>
-                                <span className="text-emerald-600 font-bold">Seats Open</span>
+                                <span className="text-success font-bold">Seats Open</span>
                             </div>
                         </div>
                     )}

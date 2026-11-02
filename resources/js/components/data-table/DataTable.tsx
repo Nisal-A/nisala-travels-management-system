@@ -4,10 +4,9 @@ import {
     flexRender,
     getCoreRowModel,
     useReactTable,
-    ColumnDef,
-    SortingState,
-    VisibilityState as ColumnVisibilityState,
-    RowData,
+    type ColumnDef,
+    type SortingState,
+    type VisibilityState as ColumnVisibilityState,
 } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,7 @@ import { EmptyState } from '@/components/common';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-interface DataTableProps<TData extends Record<string, any>, TValue> {
+interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     mobileCard?: (row: TData) => React.ReactNode;
@@ -36,18 +35,20 @@ interface DataTableProps<TData extends Record<string, any>, TValue> {
     from?: number;
     to?: number;
     searchable?: boolean;
-    filters?: Record<string, any>;
-    savedFilters?: any[]; // For the "Views" dropdown
+    filters?: Record<string, unknown>;
+    savedFilters?: Array<{ id: number; name: string; filters: Record<string, unknown> }>; // For the "Views" dropdown
     isLoading?: boolean;
     bulkActions?: {
         label: string;
-        icon?: React.FC<any>;
+        icon?: React.ComponentType<{ className?: string }>;
         variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
         onClick: (selectedIds: (string | number)[]) => void;
     }[];
+    title?: string;
+    actions?: React.ReactNode;
 }
 
-export function DataTable<TData extends Record<string, any> & { id: number | string }, TValue>({
+export function DataTable<TData extends { id?: string | number }, TValue>({
     columns,
     data,
     mobileCard,
@@ -61,10 +62,14 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     savedFilters = [],
     isLoading = false,
     bulkActions = [],
+    title,
+    actions,
 }: DataTableProps<TData, TValue>) {
     // Sort & Filters from URL props
     const [sorting, setSorting] = useState<SortingState>(
-        filters.sort ? [{ id: filters.sort, desc: filters.direction === 'desc' }] : [],
+        filters.sort && typeof filters.sort === 'string'
+            ? [{ id: filters.sort, desc: filters.direction === 'desc' }]
+            : [],
     );
     const [rowSelection, setRowSelection] = useState({});
 
@@ -79,11 +84,13 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     }, [columnVisibility, tableKey]);
 
     // Search
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [searchTerm, setSearchTerm] = useState(
+        typeof filters.search === 'string' ? filters.search : '',
+    );
 
     const applyFilters = useCallback(
-        (newParams: any = {}) => {
-            const query = {
+        (newParams: Record<string, unknown> = {}) => {
+            const query: Record<string, unknown> = {
                 ...filters,
                 ...newParams,
             };
@@ -94,7 +101,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                 }
             });
 
-            router.get(window.location.pathname, query, {
+            router.get(window.location.pathname, query as Record<string, string>, {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
@@ -106,12 +113,12 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
     // Debounced search
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (searchTerm !== filters.search) {
+            if (searchTerm !== (filters.search || '')) {
                 applyFilters({ search: searchTerm, page: 1 });
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchTerm]);
+    }, [searchTerm, filters.search, applyFilters]);
 
     // Update Sorting
     useEffect(() => {
@@ -122,7 +129,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                 applyFilters({ sort: sortField, direction: sortDir });
             }
         }
-    }, [sorting]);
+    }, [sorting, filters.sort, filters.direction, applyFilters]);
 
     const table = useReactTable({
         data,
@@ -151,120 +158,33 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                 filters: filters,
             });
             toast.success('Filter view saved successfully');
-            router.reload({ preserveState: true, preserveScroll: true } as any);
-        } catch (e) {
+            router.reload();
+        } catch {
             toast.error('Failed to save filter view');
         }
     };
 
     const handleDeleteFilter = async (id: number) => {
         try {
-            await axios.delete(route('saved-filters.destroy', id as any));
+            await axios.delete(route('saved-filters.destroy', { id }));
             toast.success('Filter view deleted');
-            router.reload({ preserveState: true, preserveScroll: true } as any);
-        } catch (e) {
+            router.reload();
+        } catch {
             toast.error('Failed to delete filter view');
         }
     };
 
     const selectedRows = table.getSelectedRowModel().rows;
-    const selectedIds = selectedRows.map((row) => (row.original as TData).id);
+    const selectedIds = selectedRows
+        .map((row) => (row.original as { id?: string | number }).id)
+        .filter((id): id is string | number => id !== undefined);
 
     return (
         <div className="space-y-4">
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex flex-1 items-center space-x-2 w-full">
-                    {searchable && (
-                        <div className="relative max-w-sm w-full">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 w-full lg:w-[300px]"
-                            />
-                        </div>
-                    )}
-
-                    {/* Saved Filters Dropdown */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={
-                                <Button variant="outline" size="sm" className="ml-auto hidden h-9 lg:flex">
-                                    <Bookmark className="mr-2 h-4 w-4" />
-                                    Views
-                                </Button>
-                            }
-                        />
-                        <DropdownMenuContent align="end" className="w-[200px]">
-                            <DropdownMenuLabel>Saved Views</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {savedFilters.length === 0 ? (
-                                <DropdownMenuItem disabled>No saved views</DropdownMenuItem>
-                            ) : (
-                                savedFilters.map((sf) => (
-                                    <div key={sf.id} className="flex items-center justify-between group">
-                                        <DropdownMenuItem
-                                            className="flex-1 cursor-pointer"
-                                            onClick={() => applyFilters(sf.filters)}
-                                        >
-                                            {sf.name}
-                                        </DropdownMenuItem>
-                                        <Trash
-                                            className="h-4 w-4 mr-2 text-muted-foreground hover:text-destructive cursor-pointer opacity-0 group-hover:opacity-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteFilter(sf.id);
-                                            }}
-                                        />
-                                    </div>
-                                ))
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleSaveFilter}>
-                                <Plus className="mr-2 h-4 w-4" /> Save Current View
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Columns Dropdown */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={
-                                <Button variant="outline" size="sm" className="ml-auto h-9">
-                                    <Settings2 className="mr-2 h-4 w-4" />
-                                    Columns
-                                </Button>
-                            }
-                        />
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {table
-                                .getAllColumns()
-                                .filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
-                                .map((column) => {
-                                    return (
-                                        <DropdownMenuCheckboxItem
-                                            key={column.id}
-                                            className="capitalize"
-                                            checked={column.getIsVisible()}
-                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                        >
-                                            {column.id.replace(/_/g, ' ')}
-                                        </DropdownMenuCheckboxItem>
-                                    );
-                                })}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-
             {/* Bulk Actions Bar */}
             {selectedRows.length > 0 && bulkActions.length > 0 && (
-                <div className="bg-muted p-2 rounded-lg flex items-center justify-between">
-                    <span className="text-sm font-medium ml-2">{selectedRows.length} selected</span>
+                <div className="bg-muted p-2.5 rounded-lg flex items-center justify-between border border-border">
+                    <span className="text-sm font-medium ml-2 text-foreground">{selectedRows.length} selected</span>
                     <div className="flex gap-2">
                         {bulkActions.map((action, i) => {
                             const Icon = action.icon;
@@ -278,7 +198,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                                         setRowSelection({});
                                     }}
                                 >
-                                    {Icon && <Icon className="mr-2 h-4 w-4" />}
+                                    {Icon && <Icon className="mr-1.5 size-4" />}
                                     {action.label}
                                 </Button>
                             );
@@ -287,31 +207,141 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                 </div>
             )}
 
-            {/* Mobile View */}
-            {mobileCard && (
-                <div className="grid grid-cols-1 gap-4 md:hidden">
-                    {isLoading ? (
-                        <div className="flex justify-center p-8">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : data.length === 0 ? (
-                        <EmptyState
-                            title="No records found"
-                            description="Adjust your filters or create a new record."
-                            onAction={() => applyFilters({ search: '', status: '' })}
-                            actionLabel="Clear Filters"
-                        />
+            {/* Main Wrapper */}
+            <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                {/* Toolbar */}
+                <div className="px-6 py-4 border-b border-border bg-muted/50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    {title ? (
+                        <div className="font-bold text-base text-foreground tracking-tight">{title}</div>
                     ) : (
-                        data.map((row, i) => <div key={row.id || i}>{mobileCard(row)}</div>)
+                        <div />
                     )}
-                </div>
-            )}
 
-            {/* Desktop Table */}
-            <div className={`rounded-md border ${mobileCard ? 'hidden md:block' : 'block'}`}>
-                <div className="relative w-full overflow-auto">
+                    <div className="flex flex-1 items-center justify-between sm:justify-end gap-2 w-full">
+                        {searchable && (
+                            <div className="relative w-full sm:w-64 max-w-sm">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9 h-9 w-full bg-background rounded-lg border text-sm"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                            {/* Saved Filters Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger
+                                    render={
+                                        <button
+                                            type="button"
+                                            className="h-9 px-3 rounded-md border border-border bg-card text-foreground text-sm font-medium shadow-sm gap-1 hover:bg-muted transition-colors hidden lg:inline-flex items-center focus-visible:outline-none focus-visible:ring-2 ring-ring cursor-pointer"
+                                        >
+                                            <Bookmark className="size-4 text-muted-foreground" />
+                                            <span>Views</span>
+                                        </button>
+                                    }
+                                />
+                                <DropdownMenuContent align="end" className="w-[200px]">
+                                    <DropdownMenuLabel>Saved Views</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {savedFilters.length === 0 ? (
+                                        <DropdownMenuItem disabled>No saved views</DropdownMenuItem>
+                                    ) : (
+                                        savedFilters.map((sf) => (
+                                            <div key={sf.id} className="flex items-center justify-between group">
+                                                <DropdownMenuItem
+                                                    className="flex-1 cursor-pointer"
+                                                    onClick={() => applyFilters(sf.filters)}
+                                                >
+                                                    {sf.name}
+                                                </DropdownMenuItem>
+                                                <Trash
+                                                    className="size-4 mr-2 text-muted-foreground hover:text-destructive cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteFilter(sf.id);
+                                                    }}
+                                                />
+                                            </div>
+                                        ))
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleSaveFilter} className="cursor-pointer">
+                                        <Plus className="mr-2 size-4" /> Save Current View
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Columns Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger
+                                    render={
+                                        <button
+                                            type="button"
+                                            className="h-9 px-3 rounded-md border border-border bg-card text-foreground text-sm font-medium shadow-sm gap-1 hover:bg-muted transition-colors inline-flex items-center focus-visible:outline-none focus-visible:ring-2 ring-ring cursor-pointer"
+                                        >
+                                            <Settings2 className="size-4 text-muted-foreground" />
+                                            <span>Columns</span>
+                                        </button>
+                                    }
+                                />
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {table
+                                        .getAllColumns()
+                                        .filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
+                                        .map((column) => {
+                                            return (
+                                                <DropdownMenuCheckboxItem
+                                                    key={column.id}
+                                                    className="capitalize cursor-pointer"
+                                                    checked={column.getIsVisible()}
+                                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                                >
+                                                    {column.id.replace(/_/g, ' ')}
+                                                </DropdownMenuCheckboxItem>
+                                            );
+                                        })}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {actions}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile View */}
+                {mobileCard && (
+                    <div className="p-4 md:hidden">
+                        {isLoading ? (
+                            <div className="flex justify-center p-8">
+                                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : data.length === 0 ? (
+                            <EmptyState
+                                title="No records found"
+                                description="Adjust your filters or create a new record."
+                                onAction={() => applyFilters({ search: '', status: '' })}
+                                actionLabel="Clear Filters"
+                            />
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4">
+                                {data.map((row, i) => (
+                                    <div key={row.id || i}>{mobileCard(row)}</div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Desktop Table View */}
+                <div className={`relative w-full overflow-x-auto ${mobileCard ? 'hidden md:block' : 'block'}`}>
                     <Table>
-                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                        <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
@@ -328,12 +358,15 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={columns.length} className="h-24 text-center">
-                                        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                                        <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" />
                                     </TableCell>
                                 </TableRow>
                             ) : table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                                    <TableRow
+                                        key={row.id}
+                                        data-state={row.getIsSelected() && 'selected'}
+                                    >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -355,17 +388,14 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
 
             {/* Pagination Controls */}
             {total > 0 && links && links.length > 3 && (
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
                     <div className="text-sm text-muted-foreground">
-                        Showing <span className="font-medium">{from || 0}</span> to{' '}
-                        <span className="font-medium">{to || 0}</span> of <span className="font-medium">{total}</span>{' '}
-                        results
+                        Showing <span className="font-medium text-foreground">{from || 0}</span> to{' '}
+                        <span className="font-medium text-foreground">{to || 0}</span> of{' '}
+                        <span className="font-medium text-foreground">{total}</span> results
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                         {links.map((link, index) => {
-                            const isPrevious = index === 0;
-                            const isNext = index === links.length - 1;
-
                             if (link.url === null) {
                                 return (
                                     <Button
@@ -373,6 +403,7 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                                         variant="outline"
                                         size="sm"
                                         disabled
+                                        className="h-8 px-3 text-xs"
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 );
@@ -383,8 +414,8 @@ export function DataTable<TData extends Record<string, any> & { id: number | str
                                     key={index}
                                     variant={link.active ? 'default' : 'outline'}
                                     size="sm"
+                                    className="h-8 px-3 text-xs"
                                     onClick={() => {
-                                        // Extract page number from URL if possible, or just visit it
                                         router.visit(link.url!, { preserveState: true, preserveScroll: true });
                                     }}
                                     dangerouslySetInnerHTML={{ __html: link.label }}

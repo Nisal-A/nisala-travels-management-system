@@ -1,18 +1,20 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { PageHeader, EmptyState } from '@/components/common';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     BarChart3,
-    ArrowRight,
     TrendingUp,
-    Briefcase,
-    CalendarCheck,
-    FileSpreadsheet,
-    Receipt,
+    ClipboardList,
+    Wallet,
+    Landmark,
+    AlertCircle,
+    CalendarDays,
+    Users,
+    FileCheck,
+    MessageSquare,
+    FileText,
+    ChevronRight,
+    type LucideIcon,
 } from 'lucide-react';
 
 export interface ReportFilterOption {
@@ -34,7 +36,7 @@ export interface ReportColumnDef {
     label: string;
     sortable?: boolean;
     align?: 'left' | 'center' | 'right';
-    format?: 'text' | 'number' | 'money' | 'date' | 'datetime' | 'badge';
+    format?: 'text' | 'number' | 'money' | 'date' | 'datetime' | 'badge' | 'percentage';
     currency?: string;
 }
 
@@ -49,27 +51,58 @@ export interface ReportDescriptor {
 }
 
 export interface ReportsIndexProps {
-    reports: ReportDescriptor[];
-    grouped: {
-        financial: ReportDescriptor[];
-        operational: ReportDescriptor[];
+    reports?: ReportDescriptor[];
+    grouped?: {
+        financial?: ReportDescriptor[];
+        operational?: ReportDescriptor[];
     };
 }
 
-function getReportIcon(key: string, category: string) {
-    if (key.includes('booking')) {
-        return CalendarCheck;
+interface ReportIconConfig {
+    icon: LucideIcon;
+    tintClass: string;
+}
+
+function getReportIconConfig(key: string, category: 'financial' | 'operational' | string): ReportIconConfig {
+    switch (key) {
+        case 'income-expenses':
+            return { icon: Wallet, tintClass: 'bg-success/10 text-success' };
+        case 'cash-bank':
+            return { icon: Landmark, tintClass: 'bg-info/10 text-info' };
+        case 'outstanding-balances':
+            return { icon: AlertCircle, tintClass: 'bg-warning/10 text-warning' };
+        case 'tour-profitability':
+            return { icon: BarChart3, tintClass: 'bg-info/10 text-info' };
+        case 'booking-register':
+            return { icon: ClipboardList, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
+        case 'upcoming-tours':
+            return { icon: CalendarDays, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
+        case 'passenger-count':
+            return { icon: Users, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
+        case 'document-status':
+            return { icon: FileCheck, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
+        case 'inquiry-followup':
+            return { icon: MessageSquare, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
+        default:
+            if (category === 'financial') {
+                return { icon: BarChart3, tintClass: 'bg-primary/10 text-primary' };
+            }
+            return { icon: FileText, tintClass: 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary' };
     }
-    if (key.includes('income') || key.includes('profit') || key.includes('cash')) {
-        return Receipt;
-    }
-    return category === 'financial' ? TrendingUp : Briefcase;
 }
 
 export default function ReportsIndex({ reports = [], grouped = { financial: [], operational: [] } }: ReportsIndexProps) {
-    const hasAnyReports = reports.length > 0;
-    const hasFinancial = grouped.financial && grouped.financial.length > 0;
-    const hasOperational = grouped.operational && grouped.operational.length > 0;
+    const financialReports = (grouped?.financial && grouped.financial.length > 0)
+        ? grouped.financial
+        : reports.filter((r) => r.category === 'financial');
+
+    const operationalReports = (grouped?.operational && grouped.operational.length > 0)
+        ? grouped.operational
+        : reports.filter((r) => r.category === 'operational');
+
+    const hasFinancial = financialReports.length > 0;
+    const hasOperational = operationalReports.length > 0;
+    const hasAnyReports = hasFinancial || hasOperational || reports.length > 0;
 
     return (
         <AppLayout
@@ -79,12 +112,12 @@ export default function ReportsIndex({ reports = [], grouped = { financial: [], 
                 { label: 'Reports' },
             ]}
         >
-            <Head title="Reports Hub" />
+            <Head title="Reports" />
 
-            <div className="w-full max-w-full space-y-8">
+            <div className="space-y-8">
                 <PageHeader
-                    title="Reports Hub"
-                    description="Access financial statements, operational summaries, and key performance analytics."
+                    title="Reports"
+                    description="Access financial statements, operational summaries and key performance analytics."
                 />
 
                 {!hasAnyReports ? (
@@ -95,68 +128,47 @@ export default function ReportsIndex({ reports = [], grouped = { financial: [], 
                     />
                 ) : (
                     <div className="space-y-10">
-                        {/* Financial Reports */}
+                        {/* Financial Reports Section */}
                         {hasFinancial && (
-                            <section className="space-y-4">
-                                <div className="flex items-center gap-2 border-b border-border pb-3">
-                                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                        <TrendingUp className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                                                Financial Reports
-                                            </h2>
-                                            <Badge variant="secondary" className="font-mono text-xs">
-                                                {grouped.financial.length}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Cash flow, revenue calculations, outstanding balances, and profitability.
-                                        </p>
-                                    </div>
-                                </div>
+                            <section>
+                                <h2 className="text-lg font-bold flex items-center gap-2 mb-4 text-foreground">
+                                    <TrendingUp className="size-5 text-primary shrink-0" />
+                                    <span>Financial Reports</span>
+                                </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                                    {grouped.financial.map((report) => {
-                                        const IconComponent = getReportIcon(report.key, report.category);
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {financialReports.map((report) => {
+                                        const { icon: Icon, tintClass } = getReportIconConfig(report.key, report.category);
 
                                         return (
                                             <Link
                                                 key={report.key}
                                                 href={`/reports/${report.key}`}
-                                                className="group focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl block"
+                                                className="group flex flex-col justify-between rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 ring-ring"
                                             >
-                                                <Card className="h-full flex flex-col justify-between border-border/80 transition-all duration-200 group-hover:border-primary/50 group-hover:shadow-md bg-card">
-                                                    <CardHeader className="space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="p-2 rounded-md bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                                                <IconComponent className="h-5 w-5" />
-                                                            </div>
-                                                            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-                                                                Financial
-                                                            </Badge>
+                                                <div>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className={`size-8 rounded-lg grid place-items-center transition-colors ${tintClass}`}>
+                                                            <Icon className="size-4" />
                                                         </div>
-                                                        <div>
-                                                            <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                                {report.title}
-                                                            </CardTitle>
-                                                            <CardDescription className="text-xs leading-relaxed text-muted-foreground mt-1.5 line-clamp-2">
-                                                                {report.description}
-                                                            </CardDescription>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardFooter className="pt-0">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-xs font-medium text-primary hover:bg-transparent p-0 flex items-center gap-1 group-hover:translate-x-1 transition-transform"
-                                                        >
-                                                            Open Report
-                                                            <ArrowRight className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                    </CardFooter>
-                                                </Card>
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                                            {report.category || 'Financial'}
+                                                        </span>
+                                                    </div>
+
+                                                    <h3 className="text-lg font-bold text-foreground mt-4 group-hover:text-primary transition-colors">
+                                                        {report.title}
+                                                    </h3>
+
+                                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+                                                        {report.description}
+                                                    </p>
+                                                </div>
+
+                                                <div className="mt-6 text-sm font-medium text-primary flex items-center gap-1">
+                                                    <span>Open report</span>
+                                                    <ChevronRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+                                                </div>
                                             </Link>
                                         );
                                     })}
@@ -164,68 +176,47 @@ export default function ReportsIndex({ reports = [], grouped = { financial: [], 
                             </section>
                         )}
 
-                        {/* Operational Reports */}
+                        {/* Operational Reports Section */}
                         {hasOperational && (
-                            <section className="space-y-4">
-                                <div className="flex items-center gap-2 border-b border-border pb-3">
-                                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                        <Briefcase className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                                                Operational Reports
-                                            </h2>
-                                            <Badge variant="secondary" className="font-mono text-xs">
-                                                {grouped.operational.length}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Tour registers, upcoming departures, passenger rosters, and operational statuses.
-                                        </p>
-                                    </div>
-                                </div>
+                            <section>
+                                <h2 className="text-lg font-bold flex items-center gap-2 mb-4 text-foreground">
+                                    <ClipboardList className="size-5 text-warning shrink-0" />
+                                    <span>Operational Reports</span>
+                                </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                                    {grouped.operational.map((report) => {
-                                        const IconComponent = getReportIcon(report.key, report.category);
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {operationalReports.map((report) => {
+                                        const { icon: Icon } = getReportIconConfig(report.key, report.category);
 
                                         return (
                                             <Link
                                                 key={report.key}
                                                 href={`/reports/${report.key}`}
-                                                className="group focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl block"
+                                                className="group flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 ring-ring"
                                             >
-                                                <Card className="h-full flex flex-col justify-between border-border/80 transition-all duration-200 group-hover:border-primary/50 group-hover:shadow-md bg-card">
-                                                    <CardHeader className="space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="p-2 rounded-md bg-muted text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                                                <IconComponent className="h-5 w-5" />
-                                                            </div>
-                                                            <Badge variant="outline" className="text-xs uppercase tracking-wider">
-                                                                Operational
-                                                            </Badge>
+                                                <div>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="size-8 rounded-lg grid place-items-center bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                                            <Icon className="size-4" />
                                                         </div>
-                                                        <div>
-                                                            <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                                {report.title}
-                                                            </CardTitle>
-                                                            <CardDescription className="text-xs leading-relaxed text-muted-foreground mt-1.5 line-clamp-2">
-                                                                {report.description}
-                                                            </CardDescription>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardFooter className="pt-0">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-xs font-medium text-primary hover:bg-transparent p-0 flex items-center gap-1 group-hover:translate-x-1 transition-transform"
-                                                        >
-                                                            Open Report
-                                                            <ArrowRight className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                    </CardFooter>
-                                                </Card>
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                            {report.category || 'Operational'}
+                                                        </span>
+                                                    </div>
+
+                                                    <h3 className="text-base font-bold text-foreground mt-3 group-hover:text-primary transition-colors">
+                                                        {report.title}
+                                                    </h3>
+
+                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                                                        {report.description}
+                                                    </p>
+                                                </div>
+
+                                                <div className="mt-6 text-sm font-medium text-primary flex items-center gap-1">
+                                                    <span>Open report</span>
+                                                    <ChevronRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+                                                </div>
                                             </Link>
                                         );
                                     })}

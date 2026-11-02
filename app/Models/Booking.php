@@ -73,6 +73,14 @@ class Booking extends Model
     }
 
     /**
+     * The refunds for this booking.
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
      * The payment schedule installments for this booking.
      */
     public function paymentSchedules(): HasMany

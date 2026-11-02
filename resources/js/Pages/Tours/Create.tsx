@@ -7,9 +7,10 @@ interface CreateProps {
     destinations: DestinationOption[];
     tiers: Record<string, TierConfig>;
     allowed_by_destination: Record<string, string[]>;
+    suppliers?: { id: number; name: string; supplier_code: string; default_currency?: string }[];
 }
 
-export default function Create({ destinations, tiers, allowed_by_destination }: CreateProps) {
+export default function Create({ destinations, tiers, allowed_by_destination, suppliers }: CreateProps) {
     return (
         <AppLayout
             title="Create Tour Package"
@@ -25,6 +26,7 @@ export default function Create({ destinations, tiers, allowed_by_destination }: 
                     destinations={destinations}
                     tiers={tiers}
                     allowed_by_destination={allowed_by_destination}
+                    suppliers={suppliers}
                 />
             </div>
         </AppLayout>

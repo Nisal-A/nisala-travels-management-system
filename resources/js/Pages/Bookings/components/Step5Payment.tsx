@@ -375,11 +375,11 @@ export default function Step5Payment({
                                 <div className="flex items-center gap-3">
                                     <MoneyText amount={totalScheduled} currency={currency} weight="bold" />
                                     {!isScheduleBalanced ? (
-                                        <span className="text-amber-600 text-[11px] font-normal">
+                                        <span className="text-warning text-[11px] font-normal">
                                             (Diff: {Number(finalTotal - totalScheduled).toLocaleString()} {currency})
                                         </span>
                                     ) : (
-                                        <span className="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+                                        <span className="text-success text-[11px] font-medium flex items-center gap-1">
                                             <CheckCircle className="w-3 h-3" /> Balanced
                                         </span>
                                     )}
@@ -463,7 +463,7 @@ export default function Step5Payment({
                                         currency={currency}
                                         weight="bold"
                                         className={
-                                            remainingBalanceAfterPayment === 0 ? 'text-emerald-600' : 'text-primary'
+                                            remainingBalanceAfterPayment === 0 ? 'text-success' : 'text-primary'
                                         }
                                     />
                                 </div>

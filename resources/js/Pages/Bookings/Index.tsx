@@ -22,8 +22,8 @@ import { PaginatedData, Booking } from '@/types';
 
 interface BookingIndexProps {
     bookings: PaginatedData<Booking>;
-    filters: Record<string, any>;
-    savedFilters: any[];
+    filters: Record<string, unknown>;
+    savedFilters: { id: number; name: string; filters: Record<string, unknown> }[];
 }
 
 export default function BookingIndex({ bookings, filters, savedFilters = [] }: BookingIndexProps) {
@@ -49,7 +49,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
             id: 'customer',
             header: 'Customer',
             cell: ({ row }) => {
-                const customer: any = row.original.customer;
+                const customer = row.original.customer;
                 return (
                     <div className="flex flex-col">
                         <span className="font-medium">
@@ -64,7 +64,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
             id: 'tourPackage',
             header: 'Package',
             cell: ({ row }) => {
-                const pkg: any = row.original.tour_package;
+                const pkg = row.original.tour_package;
                 return <span className="font-medium">{pkg?.name}</span>;
             },
         },
@@ -94,7 +94,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
             cell: ({ row }) => {
                 const status = row.getValue('booking_status') as string;
                 return (
-                    <StatusBadge type="booking" status={(status.charAt(0).toUpperCase() + status.slice(1)) as any} />
+                    <StatusBadge type="booking" status={status.charAt(0).toUpperCase() + status.slice(1)} />
                 );
             },
         },
@@ -161,7 +161,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                 </div>
                 <StatusBadge
                     type="booking"
-                    status={(booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)) as any}
+                    status={booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
                 />
             </div>
             <div className="text-sm">
@@ -171,7 +171,7 @@ export default function BookingIndex({ bookings, filters, savedFilters = [] }: B
                 </div>
             </div>
             <div className="flex justify-between items-center mt-2 border-t pt-2">
-                <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                <div className="font-semibold text-foreground">
                     <MoneyText
                         amount={Number(booking.final_amount)}
                         currency={booking.currency as 'LKR' | 'USD' | undefined}

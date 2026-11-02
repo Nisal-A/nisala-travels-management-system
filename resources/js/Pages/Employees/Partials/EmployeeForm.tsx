@@ -1,12 +1,11 @@
-import { useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { useForm, Link } from '@inertiajs/react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Save, X } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { User } from '@/types';
-import { Link } from '@inertiajs/react';
 
 interface EmployeeFormProps {
     employee?: User;
@@ -28,17 +27,17 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
         e.preventDefault();
 
         if (isEditing && employee) {
-            put(route('employees.update', employee.id));
+            put(route('employees.update', { employee: employee.id }));
         } else {
             post(route('employees.store'));
         }
     };
 
     return (
-        <form onSubmit={submit} className="max-w-2xl mx-auto space-y-6">
+        <form onSubmit={submit} className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Employee Details</CardTitle>
+                    <CardTitle className="text-base font-bold">Employee Details</CardTitle>
                     <CardDescription>
                         {isEditing
                             ? 'Update employee profile and system access.'
@@ -148,12 +147,12 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
                 </CardContent>
             </Card>
 
-            <div className="flex items-center justify-end space-x-4">
+            {/* Sticky Action Footer */}
+            <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-4 border-t border-border bg-muted/50 backdrop-blur-xs flex items-center justify-end gap-3 z-10">
                 <Link
                     href={route('employees.index')}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+                    className={buttonVariants({ variant: 'ghost' })}
                 >
-                    <X className="mr-2 h-4 w-4" />
                     Cancel
                 </Link>
                 <Button type="submit" disabled={processing}>

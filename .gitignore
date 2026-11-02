@@ -7,6 +7,7 @@
 /storage/framework/cache
 /storage/framework/sessions
 /storage/framework/views
+/storage/framework/testing
 /storage/logs/*.log
 /vendor
 /storage/pail
@@ -27,3 +28,13 @@ yarn-error.log
 /.vscode
 node_modules
 .vite
+/database/*.sqlite
+/storage/framework/views/*.php
+/storage/app/mpdf/ttfontdata/*
+
+# Temporary debug scripts / dumps
+capture_errors.cjs
+script*.cjs
+ts_errors.txt
+all_routes.txt
+home-report.json

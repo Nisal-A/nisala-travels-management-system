@@ -49,7 +49,7 @@ interface SettingsNavProps {
 
 export function SettingsNav({ activeSection, onSelectSection }: SettingsNavProps) {
     return (
-        <nav aria-label="Settings navigation" className="space-y-1.5">
+        <nav aria-label="Settings navigation" className="w-full md:w-64 shrink-0 space-y-1">
             {SETTINGS_SECTIONS.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
@@ -59,37 +59,17 @@ export function SettingsNav({ activeSection, onSelectSection }: SettingsNavProps
                         key={section.id}
                         type="button"
                         onClick={() => onSelectSection(section.id)}
+                        title={section.description}
                         className={cn(
-                            'w-full flex items-start gap-3.5 px-3.5 py-3 rounded-xl text-left transition-all duration-150',
+                            'w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg border text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             isActive
-                                ? 'bg-primary text-primary-foreground shadow-sm font-medium'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60 dark:hover:bg-muted/40'
+                                ? 'bg-card shadow-sm border-border text-primary font-semibold'
+                                : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                         aria-current={isActive ? 'page' : undefined}
                     >
-                        <div
-                            className={cn(
-                                'p-2 rounded-lg shrink-0 transition-colors',
-                                isActive
-                                    ? 'bg-primary-foreground/15 text-primary-foreground'
-                                    : 'bg-muted text-foreground/70'
-                            )}
-                        >
-                            <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium leading-tight">
-                                {section.title}
-                            </div>
-                            <div
-                                className={cn(
-                                    'text-xs mt-1 truncate',
-                                    isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                                )}
-                            >
-                                {section.description}
-                            </div>
-                        </div>
+                        <Icon className="size-4 shrink-0" />
+                        <span className="truncate">{section.title}</span>
                     </button>
                 );
             })}
