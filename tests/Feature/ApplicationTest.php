@@ -4,7 +4,7 @@ test('application is up', function () {
     expect(true)->toBeTrue();
 });
 
-test('home page loads successfully', function () {
+test('root route redirects guests to login', function () {
     $response = $this->get('/');
-    $response->assertOk();
+    $response->assertRedirect('/login');
 });

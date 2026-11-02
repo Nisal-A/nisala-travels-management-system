@@ -22,7 +22,6 @@ import {
     AlertCircle,
     CheckCircle2,
 } from 'lucide-react';
-import { siteContent } from '@/content/site';
 import type { PageProps } from '@/types';
 
 interface LoginProps {
@@ -313,7 +312,7 @@ export default function Login({ status, canResetPassword = false }: LoginProps) 
                 {/* Footer */}
                 <footer className="w-full py-4 sm:py-6 px-4 text-center text-xs text-muted-foreground">
                     <p>
-                        &copy; {currentYear} {siteContent.company.name} &bull; {siteContent.contact.email}
+                        &copy; {currentYear} {page.props.company?.name ?? 'Nisala Travels'} &bull; {page.props.company?.support_email ?? 'support@nisalatravels.com'}
                     </p>
                 </footer>
             </div>

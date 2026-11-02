@@ -15,7 +15,6 @@ use App\Http\Controllers\PackageCostLineController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Portal\DocumentController;
 use App\Http\Controllers\Portal\ProfileController;
-use App\Http\Controllers\PublicController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SavedFilterController;
@@ -23,6 +22,8 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TourPackageController;
+use App\Enums\UserRole;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,57 +31,25 @@ require_once app_path('Models/AppSetting.php');
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| Root Route
 |--------------------------------------------------------------------------
 |
-| Routes accessible to everyone (guests and authenticated users alike).
-| These render public-facing pages wrapped with PublicLayout.
+| The public marketing website is served by the separate Next.js frontend.
+| This app's root simply forwards visitors: guests go to the login page,
+| customers go to the customer portal, and staff/admin go to the dashboard.
 |
 */
-Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/', function (Request $request) {
+    $user = $request->user();
 
-Route::get('/our-destinations', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Our Destinations',
-    'description' => 'Explore our handpicked travel destinations across Thailand, India, and the Maldives.',
-]))->name('public.destinations');
+    if (! $user) {
+        return redirect()->route('login');
+    }
 
-Route::get('/our-tours', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Our Tours',
-    'description' => 'Browse our curated collection of tour packages designed for unforgettable experiences.',
-]))->name('public.tours');
-
-Route::get('/our-tours/{slug}', fn (string $slug) => Inertia::render('Public/Placeholder', [
-    'title' => 'Tour Details',
-    'description' => 'Detailed information and itinerary for this tour package.',
-    'slug' => $slug,
-]))->name('public.tours.show');
-
-Route::redirect('/memories', '/about#memories', 301);
-Route::get('/about', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'About Us',
-    'description' => 'Learn about Nisala Travels, our story, and our journey.',
-]))->name('public.about');
-
-Route::get('/travel-guides', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Travel Guides',
-    'description' => 'Expert tips, packing advice, and local insights for your next adventure.',
-]))->name('public.travel-guides');
-
-Route::match(['get', 'post'], '/contact', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Contact Us',
-    'description' => 'Get in touch with our travel experts to plan your customized journey.',
-]))->name('public.contact');
-
-Route::get('/privacy-policy', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Privacy Policy',
-    'description' => 'How we collect, use, and protect your personal information.',
-]))->name('public.privacy-policy');
-
-Route::get('/terms', fn () => Inertia::render('Public/Placeholder', [
-    'title' => 'Terms & Conditions',
-    'description' => 'Our terms of service, booking conditions, and policies.',
-]))->name('public.terms');
-
+    return $user->hasRole(UserRole::Customer->value)
+        ? redirect()->route('portal.dashboard')
+        : redirect()->route('dashboard');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
