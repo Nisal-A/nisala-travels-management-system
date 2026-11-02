@@ -16,14 +16,9 @@ class EnsurePublicApiKey
     public function handle(Request $request, Closure $next): Response
     {
         $expectedKey = config('services.nisala_web.key');
+        $providedKey = $request->header('X-Nisala-Key');
 
-        if (empty($expectedKey)) {
-            return response()->json(['message' => 'Service unavailable'], 503);
-        }
-
-        $headerKey = $request->header('X-Nisala-Key');
-
-        if (!is_string($headerKey) || !hash_equals((string) $expectedKey, $headerKey)) {
+        if (empty($expectedKey) || !is_string($providedKey) || !hash_equals((string) $expectedKey, (string) $providedKey)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 

@@ -27,13 +27,13 @@ test('get api public tours with wrong key returns 401', function () {
         ->assertJson(['message' => 'Unauthorized']);
 });
 
-test('get api public tours with empty key in config returns 503', function () {
+test('get api public tours with empty key in config returns 401', function () {
     config(['services.nisala_web.key' => '']);
 
     $response = $this->withHeader('X-Nisala-Key', 'test-valid-api-key')->getJson('/api/public/tours');
 
-    $response->assertStatus(503)
-        ->assertJson(['message' => 'Service unavailable']);
+    $response->assertStatus(401)
+        ->assertJson(['message' => 'Unauthorized']);
 });
 
 test('get api public tours with correct key returns 200', function () {

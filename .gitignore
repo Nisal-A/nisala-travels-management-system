@@ -7,6 +7,7 @@
 /storage/framework/cache
 /storage/framework/sessions
 /storage/framework/views
+/storage/framework/testing
 /storage/logs/*.log
 /vendor
 /storage/pail
