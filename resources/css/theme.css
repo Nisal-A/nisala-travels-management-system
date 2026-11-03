@@ -1,70 +1,95 @@
+/*
+ * Nisala Travels — Executive Navy & Gold design tokens.
+ *
+ * All semantic tokens hold complete CSS color values (hex / rgb) so they can be
+ * consumed directly by Tailwind v4 (`@theme inline` in app.css), opacity
+ * modifiers (`bg-primary/10` → color-mix), and raw `var(--token)` usage.
+ */
 :root {
     /* Nisala Travels Official Brand Colors */
-    --brand-navy: #052351;
-    --brand-teal: #026E9F;
-    --brand-blue: #0184BA;
-    --brand-gold: #FEC822;
-    --brand-orange: #FE950B;
+    --brand-navy: #0E2A47;
+    /* Deep Navy (primary) */
+    --brand-navy-bright: #0B3D91;
+    /* Royal Navy (interactive / links) */
+    --brand-gold: #C49A2C;
+    /* Executive Gold (accent) */
+    --brand-amber: #F59E0B;
+    /* Amber (highlight / focus) */
     --brand-white: #FFFFFF;
+    --brand-slate: #F8FAFC;
 
-    --gradient-navbar: linear-gradient(to bottom left, #052351 0%, #026E9F 55%, #0184BA 100%);
-    --gradient-premium: linear-gradient(135deg, #052351 0%, #026E9F 55%, #0184BA 100%);
-    --gradient-gold: linear-gradient(90deg, #FEC822 0%, #FE950B 100%);
+    /* Legacy aliases (kept for backwards compatibility) */
+    --brand-teal: #0B3D91;
+    --brand-blue: #0B3D91;
+    --brand-orange: #F59E0B;
 
-    --background: 0.97 0.01 90;
-    /* Soft sand */
-    --foreground: 0.25 0.02 260;
-    /* Charcoal text */
-    --card: 1 0 0;
-    --card-foreground: 0.25 0.02 260;
-    --popover: 1 0 0;
-    --popover-foreground: 0.25 0.02 260;
+    --gradient-navbar: linear-gradient(to bottom left, #0E2A47 0%, #0B3D91 100%);
+    --gradient-premium: linear-gradient(135deg, #0E2A47 0%, #0B3D91 100%);
+    --gradient-gold: linear-gradient(90deg, #C49A2C 0%, #F59E0B 100%);
 
-    /* Brand Palette - Primary: Deep Ocean Navy */
-    --primary: 0.35 0.07 250;
-    --primary-foreground: 0.98 0 0;
+    /* Surfaces */
+    --background: #F8FAFC;
+    /* Light slate page background */
+    --foreground: #0F172A;
+    /* Slate-900 text */
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
 
-    /* Brand Palette - Accent: Warm Gold / Amber */
-    --accent: 0.82 0.15 70;
-    --accent-foreground: 0.2 0 0;
+    /* Brand Palette - Primary: Deep Navy */
+    --primary: #0E2A47;
+    --primary-foreground: #FFFFFF;
+    --primary-bright: #0B3D91;
+    --primary-bright-foreground: #FFFFFF;
+
+    /* Brand Palette - Gold / Amber */
+    --gold: #C49A2C;
+    --gold-foreground: #0E2A47;
+    --amber: #F59E0B;
+    --amber-foreground: #0E2A47;
+
+    /* Accent: subtle gold-tinted surface (shadcn hover/active semantics) */
+    --accent: #FBF5E6;
+    --accent-foreground: #0E2A47;
 
     /* Thailand Teal Accent */
-    --thailand: 0.6 0.1 200;
-    --thailand-foreground: 1 0 0;
+    --thailand: #0F8A9D;
+    --thailand-foreground: #FFFFFF;
 
     /* India Saffron Accent */
-    --india: 0.65 0.15 45;
-    --india-foreground: 1 0 0;
+    --india: #E07B24;
+    --india-foreground: #FFFFFF;
 
     /* Brand Palette - Secondary */
-    --secondary: 0.95 0.02 260;
-    --secondary-foreground: 0.25 0.02 260;
+    --secondary: #F1F5F9;
+    --secondary-foreground: #0E2A47;
 
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
 
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.98 0 0);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --destructive: #E11D48;
+    --destructive-foreground: #FFFFFF;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0B3D91;
 
     /* Chart colors */
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: #0E2A47;
+    --chart-2: #0B3D91;
+    --chart-3: #C49A2C;
+    --chart-4: #F59E0B;
+    --chart-5: #64748B;
 
-    /* Sidebar */
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* Sidebar (Executive Navy) */
+    --sidebar: #0E2A47;
+    --sidebar-foreground: #E2E8F0;
+    --sidebar-primary: #C49A2C;
+    --sidebar-primary-foreground: #0E2A47;
+    --sidebar-accent: #13365C;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #1B3A5E;
+    --sidebar-ring: #F59E0B;
 
     /* Radius */
     --radius: 0.625rem;
@@ -72,103 +97,111 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
 
-    /* Neutral Scale */
-    --neutral-50: oklch(0.98 0.01 260);
-    --neutral-100: oklch(0.95 0.02 260);
-    --neutral-200: oklch(0.9 0.03 260);
-    --neutral-300: oklch(0.8 0.04 260);
-    --neutral-400: oklch(0.65 0.05 260);
-    --neutral-500: oklch(0.5 0.05 260);
-    --neutral-600: oklch(0.4 0.04 260);
-    --neutral-700: oklch(0.3 0.03 260);
-    --neutral-800: oklch(0.2 0.02 260);
-    --neutral-900: oklch(0.1 0.01 260);
+    /* Neutral Scale (Slate) */
+    --neutral-50: #F8FAFC;
+    --neutral-100: #F1F5F9;
+    --neutral-200: #E2E8F0;
+    --neutral-300: #CBD5E1;
+    --neutral-400: #94A3B8;
+    --neutral-500: #64748B;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1E293B;
+    --neutral-900: #0F172A;
 
     /* Status Colors */
-    --success: oklch(0.6 0.15 140);
-    --success-foreground: oklch(0.98 0 0);
-    --warning: oklch(0.7 0.15 70);
-    --warning-foreground: oklch(0.1 0 0);
-    --error: oklch(0.55 0.2 25);
-    --error-foreground: oklch(0.98 0 0);
-    --info: oklch(0.6 0.15 230);
-    --info-foreground: oklch(0.98 0 0);
+    --success: #047857;
+    --success-foreground: #FFFFFF;
+    --warning: #B45309;
+    --warning-foreground: #FFFFFF;
+    --error: #BE123C;
+    --error-foreground: #FFFFFF;
+    --info: #0B3D91;
+    --info-foreground: #FFFFFF;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    /* Shadows (navy-tinted) */
+    --shadow-sm: 0 1px 2px 0 rgb(14 42 71 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(14 42 71 / 0.08), 0 1px 2px -1px rgb(14 42 71 / 0.08);
+    --shadow-md: 0 4px 6px -1px rgb(14 42 71 / 0.08), 0 2px 4px -2px rgb(14 42 71 / 0.08);
+    --shadow-lg: 0 10px 15px -3px rgb(14 42 71 / 0.1), 0 4px 6px -4px rgb(14 42 71 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(14 42 71 / 0.1), 0 8px 10px -6px rgb(14 42 71 / 0.1);
 }
 
 .dark {
-    --background: 0.15 0.01 260;
-    /* Deep dark background */
-    --foreground: 0.97 0.01 90;
-    --card: 0.2 0.02 260;
-    --card-foreground: 0.97 0.01 90;
-    --popover: 0.2 0.02 260;
-    --popover-foreground: 0.97 0.01 90;
+    /* Surfaces */
+    --background: #07111E;
+    /* Deep night page background */
+    --foreground: #F1F5F9;
+    --card: #0C1B2E;
+    /* Card surface */
+    --card-foreground: #F1F5F9;
+    --popover: #0C1B2E;
+    --popover-foreground: #F1F5F9;
 
-    /* Brand Palette - Primary */
-    --primary: 0.82 0.15 70;
-    /* Invert primary/accent for dark mode optionally, or keep primary */
-    --primary-foreground: 0.2 0 0;
+    /* Brand Palette - Primary (gold reads better than navy on navy surfaces) */
+    --primary: #C49A2C;
+    --primary-foreground: #07111E;
+    --primary-bright: #3B6FD1;
+    --primary-bright-foreground: #FFFFFF;
 
-    /* Brand Palette - Accent */
-    --accent: 0.35 0.07 250;
-    --accent-foreground: 0.98 0 0;
+    --gold: #C49A2C;
+    --gold-foreground: #07111E;
+    --amber: #F59E0B;
+    --amber-foreground: #07111E;
+
+    /* Accent: subtle raised navy surface */
+    --accent: #13253D;
+    --accent-foreground: #F1F5F9;
 
     /* Thailand Teal Accent */
-    --thailand: 0.6 0.1 200;
-    --thailand-foreground: 1 0 0;
+    --thailand: #22A6B8;
+    --thailand-foreground: #07111E;
 
     /* India Saffron Accent */
-    --india: 0.65 0.15 45;
-    --india-foreground: 1 0 0;
+    --india: #F0954A;
+    --india-foreground: #07111E;
 
-    --secondary: 0.25 0.02 260;
-    --secondary-foreground: 0.97 0.01 90;
-    --muted: 0.25 0.02 260;
-    --muted-foreground: 0.7 0.02 260;
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: oklch(0.145 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --secondary: #13253D;
+    --secondary-foreground: #F1F5F9;
+    --muted: #111F33;
+    --muted-foreground: #94A3B8;
+    --destructive: #FB7185;
+    --destructive-foreground: #07111E;
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: #F59E0B;
 
     /* Chart */
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: #C49A2C;
+    --chart-2: #3B6FD1;
+    --chart-3: #F59E0B;
+    --chart-4: #94A3B8;
+    --chart-5: #22A6B8;
 
     /* Sidebar */
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar: #0C1B2E;
+    --sidebar-foreground: #E2E8F0;
+    --sidebar-primary: #C49A2C;
+    --sidebar-primary-foreground: #07111E;
+    --sidebar-accent: #13253D;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #1E293B;
+    --sidebar-ring: #F59E0B;
 
     /* Status Colors (Dark mode safe) */
-    --success: oklch(0.5 0.15 140);
-    --success-foreground: oklch(0.98 0 0);
-    --warning: oklch(0.6 0.15 70);
-    --warning-foreground: oklch(0.1 0 0);
-    --error: oklch(0.45 0.2 25);
-    --error-foreground: oklch(0.98 0 0);
-    --info: oklch(0.5 0.15 230);
-    --info-foreground: oklch(0.98 0 0);
+    --success: #34D399;
+    --success-foreground: #07111E;
+    --warning: #FBBF24;
+    --warning-foreground: #07111E;
+    --error: #FB7185;
+    --error-foreground: #07111E;
+    --info: #60A5FA;
+    --info-foreground: #07111E;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
 }

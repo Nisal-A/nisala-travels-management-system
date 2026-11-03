@@ -24,6 +24,18 @@ body {
     --color-brand-gold: var(--brand-gold);
     --color-brand-orange: var(--brand-orange);
     --color-brand-white: var(--brand-white);
+    --color-brand-navy-bright: var(--brand-navy-bright);
+    --color-brand-amber: var(--brand-amber);
+    --color-brand-slate: var(--brand-slate);
+
+    /* Executive Navy & Gold semantic tokens */
+    --color-primary-bright: var(--primary-bright);
+    --color-primary-bright-foreground: var(--primary-bright-foreground);
+    --color-gold: var(--gold);
+    --color-gold-foreground: var(--gold-foreground);
+    --color-amber-accent: var(--amber);
+    --color-amber-accent-foreground: var(--amber-foreground);
+    --color-destructive-foreground: var(--destructive-foreground);
 
     --background-image-gradient-navbar: var(--gradient-navbar);
     --background-image-gradient-premium: var(--gradient-premium);
@@ -143,6 +155,34 @@ body {
 
     html {
         @apply font-sans;
+    }
+}
+
+/*
+ * Table density
+ * Set `data-density="compact" | "comfortable"` on any ancestor (page wrapper,
+ * card, or the <table> itself) to adjust cell padding and type size.
+ *   compact     → py-2   text-xs
+ *   comfortable → py-3.5 text-sm
+ */
+@layer utilities {
+    [data-density='compact'] :is(td, th),
+    [data-density='compact']:is(td, th) {
+        padding-block: calc(var(--spacing) * 2);
+        font-size: var(--text-xs);
+        line-height: var(--text-xs--line-height);
+    }
+
+    [data-density='compact'] th,
+    [data-density='compact']:is(th) {
+        height: auto;
+    }
+
+    [data-density='comfortable'] :is(td, th),
+    [data-density='comfortable']:is(td, th) {
+        padding-block: calc(var(--spacing) * 3.5);
+        font-size: var(--text-sm);
+        line-height: var(--text-sm--line-height);
     }
 }
 

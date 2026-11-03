@@ -1,143 +1,132 @@
-import { CheckCircle, Clock, AlertCircle, XCircle, FileWarning, HelpCircle, AlertTriangle } from 'lucide-react';
+import React from 'react';
 
 export type StatusBadgeProps = {
-    type?: 'booking' | 'payment' | 'document' | 'tour' | 'alert' | string;
+    type?: 'booking' | 'payment' | 'document' | 'tour' | 'alert' | 'inquiry' | string;
     status: string;
+    showDot?: boolean;
     className?: string;
 };
 
+type BadgeTone = 'emerald' | 'amber' | 'rose' | 'slate';
+
+const TONE_STYLES: Record<BadgeTone, { badge: string; dot: string }> = {
+    emerald: {
+        badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60',
+        dot: 'bg-emerald-500 dark:bg-emerald-400',
+    },
+    amber: {
+        badge: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60',
+        dot: 'bg-amber-500 dark:bg-amber-400',
+    },
+    rose: {
+        badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800/60',
+        dot: 'bg-rose-500 dark:bg-rose-400',
+    },
+    slate: {
+        badge: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/70 dark:text-slate-300 dark:border-slate-700',
+        dot: 'bg-slate-500 dark:bg-slate-400',
+    },
+};
+
+const EMERALD_KEYS = new Set([
+    'confirmed',
+    'paid',
+    'verified',
+    'active',
+    'available',
+    'completed',
+    'matched',
+    'reconciled',
+    'approved',
+    'converted',
+]);
+
+const AMBER_KEYS = new Set([
+    'pending',
+    'partial',
+    'coming_soon',
+    'coming soon',
+    'unverified',
+    'unpaid',
+    'pending_review',
+    'pending review',
+    'starting_soon',
+    'starting soon',
+    'expiring_soon',
+    'expiring soon',
+    'in_progress',
+    'in progress',
+    'contacted',
+    'follow_up',
+    'follow up',
+]);
+
+const ROSE_KEYS = new Set([
+    'overdue',
+    'rejected',
+    'cancelled',
+    'canceled',
+    'failed',
+    'missing',
+    'limited_seats',
+    'limited seats',
+    'mismatch',
+    'lost',
+]);
+
+const SLATE_KEYS = new Set([
+    'draft',
+    'inactive',
+    'expired',
+    'refunded',
+    'sold_out',
+    'sold out',
+    'archived',
+    'closed',
+]);
+
+function resolveTone(status: string): BadgeTone {
+    const key = status.trim().toLowerCase().replace(/[\s-]+/g, '_');
+    const rawKey = status.trim().toLowerCase();
+
+    if (EMERALD_KEYS.has(key) || EMERALD_KEYS.has(rawKey)) {
+        return 'emerald';
+    }
+    if (AMBER_KEYS.has(key) || AMBER_KEYS.has(rawKey)) {
+        return 'amber';
+    }
+    if (ROSE_KEYS.has(key) || ROSE_KEYS.has(rawKey) || rawKey.startsWith('mismatch')) {
+        return 'rose';
+    }
+    if (SLATE_KEYS.has(key) || SLATE_KEYS.has(rawKey)) {
+        return 'slate';
+    }
+    return 'slate';
+}
+
 /**
- * StatusBadge displays a consistently styled badge for domain states.
+ * StatusBadge displays a consistently styled status pill with a subtle dot indicator.
+ *
+ * Standardized mappings:
+ * - Emerald: `confirmed`, `paid`, `verified`, `active`
+ * - Amber/Gold: `pending`, `partial`, `coming_soon`, `unverified`
+ * - Rose: `overdue`, `rejected`, `cancelled`
+ * - Slate: `draft`, `inactive`
  *
  * @example
  * <StatusBadge type="booking" status="Confirmed" />
- * <StatusBadge status="Limited Seats" />
+ * <StatusBadge status="coming_soon" />
  */
-export function StatusBadge({ type, status, className = '' }: StatusBadgeProps) {
-    let colorClass = 'bg-muted/50 text-muted-foreground border-border';
-    let Icon = HelpCircle;
-
+export function StatusBadge({ status, showDot = true, className = '' }: StatusBadgeProps) {
     const normalizedStatus = status ? status.trim() : '';
-
-    // Tour alert statuses
-    if (normalizedStatus === 'Starting Soon') {
-        colorClass = 'bg-warning/10 text-warning border-warning/20';
-        Icon = Clock;
-    } else if (normalizedStatus === 'Limited Seats') {
-        colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-        Icon = AlertCircle;
-    } else if (normalizedStatus === 'Sold Out') {
-        colorClass = 'bg-muted/50 text-muted-foreground border-border';
-        Icon = XCircle;
-    } else if (normalizedStatus === 'Available') {
-        colorClass = 'bg-success/10 text-success border-success/20';
-        Icon = CheckCircle;
-    } else if (
-        type === 'booking' ||
-        (!type && ['Pending', 'Confirmed', 'Cancelled', 'Completed'].includes(normalizedStatus))
-    ) {
-        switch (normalizedStatus.toLowerCase()) {
-            case 'pending':
-                colorClass = 'bg-warning/10 text-warning border-warning/20';
-                Icon = Clock;
-                break;
-            case 'confirmed':
-                colorClass = 'bg-success/10 text-success border-success/20';
-                Icon = CheckCircle;
-                break;
-            case 'cancelled':
-                colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-                Icon = XCircle;
-                break;
-            case 'completed':
-                colorClass = 'bg-info/10 text-info border-info/20';
-                Icon = CheckCircle;
-                break;
-        }
-    } else if (
-        type === 'payment' ||
-        (!type && ['Paid', 'Unpaid', 'Partial', 'Verified', 'Failed', 'Refunded'].includes(normalizedStatus))
-    ) {
-        switch (normalizedStatus.toLowerCase()) {
-            case 'pending':
-            case 'unpaid':
-            case 'partial':
-                colorClass = 'bg-warning/10 text-warning border-warning/20';
-                Icon = Clock;
-                break;
-            case 'failed':
-                colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-                Icon = AlertCircle;
-                break;
-            case 'completed':
-            case 'paid':
-            case 'verified':
-                colorClass = 'bg-success/10 text-success border-success/20';
-                Icon = CheckCircle;
-                break;
-            case 'refunded':
-                colorClass = 'bg-muted/50 text-muted-foreground border-border';
-                Icon = XCircle;
-                break;
-        }
-    } else if (
-        type === 'document' ||
-        (!type &&
-            [
-                'Pending Review',
-                'Pending',
-                'Verified',
-                'Rejected',
-                'Expired',
-                'Expiring soon',
-                'Expiring Soon',
-                'Missing',
-            ].includes(normalizedStatus))
-    ) {
-        switch (normalizedStatus.toLowerCase()) {
-            case 'missing':
-                colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-                Icon = AlertTriangle;
-                break;
-            case 'expiring soon':
-            case 'pending':
-            case 'pending review':
-                colorClass = 'bg-warning/10 text-warning border-warning/20';
-                Icon = Clock;
-                break;
-            case 'verified':
-                colorClass = 'bg-success/10 text-success border-success/20';
-                Icon = CheckCircle;
-                break;
-            case 'rejected':
-                colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-                Icon = XCircle;
-                break;
-            case 'expired':
-                colorClass = 'bg-muted/50 text-muted-foreground border-border';
-                Icon = FileWarning;
-                break;
-        }
-    } else if (normalizedStatus.toLowerCase() === 'mismatch' || normalizedStatus.toLowerCase().startsWith('mismatch')) {
-        colorClass = 'bg-destructive/10 text-destructive border-destructive/20';
-        Icon = AlertCircle;
-    } else if (
-        normalizedStatus.toLowerCase() === 'matched' ||
-        normalizedStatus.toLowerCase() === 'reconciled' ||
-        normalizedStatus.toLowerCase() === 'active'
-    ) {
-        colorClass = 'bg-success/10 text-success border-success/20';
-        Icon = CheckCircle;
-    } else if (normalizedStatus.toLowerCase() === 'inactive' || normalizedStatus.toLowerCase() === 'draft') {
-        colorClass = 'bg-muted/50 text-muted-foreground border-border';
-        Icon = HelpCircle;
-    }
+    const tone = resolveTone(normalizedStatus);
+    const styles = TONE_STYLES[tone];
 
     return (
         <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${colorClass} ${className}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${styles.badge} ${className}`}
         >
-            <Icon className="size-3.5 shrink-0" />
+            {showDot && <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${styles.dot}`} />}
             <span>{status}</span>
         </span>
     );
