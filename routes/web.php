@@ -174,6 +174,8 @@ Route::middleware(['auth', 'active'])->group(function () {
             Route::get('/', fn () => Inertia::render('Documents/Index'))->name('index');
         });
 
+        Route::post('catalog/revalidate-public-cache', [DestinationController::class, 'revalidatePublicCache'])->name('catalog.revalidate');
+        Route::patch('destinations/{destination}/listing-state', [DestinationController::class, 'updateListingState'])->name('destinations.listing-state');
         Route::resource('destinations', DestinationController::class);
         Route::resource('tours', TourPackageController::class);
 

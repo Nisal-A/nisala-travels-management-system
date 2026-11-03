@@ -15,7 +15,7 @@ class RevalidateNextJs implements ShouldQueue
 
     public array $tags;
 
-    public function __construct(array $tags)
+    public function __construct(array $tags = ['destinations', 'tours'])
     {
         $this->tags = $tags;
     }

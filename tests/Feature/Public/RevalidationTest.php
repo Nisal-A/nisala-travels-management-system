@@ -109,3 +109,20 @@ test('if revalidate URL is empty, job logs info and returns without error', func
             return true;
         });
 });
+
+test('staff or admin can manually trigger public cache revalidation via POST /catalog/revalidate-public-cache', function () {
+    Queue::fake();
+
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => \App\Enums\UserRole::Staff->value, 'guard_name' => 'web']);
+    $staff = \App\Models\User::factory()->create();
+    $staff->assignRole(\App\Enums\UserRole::Staff->value);
+
+    $response = $this->actingAs($staff)
+        ->from(route('destinations.index'))
+        ->post(route('catalog.revalidate'));
+
+    $response->assertRedirect(route('destinations.index'));
+    $response->assertSessionHas('success', 'Public Next.js website cache revalidation triggered.');
+
+    Queue::assertPushed(RevalidateNextJs::class);
+});

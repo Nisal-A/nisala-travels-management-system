@@ -13,13 +13,14 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, Plus, Search, Edit, Trash2, MapPin, Eye } from 'lucide-react';
+import { MoreHorizontal, Plus, Search, Edit, Trash2, MapPin, Eye, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { PageHeader, StatusBadge, MoneyText } from '@/components/common';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
 import { ColumnDef } from '@tanstack/react-table';
 import { PaginatedData } from '@/types';
+import { toast } from 'sonner';
 
 interface TourPackage {
     id: number;
@@ -66,9 +67,33 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
     const [sortDirection] = useState<'asc' | 'desc'>(
         filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc',
     );
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const canCreate = hasRole('super_admin', 'manager', 'staff');
     const canDelete = hasRole('super_admin', 'manager');
+
+    const handleSyncPublicCache = () => {
+        if (isSyncing) return;
+        setIsSyncing(true);
+        const url =
+            typeof route === 'function' ? route('catalog.revalidate') : '/catalog/revalidate-public-cache';
+        router.post(
+            url,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Public Next.js website cache revalidation triggered.');
+                },
+                onError: () => {
+                    toast.error('Failed to trigger public cache revalidation.');
+                },
+                onFinish: () => {
+                    setIsSyncing(false);
+                },
+            },
+        );
+    };
 
     const applyFilters = (overrides = {}) => {
         const query: Record<string, string | undefined> = {
@@ -287,7 +312,21 @@ export default function ToursIndex({ tours, destinations, filters }: IndexProps)
                     title="Tour Packages"
                     description="Manage tour packages, pricing, and availability."
                     actions={
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            {canCreate && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleSyncPublicCache}
+                                    disabled={isSyncing}
+                                    className="border-[#C49A2C]/40 text-[#0E2A47] hover:bg-amber-50/60 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                                >
+                                    <RefreshCw
+                                        className={`mr-2 size-4 text-[#C49A2C] ${isSyncing ? 'animate-spin' : ''}`}
+                                    />
+                                    {isSyncing ? 'Syncing Cache...' : 'Sync Public Cache Now'}
+                                </Button>
+                            )}
                             <Link href={route('destinations.index')} className={buttonVariants({ variant: 'outline' })}>
                                 <MapPin className="mr-2 size-4" /> Manage destinations
                             </Link>
