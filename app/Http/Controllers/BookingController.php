@@ -17,6 +17,7 @@ use App\Models\BookingNote;
 use App\Models\BookingTraveler;
 use App\Models\Customer;
 use App\Models\Employee;
+use App\Models\Inquiry;
 use App\Models\Payment;
 use App\Models\PaymentSchedule;
 use App\Models\SavedFilter;
@@ -40,7 +41,14 @@ class BookingController extends Controller
         Gate::authorize('viewAny', Booking::class);
 
         $perPage = $request->input('per_page', 10);
-        $bookings = Booking::with(['customer', 'tourPackage', 'assignedTo'])
+        $bookings = Booking::with([
+            'customer.documents.documentType',
+            'tourPackage.costLines.supplier',
+            'assignedTo',
+            'travelers',
+            'paymentSchedules',
+            'payments.receipt',
+        ])
             ->filterAndSort($request->all())
             ->paginate($perPage)
             ->withQueryString();
@@ -85,15 +93,27 @@ class BookingController extends Controller
     {
         Gate::authorize('create', Booking::class);
 
-        $customers = Customer::select('id', 'customer_id', 'first_name', 'last_name', 'email', 'phone', 'passport_number', 'nationality')
-            ->orderBy('first_name')
+        $customers = Customer::select('id', 'customer_id', 'full_name', 'email', 'phone', 'passport_number', 'nationality')
+            ->orderBy('full_name')
             ->limit(50)
-            ->get();
+            ->get()
+            ->map(function (Customer $c) {
+                $parts = preg_split('/\s+/', trim((string) $c->full_name), 2);
+                $c->setAttribute('first_name', $parts[0] ?? $c->full_name);
+                $c->setAttribute('last_name', $parts[1] ?? '');
 
-        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')
+                return $c;
+            });
+
+        $packages = TourPackage::select('id', 'package_name', 'destination_id', 'price', 'currency', 'capacity', 'duration_days')
             ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('package_name')
+            ->get()
+            ->map(function (TourPackage $pkg) {
+                $pkg->setAttribute('name', $pkg->package_name);
+
+                return $pkg;
+            });
 
         $employees = Employee::select('id', 'first_name', 'last_name', 'designation')
             ->where('status', 'active')
@@ -102,12 +122,80 @@ class BookingController extends Controller
 
         $existingDraft = BookingDraft::where('user_id', $request->user()->id)->first();
 
+        $initialInquiry = null;
+        if ($inquiryId = $request->input('inquiry_id')) {
+            $inquiry = Inquiry::with(['tourPackage', 'destination', 'customer'])->find($inquiryId);
+            if ($inquiry) {
+                // Attempt to resolve a matching customer if customer_id isn't linked yet
+                $matchedCustomerId = $inquiry->customer_id;
+                if (! $matchedCustomerId && ($inquiry->email || $inquiry->phone)) {
+                    $matchedCustomer = Customer::query()
+                        ->when($inquiry->email, fn ($q) => $q->where('email', $inquiry->email))
+                        ->when(! $inquiry->email && $inquiry->phone, fn ($q) => $q->where('phone', $inquiry->phone))
+                        ->first();
+                    $matchedCustomerId = $matchedCustomer?->id;
+                }
+
+                // Attempt to resolve a matching tour package if tour_package_id isn't linked yet
+                $matchedPackageId = $inquiry->tour_package_id;
+                if (! $matchedPackageId) {
+                    $searchPkg = $inquiry->package_interest ?? $inquiry->interest ?? $inquiry->getAttributes()['destination'] ?? null;
+                    if ($searchPkg) {
+                        $matchedPkg = TourPackage::where('package_name', 'like', "%{$searchPkg}%")->first();
+                        $matchedPackageId = $matchedPkg?->id;
+                    }
+                    if (! $matchedPackageId && $inquiry->destination_id) {
+                        $matchedPkg = TourPackage::where('destination_id', $inquiry->destination_id)->first();
+                        $matchedPackageId = $matchedPkg?->id;
+                    }
+                }
+
+                $destRelation = $inquiry->getRelationValue('destination');
+                $destinationName = is_object($destRelation) && isset($destRelation->name)
+                    ? $destRelation->name
+                    : ($inquiry->getAttributes()['destination'] ?? null);
+
+                $adults = (int) ($inquiry->adults ?? $inquiry->number_of_travelers ?? 1);
+                $children = (int) ($inquiry->children ?? 0);
+                $totalPax = max(1, (int) ($inquiry->number_of_travelers ?: ($adults + $children)));
+
+                $travelDate = $inquiry->start_date
+                    ? $inquiry->start_date->format('Y-m-d')
+                    : ($inquiry->travel_date ? $inquiry->travel_date->format('Y-m-d') : null);
+
+                $returnDate = $inquiry->end_date
+                    ? $inquiry->end_date->format('Y-m-d')
+                    : null;
+
+                $initialInquiry = [
+                    'id' => $inquiry->id,
+                    'reference' => $inquiry->reference ?? ('INQ-'.$inquiry->id),
+                    'customer_id' => $matchedCustomerId,
+                    'name' => $inquiry->name,
+                    'email' => $inquiry->email ?? $inquiry->contact_information,
+                    'phone' => $inquiry->phone ?? $inquiry->contact_information,
+                    'tour_package_id' => $matchedPackageId,
+                    'destination_id' => $inquiry->destination_id,
+                    'destination_name' => $destinationName,
+                    'package_interest' => $inquiry->package_interest ?? $inquiry->interest,
+                    'travel_date' => $travelDate,
+                    'return_date' => $returnDate,
+                    'number_of_travelers' => $totalPax,
+                    'adults' => max(1, $adults),
+                    'children' => max(0, $children),
+                    'assigned_to' => $inquiry->assigned_to,
+                    'message' => $inquiry->message,
+                ];
+            }
+        }
+
         return Inertia::render('Bookings/Create', [
             'customers' => $customers,
             'packages' => $packages,
             'employees' => $employees,
             'travelerTypes' => array_column(TravelerType::cases(), 'value'),
             'canDiscount' => $request->user()->can('applyDiscount', Booking::class),
+            'initialInquiry' => $initialInquiry,
             'existingDraft' => $existingDraft ? [
                 'id' => $existingDraft->id,
                 'step' => $existingDraft->step,
@@ -465,13 +553,25 @@ class BookingController extends Controller
         Gate::authorize('update', $booking);
 
         $booking->load(['travelers', 'customer', 'tourPackage', 'paymentSchedules']);
-        $customers = Customer::select('id', 'customer_id', 'first_name', 'last_name', 'email', 'phone', 'passport_number', 'nationality')
-            ->orderBy('first_name')
-            ->get();
-        $packages = TourPackage::select('id', 'name', 'price', 'currency', 'capacity', 'duration_days')
+        $customers = Customer::select('id', 'customer_id', 'full_name', 'email', 'phone', 'passport_number', 'nationality')
+            ->orderBy('full_name')
+            ->get()
+            ->map(function (Customer $c) {
+                $parts = preg_split('/\s+/', trim((string) $c->full_name), 2);
+                $c->setAttribute('first_name', $parts[0] ?? $c->full_name);
+                $c->setAttribute('last_name', $parts[1] ?? '');
+
+                return $c;
+            });
+        $packages = TourPackage::select('id', 'package_name', 'destination_id', 'price', 'currency', 'capacity', 'duration_days')
             ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('package_name')
+            ->get()
+            ->map(function (TourPackage $pkg) {
+                $pkg->setAttribute('name', $pkg->package_name);
+
+                return $pkg;
+            });
         $employees = Employee::select('id', 'first_name', 'last_name', 'designation')
             ->where('status', 'active')
             ->orderBy('first_name')

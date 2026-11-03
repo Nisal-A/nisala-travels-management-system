@@ -46,6 +46,7 @@ interface DataTableProps<TData, TValue> {
     }[];
     title?: string;
     actions?: React.ReactNode;
+    onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData extends { id?: string | number }, TValue>({
@@ -64,6 +65,7 @@ export function DataTable<TData extends { id?: string | number }, TValue>({
     bulkActions = [],
     title,
     actions,
+    onRowClick,
 }: DataTableProps<TData, TValue>) {
     // Sort & Filters from URL props
     const [sorting, setSorting] = useState<SortingState>(
@@ -366,6 +368,15 @@ export function DataTable<TData extends { id?: string | number }, TValue>({
                                     <TableRow
                                         key={row.id}
                                         data-state={row.getIsSelected() && 'selected'}
+                                        onClick={(e) => {
+                                            if (!onRowClick) return;
+                                            const target = e.target as HTMLElement;
+                                            if (target.closest('a, button, input, select, [role="menuitem"], [data-no-row-click]')) {
+                                                return;
+                                            }
+                                            onRowClick(row.original);
+                                        }}
+                                        className={onRowClick ? 'cursor-pointer' : undefined}
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>

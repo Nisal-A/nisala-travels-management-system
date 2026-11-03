@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/components/layouts/AppLayout';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,35 +9,34 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Edit } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, CalendarPlus } from 'lucide-react';
 import { PageHeader, StatusBadge } from '@/components/common';
 import { useAuth } from '@/hooks/use-auth';
-import { PaginatedData } from '@/types';
+import { PaginatedData, Inquiry as SharedInquiry } from '@/types';
 import { DataTable } from '@/components/data-table/DataTable';
 import { DataTableColumnHeader } from '@/components/data-table/DataTableColumnHeader';
 import { ColumnDef } from '@tanstack/react-table';
 
-export interface Inquiry {
-    id: number;
-    reference: string;
-    full_name: string;
-    email?: string;
-    phone?: string;
-    interest?: string;
-    tour_slug?: string | null;
-    destination_slug?: string | null;
-    travel_start?: string | null;
-    travel_end?: string | null;
-    party_size?: number | null;
-    status: string;
-    assigned_to?: string | null;
-    created_at: string;
-}
+export type Inquiry = SharedInquiry;
 
 interface IndexProps {
     inquiries: PaginatedData<Inquiry>;
     filters: Record<string, unknown>;
     savedFilters?: { id: number; name: string; filters: Record<string, unknown> }[];
+}
+
+function getInquiryName(inquiry: Inquiry): string {
+    return inquiry.full_name || inquiry.name || 'Website Visitor';
+}
+
+function getInquiryDestination(inquiry: Inquiry): string {
+    if (typeof inquiry.destination === 'object' && inquiry.destination?.name) {
+        return inquiry.destination.name;
+    }
+    if (typeof inquiry.destination === 'string' && inquiry.destination) {
+        return inquiry.destination;
+    }
+    return inquiry.destination_slug ?? '—';
 }
 
 export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }: IndexProps) {
@@ -53,46 +52,60 @@ export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }
         {
             accessorKey: 'reference',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Reference" />,
-            cell: ({ row }) => <span className="font-mono text-xs">{row.getValue('reference')}</span>,
+            cell: ({ row }) => (
+                <span className="font-mono text-xs font-semibold text-[#0E2A47] dark:text-[#F59E0B]">
+                    {row.getValue('reference') || `INQ-${row.original.id}`}
+                </span>
+            ),
         },
         {
-            accessorKey: 'full_name',
+            id: 'full_name',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-            cell: ({ row }) => <span className="font-semibold text-foreground">{row.getValue('full_name')}</span>,
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">{getInquiryName(row.original)}</span>
+                    {row.original.email && (
+                        <span className="text-xs text-muted-foreground">{row.original.email}</span>
+                    )}
+                </div>
+            ),
         },
         {
             accessorKey: 'interest',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Interest" />,
-            cell: ({ row }) => <span>{row.getValue('interest') || '—'}</span>,
+            cell: ({ row }) => (
+                <span>{row.original.interest || row.original.package_interest || '—'}</span>
+            ),
         },
         {
-            accessorKey: 'tour_slug',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Tour" />,
-            cell: ({ row }) => <span>{row.getValue('tour_slug') ?? '—'}</span>,
-        },
-        {
-            accessorKey: 'destination_slug',
+            id: 'destination',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Destination" />,
-            cell: ({ row }) => <span>{row.getValue('destination_slug') ?? '—'}</span>,
+            cell: ({ row }) => <span>{getInquiryDestination(row.original)}</span>,
         },
         {
-            accessorKey: 'travel_start',
+            id: 'travel_start',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Travel Start" />,
             cell: ({ row }) => {
-                const d = row.getValue('travel_start') as string | null;
+                const d = row.original.travel_start || row.original.start_date || row.original.travel_date;
                 return d ? new Date(d).toLocaleDateString() : '—';
             },
         },
         {
-            accessorKey: 'party_size',
+            id: 'party_size',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Party Size" />,
-            cell: ({ row }) => <span>{row.getValue('party_size') ?? '—'}</span>,
+            cell: ({ row }) => {
+                const pax =
+                    row.original.party_size ??
+                    row.original.number_of_travelers ??
+                    ((Number(row.original.adults || 0) + Number(row.original.children || 0)) || null);
+                return <span>{pax ?? '—'}</span>;
+            },
         },
         {
             accessorKey: 'status',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
             cell: ({ row }) => {
-                const status = row.getValue('status') as string;
+                const status = (row.getValue('status') as string) || 'new';
                 return <StatusBadge status={status} />;
             },
         },
@@ -101,7 +114,11 @@ export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }
             header: ({ column }) => <DataTableColumnHeader column={column} title="Received" />,
             cell: ({ row }) => {
                 const d = row.getValue('created_at') as string;
-                return <span className="text-xs text-muted-foreground">{new Date(d).toLocaleDateString()}</span>;
+                return (
+                    <span className="text-xs text-muted-foreground">
+                        {d ? new Date(d).toLocaleDateString() : '—'}
+                    </span>
+                );
             },
         },
         {
@@ -110,7 +127,17 @@ export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }
             cell: ({ row }) => {
                 const inquiry = row.original;
                 return (
-                    <div className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                        {canAssign && (
+                            <Link
+                                href={`/bookings/create?inquiry_id=${inquiry.id}`}
+                                className="inline-flex items-center gap-1.5 h-8 rounded-lg bg-[#0E2A47] hover:bg-[#0B3D91] text-white px-2.5 text-xs font-semibold shadow-xs transition-colors whitespace-nowrap"
+                            >
+                                <CalendarPlus className="size-3.5 text-[#F59E0B]" />
+                                <span>Convert to Draft Booking</span>
+                            </Link>
+                        )}
+
                         <DropdownMenu>
                             <DropdownMenuTrigger
                                 render={
@@ -120,23 +147,25 @@ export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }
                                     </Button>
                                 }
                             />
-                            <DropdownMenuContent align="end" className="w-[150px]">
+                            <DropdownMenuContent align="end" className="w-[200px]">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    onClick={() => router.visit(route('admin.inquiries.show', { inquiry: inquiry.id }))}
-                                >
-                                    <Eye className="mr-2 size-4" /> View
-                                </DropdownMenuItem>
                                 {canAssign && (
                                     <DropdownMenuItem
-                                        className="cursor-pointer"
-                                        onClick={() => router.visit(route('admin.inquiries.edit', { inquiry: inquiry.id }))}
+                                        className="cursor-pointer font-medium"
+                                        onClick={() => router.visit(`/bookings/create?inquiry_id=${inquiry.id}`)}
                                     >
-                                        <Edit className="mr-2 size-4" /> Edit
+                                        <CalendarPlus className="mr-2 size-4 text-[#C49A2C]" /> Convert to Draft Booking
                                     </DropdownMenuItem>
                                 )}
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                        router.visit(route('admin.inquiries.show', { inquiry: inquiry.id }))
+                                    }
+                                >
+                                    <Eye className="mr-2 size-4" /> View Inquiry
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -149,40 +178,58 @@ export default function InquiriesIndex({ inquiries, filters, savedFilters = [] }
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm flex flex-col gap-2.5">
             <div className="flex justify-between items-start">
                 <div className="flex flex-col">
-                    <span className="font-semibold text-foreground">{inquiry.full_name}</span>
-                    <span className="font-mono text-xs text-muted-foreground">{inquiry.reference}</span>
+                    <span className="font-semibold text-foreground">{getInquiryName(inquiry)}</span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                        {inquiry.reference || `INQ-${inquiry.id}`}
+                    </span>
                 </div>
                 <StatusBadge status={inquiry.status} />
             </div>
             <div className="text-xs text-muted-foreground flex flex-col gap-1">
-                {inquiry.interest && <span>Interest: {inquiry.interest}</span>}
-                {inquiry.travel_start && (
-                    <span>Travel Start: {new Date(inquiry.travel_start).toLocaleDateString()}</span>
+                {(inquiry.interest || inquiry.package_interest) && (
+                    <span>Interest: {inquiry.interest || inquiry.package_interest}</span>
+                )}
+                {(inquiry.travel_start || inquiry.start_date || inquiry.travel_date) && (
+                    <span>
+                        Travel Start:{' '}
+                        {new Date(
+                            (inquiry.travel_start || inquiry.start_date || inquiry.travel_date) as string,
+                        ).toLocaleDateString()}
+                    </span>
                 )}
             </div>
-            <div className="flex justify-end pt-2 border-t border-border mt-1">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border mt-1">
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8"
+                    className="h-8 text-xs"
                     onClick={() => router.visit(route('admin.inquiries.show', { inquiry: inquiry.id }))}
                 >
-                    <Eye className="mr-1.5 size-4" /> View
+                    <Eye className="mr-1.5 size-3.5" /> View
                 </Button>
+                {canAssign && (
+                    <Link
+                        href={`/bookings/create?inquiry_id=${inquiry.id}`}
+                        className="inline-flex items-center gap-1.5 h-8 rounded-lg bg-[#0E2A47] hover:bg-[#0B3D91] text-white px-3 text-xs font-semibold shadow-xs transition-colors"
+                    >
+                        <CalendarPlus className="size-3.5 text-[#F59E0B]" />
+                        <span>Convert to Draft Booking</span>
+                    </Link>
+                )}
             </div>
         </div>
     );
 
     return (
         <AppLayout
-            title="Inquiries"
-            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Inquiries' }]}
+            title="Web Inquiries"
+            breadcrumbs={[{ label: 'Dashboard', href: route('dashboard') }, { label: 'Web Inquiries' }]}
         >
-            <Head title="Inquiries" />
+            <Head title="Web Inquiries" />
             <div className="space-y-6">
                 <PageHeader
-                    title="Inquiries"
-                    description="Staff can review and work through public travel inquiries."
+                    title="Web Inquiries"
+                    description="Review incoming website travel inquiries and convert qualified leads directly into draft bookings."
                 />
 
                 <DataTable

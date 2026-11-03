@@ -19,6 +19,11 @@ interface Step1CustomerProps {
     employees: Employee[];
     error?: string;
     isEditing?: boolean;
+    prefillCustomer?: {
+        name?: string | null;
+        email?: string | null;
+        phone?: string | null;
+    } | null;
 }
 
 export default function Step1Customer({
@@ -30,8 +35,9 @@ export default function Step1Customer({
     employees,
     error,
     isEditing = false,
+    prefillCustomer = null,
 }: Step1CustomerProps) {
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(() => prefillCustomer?.name || prefillCustomer?.email || '');
     const [searchResults, setSearchResults] = useState<Customer[]>(initialCustomers);
     const [searching, setSearching] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -318,6 +324,16 @@ export default function Step1Customer({
                 open={isSlideOverOpen}
                 onOpenChange={setIsSlideOverOpen}
                 onCustomerCreated={handleCreatedCustomer}
+                defaultValues={
+                    prefillCustomer
+                        ? {
+                              first_name: prefillCustomer.name?.split(' ')[0] || '',
+                              last_name: prefillCustomer.name?.split(' ').slice(1).join(' ') || '',
+                              email: prefillCustomer.email || '',
+                              phone: prefillCustomer.phone || '',
+                          }
+                        : undefined
+                }
             />
         </div>
     );
