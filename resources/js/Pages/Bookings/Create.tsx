@@ -22,7 +22,27 @@ import {
 import { Customer, TourPackage, Employee, Booking } from '@/types';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Cloud, CloudCheck, ArrowLeft, ArrowRight, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Cloud, CloudCheck, ArrowLeft, ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
+
+export interface InitialInquiryData {
+    id: number;
+    reference?: string;
+    customer_id?: number | null;
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    tour_package_id?: number | null;
+    destination_id?: number | null;
+    destination_name?: string | null;
+    package_interest?: string | null;
+    travel_date?: string | null;
+    return_date?: string | null;
+    number_of_travelers?: number | null;
+    adults?: number | null;
+    children?: number | null;
+    assigned_to?: number | null;
+    message?: string | null;
+}
 
 interface Props {
     customers: Customer[];
@@ -30,6 +50,7 @@ interface Props {
     employees: Employee[];
     travelerTypes: string[];
     canDiscount?: boolean;
+    initialInquiry?: InitialInquiryData | null;
     existingDraft?: {
         id: number;
         step: number;
@@ -46,6 +67,7 @@ export default function Create({
     employees,
     travelerTypes,
     canDiscount = false,
+    initialInquiry = null,
     existingDraft = null,
     booking,
     isEditing = false,
@@ -97,6 +119,75 @@ export default function Create({
                 payment_method: 'cash',
                 payment_reference: '',
                 notes: booking.notes || '',
+            };
+        }
+
+        if (initialInquiry) {
+            const matchedCustomer =
+                customers.find((c) => initialInquiry.customer_id && c.id === initialInquiry.customer_id) ||
+                customers.find(
+                    (c) =>
+                        (initialInquiry.email && c.email?.toLowerCase() === initialInquiry.email.toLowerCase()) ||
+                        (initialInquiry.phone && c.phone === initialInquiry.phone),
+                );
+
+            const matchedPackage =
+                packages.find((p) => initialInquiry.tour_package_id && p.id === initialInquiry.tour_package_id) ||
+                packages.find(
+                    (p) =>
+                        initialInquiry.package_interest &&
+                        (p.name || p.package_name || '')
+                            .toLowerCase()
+                            .includes(initialInquiry.package_interest.toLowerCase()),
+                ) ||
+                packages.find(
+                    (p) =>
+                        initialInquiry.destination_name &&
+                        (p.name || p.package_name || '')
+                            .toLowerCase()
+                            .includes(initialInquiry.destination_name.toLowerCase()),
+                );
+
+            const paxCount = Math.max(1, Number(initialInquiry.number_of_travelers || initialInquiry.adults || 1));
+            const adultCount = Math.max(1, Number(initialInquiry.adults || paxCount));
+            const childCount = Math.max(0, Number(initialInquiry.children || Math.max(0, paxCount - adultCount)));
+
+            const prefilledTravelers: TravelerRow[] = Array.from({ length: paxCount }, (_, index) => {
+                const isLead = index === 0;
+                const isChild = index >= adultCount && index < adultCount + childCount;
+                return {
+                    full_name: isLead ? initialInquiry.name || matchedCustomer?.full_name || '' : '',
+                    traveler_type: isChild ? 'child' : 'adult',
+                    passport_number: isLead ? matchedCustomer?.passport_number || '' : '',
+                    passport_expiry: '',
+                    dob: '',
+                    gender: 'Male',
+                    nationality: matchedCustomer?.nationality || 'Sri Lankan',
+                    special_requirements: '',
+                };
+            });
+
+            return {
+                customer_id: matchedCustomer ? matchedCustomer.id.toString() : '',
+                tour_package_id: matchedPackage ? matchedPackage.id.toString() : '',
+                booking_date: new Date().toISOString().split('T')[0],
+                travel_date: initialInquiry.travel_date || '',
+                return_date: initialInquiry.return_date || '',
+                assigned_to: initialInquiry.assigned_to ? initialInquiry.assigned_to.toString() : '',
+                travelers: prefilledTravelers,
+                extras: [],
+                tax_amount: 0,
+                discount_amount: 0,
+                payment_plan: 'deposit_balance',
+                deposit_amount: 0,
+                payment_schedules: [],
+                record_payment: false,
+                payment_amount: 0,
+                payment_method: 'cash',
+                payment_reference: '',
+                notes: initialInquiry.message
+                    ? `Converted from Web Inquiry #${initialInquiry.id} (${initialInquiry.reference || ''}): ${initialInquiry.message}`
+                    : `Converted from Web Inquiry #${initialInquiry.id}`,
             };
         }
 
@@ -426,6 +517,40 @@ export default function Create({
                     }
                 />
 
+                {/* Gold Web Inquiry Pre-fill Banner */}
+                {initialInquiry && (
+                    <div className="rounded-xl border border-[#C49A2C]/50 bg-gradient-to-r from-amber-50 via-[#FBF5E6] to-amber-50/70 dark:from-amber-950/40 dark:via-[#13253D] dark:to-amber-950/30 dark:border-[#C49A2C]/40 px-4 py-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-start sm:items-center gap-3">
+                            <div className="size-9 rounded-lg bg-[#0E2A47] text-[#F59E0B] flex items-center justify-center shrink-0">
+                                <Sparkles className="size-4" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-[#0E2A47] dark:text-[#F59E0B]">
+                                    Pre-filling draft from Web Inquiry #{initialInquiry.id}
+                                    {initialInquiry.reference ? ` (${initialInquiry.reference})` : ''}
+                                </p>
+                                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                                    Client: <strong>{initialInquiry.name || 'Website Visitor'}</strong>
+                                    {initialInquiry.email ? ` · ${initialInquiry.email}` : ''}
+                                    {initialInquiry.phone ? ` · ${initialInquiry.phone}` : ''}
+                                    {initialInquiry.destination_name || initialInquiry.package_interest
+                                        ? ` · Requested: ${initialInquiry.package_interest || initialInquiry.destination_name}`
+                                        : ''}
+                                    {initialInquiry.number_of_travelers
+                                        ? ` · ${initialInquiry.number_of_travelers} Pax`
+                                        : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <Link
+                            href={route('admin.inquiries.show', { inquiry: initialInquiry.id })}
+                            className="text-xs font-semibold text-[#0B3D91] dark:text-[#F59E0B] hover:underline shrink-0"
+                        >
+                            View Original Inquiry →
+                        </Link>
+                    </div>
+                )}
+
                 {/* Resume Draft Banner */}
                 {showResumeBanner && existingDraft && (
                     <Alert className="bg-primary/10 border-primary/20 text-foreground flex items-center justify-between gap-4">
@@ -470,6 +595,15 @@ export default function Create({
                             employees={employees}
                             error={stepErrors.customer_id}
                             isEditing={isEditing}
+                            prefillCustomer={
+                                initialInquiry
+                                    ? {
+                                          name: initialInquiry.name,
+                                          email: initialInquiry.email,
+                                          phone: initialInquiry.phone,
+                                      }
+                                    : null
+                            }
                         />
                     )}
 

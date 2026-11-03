@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDestinationRequest;
 use App\Http\Requests\UpdateDestinationRequest;
+use App\Jobs\RevalidateNextJs;
 use App\Models\Destination;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -127,6 +128,37 @@ class DestinationController extends Controller
         $this->clearPublicCatalogCache();
 
         return redirect()->route('destinations.index')->with('success', 'Destination removed successfully.');
+    }
+
+    public function revalidatePublicCache(Request $request)
+    {
+        $this->clearPublicCatalogCache();
+
+        RevalidateNextJs::dispatch();
+
+        return back()->with('success', 'Public Next.js website cache revalidation triggered.');
+    }
+
+    public function updateListingState(Request $request, Destination $destination)
+    {
+        $validated = $request->validate([
+            'listing_state' => ['required', 'string', Destination::listingStateRule()],
+        ]);
+
+        $isMaldives = strtolower((string) $destination->country) === 'maldives'
+            || strtolower((string) $destination->slug) === 'maldives';
+
+        if ($isMaldives && $validated['listing_state'] !== Destination::LISTING_STATE_COMING_SOON) {
+            return back()->with('error', 'Maldives is locked to Coming Soon until launch per business policy.');
+        }
+
+        $destination->update([
+            'listing_state' => $validated['listing_state'],
+        ]);
+
+        $this->clearPublicCatalogCache();
+
+        return back()->with('success', 'Destination listing state updated.');
     }
 
     protected function resolveGallery(Request $request, array $fallback = []): array

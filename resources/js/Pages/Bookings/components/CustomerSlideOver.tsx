@@ -14,17 +14,28 @@ interface CustomerSlideOverProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onCustomerCreated: (customer: Customer) => void;
+    defaultValues?: {
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+        phone?: string;
+    };
 }
 
-export default function CustomerSlideOver({ open, onOpenChange, onCustomerCreated }: CustomerSlideOverProps) {
+export default function CustomerSlideOver({
+    open,
+    onOpenChange,
+    onCustomerCreated,
+    defaultValues,
+}: CustomerSlideOverProps) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
-        whatsapp: '',
+        first_name: defaultValues?.first_name || '',
+        last_name: defaultValues?.last_name || '',
+        email: defaultValues?.email || '',
+        phone: defaultValues?.phone || '',
+        whatsapp: defaultValues?.phone || '',
         passport_number: '',
         nic: '',
         dob: '',

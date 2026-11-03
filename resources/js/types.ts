@@ -81,16 +81,21 @@ export interface Customer {
     status: 'active' | 'inactive';
     notes: string | null;
     created_at?: string;
+    documents?: CustomerDocument[];
 }
 
 export interface TourPackage {
     id: number;
-    name: string;
+    name?: string;
+    package_name?: string;
+    destination_id?: number;
     description?: string;
     price?: number;
     currency?: string;
     capacity?: number;
     duration_days?: number;
+    cost_lines?: PackageCostLine[];
+    costLines?: PackageCostLine[];
 }
 
 export interface Traveler {
@@ -179,6 +184,7 @@ export interface Booking {
     paid_amount?: string | number;
     balance_amount?: string | number;
     currency: string;
+    exchange_rate_to_lkr?: string | number;
     booking_status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
     payment_status?: string;
     notes?: string | null;
@@ -219,10 +225,17 @@ export interface Payment {
     reference_number?: string | null;
     booking_id: number;
     amount: string | number;
+    amount_lkr?: string | number;
+    exchange_rate_to_lkr?: string | number;
     currency: string;
     payment_date: string;
     payment_method: string;
     status: string;
+    receipt?: {
+        id: number;
+        payment_id: number;
+        receipt_number: string;
+    } | null;
     recorded_by?: { id: number; name: string };
     recordedBy?: { id: number; name: string };
     booking?: Booking;
@@ -239,11 +252,13 @@ export interface CustomerDocument {
     id: number;
     customer_id: number;
     document_type_id: number;
-    file_path: string;
-    file_name: string;
-    file_type: string;
+    file_path?: string;
+    file_name?: string;
+    original_filename?: string;
+    file_type?: string;
     file_size: number;
-    status: string;
+    status?: string;
+    verification_status?: string;
     expiry_date?: string;
     document_type?: DocumentType;
 }
@@ -317,4 +332,38 @@ export interface Refund {
         created_at: string;
         causer?: { id: number; name: string };
     }[];
+}
+
+export interface Inquiry {
+    id: number;
+    reference: string;
+    name?: string;
+    full_name?: string;
+    email?: string | null;
+    phone?: string | null;
+    contact_information?: string | null;
+    interest?: string | null;
+    package_interest?: string | null;
+    destination?: string | { id: number; name: string } | null;
+    destination_id?: number | null;
+    tour_package_id?: number | null;
+    tour_slug?: string | null;
+    destination_slug?: string | null;
+    travel_date?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    travel_start?: string | null;
+    travel_end?: string | null;
+    number_of_travelers?: number | null;
+    adults?: number | null;
+    children?: number | null;
+    party_size?: number | null;
+    message?: string | null;
+    status: string;
+    assigned_to?: number | string | null;
+    privacy_consent?: boolean;
+    marketing_consent?: boolean;
+    privacy_consent_at?: string | null;
+    marketing_consent_at?: string | null;
+    created_at: string;
 }

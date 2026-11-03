@@ -14,8 +14,20 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MoreHorizontal, Plus, Search, Edit, Trash2, MapPin, ExternalLink, Package } from 'lucide-react';
+import {
+    MoreHorizontal,
+    Plus,
+    Search,
+    Edit,
+    Trash2,
+    MapPin,
+    Package,
+    RefreshCw,
+    AlertTriangle,
+    Lock,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { PageHeader, StatusBadge } from '@/components/common';
 import { PaginatedData, PageProps } from '@/types';
 import { toast } from 'sonner';
 
@@ -57,8 +69,71 @@ export default function DestinationsIndex({ destinations, filters }: IndexProps)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(
         filters?.direction === 'asc' || filters?.direction === 'desc' ? filters.direction : 'desc',
     );
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [togglingId, setTogglingId] = useState<number | null>(null);
 
     const canManage = hasRole('super_admin', 'manager', 'staff');
+
+    const handleSyncPublicCache = () => {
+        if (isSyncing) return;
+        setIsSyncing(true);
+        const url =
+            typeof route === 'function' ? route('catalog.revalidate') : '/catalog/revalidate-public-cache';
+        router.post(
+            url,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Public Next.js website cache revalidation triggered.');
+                },
+                onError: () => {
+                    toast.error('Failed to trigger public cache revalidation.');
+                },
+                onFinish: () => {
+                    setIsSyncing(false);
+                },
+            },
+        );
+    };
+
+    const isMaldivesDestination = (destination: DestinationItem) => {
+        return (
+            destination.country?.toLowerCase() === 'maldives' ||
+            destination.slug?.toLowerCase() === 'maldives'
+        );
+    };
+
+    const handleToggleListingState = (
+        destination: DestinationItem,
+        nextState: 'live' | 'coming_soon' | 'hidden',
+    ) => {
+        if (isMaldivesDestination(destination) && nextState !== 'coming_soon') {
+            toast.warning('Maldives is locked to Coming Soon until official launch.');
+            return;
+        }
+        setTogglingId(destination.id);
+        const url =
+            typeof route === 'function'
+                ? route('destinations.listing-state', { destination: destination.id })
+                : `/destinations/${destination.id}/listing-state`;
+        router.patch(
+            url,
+            { listing_state: nextState },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(`Updated ${destination.city_region} listing state.`);
+                },
+                onError: (errs) => {
+                    toast.error(errs.error || 'Could not update listing state.');
+                },
+                onFinish: () => {
+                    setTogglingId(null);
+                },
+            },
+        );
+    };
 
     const applyFilters = (overrides = {}) => {
         const query: Record<string, string | undefined> = {
@@ -108,27 +183,16 @@ export default function DestinationsIndex({ destinations, filters }: IndexProps)
         }
     };
 
-    const renderListingStateBadge = (state: string) => {
+    const renderListingStateBadge = (destination: DestinationItem) => {
+        const state = isMaldivesDestination(destination) ? 'coming_soon' : destination.listing_state;
         switch (state) {
             case 'live':
-                return (
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                        Live
-                    </Badge>
-                );
+                return <StatusBadge status="Active" />;
             case 'coming_soon':
-                return (
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                        Coming Soon
-                    </Badge>
-                );
+                return <StatusBadge status="Coming Soon" />;
             case 'hidden':
             default:
-                return (
-                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
-                        Hidden
-                    </Badge>
-                );
+                return <StatusBadge status="Draft" />;
         }
     };
 
@@ -139,24 +203,59 @@ export default function DestinationsIndex({ destinations, filters }: IndexProps)
         >
             <Head title="Destinations" />
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Destinations</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Manage geographic locations, marketing assets, and catalogue visibility.
-                    </p>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Destinations"
+                    description="Manage geographic locations, marketing assets, and catalogue visibility."
+                    actions={
+                        <div className="flex flex-wrap items-center gap-2">
+                            {canManage && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleSyncPublicCache}
+                                    disabled={isSyncing}
+                                    className="border-[#C49A2C]/40 text-[#0E2A47] hover:bg-amber-50/60 dark:text-amber-300 dark:hover:bg-amber-950/30"
+                                >
+                                    <RefreshCw
+                                        className={`mr-2 h-4 w-4 text-[#C49A2C] ${isSyncing ? 'animate-spin' : ''}`}
+                                    />
+                                    {isSyncing ? 'Syncing Cache...' : 'Sync Public Cache Now'}
+                                </Button>
+                            )}
+                            <Link href={route('tours.index')} className={buttonVariants({ variant: 'outline' })}>
+                                <Package className="mr-2 h-4 w-4" /> Tour Packages
+                            </Link>
+                            {canManage && (
+                                <Link
+                                    href={route('destinations.create')}
+                                    className={buttonVariants({ variant: 'default' })}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" /> New Destination
+                                </Link>
+                            )}
+                        </div>
+                    }
+                />
+
+                {/* Catalog Business Policy Warning Banner */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-300/80 bg-amber-50/90 dark:bg-amber-950/40 dark:border-amber-800/70 px-4 py-3.5 text-amber-950 dark:text-amber-200 shadow-xs">
+                    <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-[#C49A2C] shrink-0 mt-0.5" />
+                        <div className="text-xs sm:text-sm leading-relaxed">
+                            <span className="font-semibold text-[#0E2A47] dark:text-amber-100">
+                                Public Catalog Policy Notice:
+                            </span>{' '}
+                            Sri Lanka packages have been permanently retired per business policy and excluded from the
+                            public website. <strong>Thailand</strong> and <strong>India</strong> are active core
+                            destinations, while <strong>Maldives</strong> is locked to{' '}
+                            <span className="inline-flex items-center font-semibold underline decoration-amber-500/60">
+                                Coming Soon
+                            </span>{' '}
+                            until official launch.
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Link href={route('tours.index')} className={buttonVariants({ variant: 'outline' })}>
-                        <Package className="mr-2 h-4 w-4" /> Tour Packages
-                    </Link>
-                    {canManage && (
-                        <Link href={route('destinations.create')} className={buttonVariants({ variant: 'default' })}>
-                            <Plus className="mr-2 h-4 w-4" /> New Destination
-                        </Link>
-                    )}
-                </div>
-            </div>
 
             {/* Filters */}
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
@@ -279,19 +378,47 @@ export default function DestinationsIndex({ destinations, filters }: IndexProps)
                                             </span>
                                         </TableCell>
 
-                                        <TableCell>{renderListingStateBadge(destination.listing_state)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2.5">
+                                                {renderListingStateBadge(destination)}
+                                                {isMaldivesDestination(destination) ? (
+                                                    <span
+                                                        className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300/60"
+                                                        title="Maldives is locked to Coming Soon until launch"
+                                                    >
+                                                        <Lock className="h-3 w-3" /> Locked
+                                                    </span>
+                                                ) : (
+                                                    canManage && (
+                                                        <Select
+                                                            value={destination.listing_state}
+                                                            disabled={togglingId === destination.id}
+                                                            onValueChange={(val) => {
+                                                                if (
+                                                                    val === 'live' ||
+                                                                    val === 'coming_soon' ||
+                                                                    val === 'hidden'
+                                                                ) {
+                                                                    handleToggleListingState(destination, val);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="h-7 w-[125px] text-xs bg-background">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="live">Active (Live)</SelectItem>
+                                                                <SelectItem value="coming_soon">Coming Soon</SelectItem>
+                                                                <SelectItem value="hidden">Draft (Hidden)</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    )
+                                                )}
+                                            </div>
+                                        </TableCell>
 
                                         <TableCell>
-                                            <Badge
-                                                variant={destination.status === 'active' ? 'default' : 'secondary'}
-                                                className={
-                                                    destination.status === 'active'
-                                                        ? 'bg-success/15 text-success hover:bg-success/25 border-success/20'
-                                                        : ''
-                                                }
-                                            >
-                                                {destination.status}
-                                            </Badge>
+                                            <StatusBadge status={destination.status} />
                                         </TableCell>
 
                                         <TableCell className="text-center">
@@ -405,6 +532,7 @@ export default function DestinationsIndex({ destinations, filters }: IndexProps)
                         </div>
                     </div>
                 )}
+            </div>
             </div>
         </AppLayout>
     );
