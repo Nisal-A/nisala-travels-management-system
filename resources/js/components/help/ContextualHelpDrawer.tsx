@@ -580,11 +580,10 @@ export function ContextualHelpDrawer({ open, onOpenChange, currentPath }: Contex
                                     key={mod.id}
                                     type="button"
                                     onClick={() => setSelectedModuleId(mod.id)}
-                                    className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                                        isSelected
+                                    className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer ${isSelected
                                             ? 'bg-[#C49A2C] text-slate-950 font-semibold shadow-xs'
                                             : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                                    }`}
+                                        }`}
                                 >
                                     <span>#{mod.number}</span>
                                     <span className="truncate max-w-[110px]">{mod.category}</span>
