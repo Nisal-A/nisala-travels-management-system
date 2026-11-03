@@ -229,9 +229,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
 
     // ==============================
-    // Staff Profile (super_admin, manager, staff, finance)
+    // Staff Profile & Help Center (super_admin, manager, staff, finance)
     // ==============================
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
+        Route::get('/help', fn () => Inertia::render('Help/Index'))->name('help.index');
         Route::get('/profile', [StaffProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [StaffProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/password', [StaffProfileController::class, 'updatePassword'])->name('profile.password.update');

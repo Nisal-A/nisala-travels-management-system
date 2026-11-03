@@ -36,6 +36,7 @@ import {
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ContextualHelpDrawer } from '@/components/help/ContextualHelpDrawer';
 
 export type SidebarTheme = 'navy' | 'light' | 'dark';
 export type TableDensity = 'comfortable' | 'compact';
@@ -629,92 +630,11 @@ export default function AppLayout({ children, title, breadcrumbs }: AppLayoutPro
                 </Sheet>
 
                 {/* Contextual Help & Guides Drawer */}
-                <Sheet open={guideOpen} onOpenChange={setGuideOpen}>
-                    <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
-                        <SheetHeader className="border-b border-border pb-4">
-                            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#C49A2C]">
-                                <BookOpen className="size-4" />
-                                <span>Contextual Page Guide</span>
-                            </div>
-                            <SheetTitle className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                                {contextualGuide.moduleTitle}
-                            </SheetTitle>
-                            <SheetDescription className="text-sm text-slate-600 dark:text-slate-400">
-                                {contextualGuide.summary}
-                            </SheetDescription>
-                        </SheetHeader>
-
-                        <div className="py-5 space-y-6">
-                            {/* Key Workflow Steps */}
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                    <CheckCircle2 className="size-3.5 text-[#0E2A47] dark:text-[#C49A2C]" />
-                                    Recommended Workflow
-                                </h4>
-                                <ol className="space-y-2.5">
-                                    {contextualGuide.workflowSteps.map((step, index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-start gap-2.5 rounded-lg border border-border bg-muted/40 p-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed"
-                                        >
-                                            <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#0E2A47] text-[11px] font-bold text-[#F59E0B]">
-                                                {index + 1}
-                                            </span>
-                                            <span>{step}</span>
-                                        </li>
-                                    ))}
-                                </ol>
-                            </div>
-
-                            {/* Pro Tips */}
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                    <Sparkles className="size-3.5 text-[#F59E0B]" />
-                                    Executive Tips
-                                </h4>
-                                <ul className="space-y-2">
-                                    {contextualGuide.tips.map((tip, index) => (
-                                        <li
-                                            key={index}
-                                            className="rounded-lg border border-amber-200/70 bg-amber-50/60 dark:border-amber-800/40 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200 leading-relaxed"
-                                        >
-                                            {tip}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Keyboard Shortcuts */}
-                            <div className="rounded-lg border border-border bg-card p-3.5 space-y-2.5">
-                                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                                    <Keyboard className="size-4 text-[#C49A2C]" />
-                                    <span>Keyboard Shortcuts</span>
-                                </div>
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <span>Global Command Palette</span>
-                                    <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
-                                        Ctrl / ⌘ + K
-                                    </kbd>
-                                </div>
-                            </div>
-
-                            {/* Link to Full Help Center */}
-                            <div className="pt-2 border-t border-border flex items-center justify-between">
-                                <Link
-                                    href="/help"
-                                    onClick={() => setGuideOpen(false)}
-                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0B3D91] dark:text-[#F59E0B] hover:underline"
-                                >
-                                    <span>Open Full Help & Guides Center</span>
-                                    <ExternalLink className="size-3.5" />
-                                </Link>
-                                <Button variant="outline" size="sm" onClick={() => setGuideOpen(false)}>
-                                    Close
-                                </Button>
-                            </div>
-                        </div>
-                    </SheetContent>
-                </Sheet>
+                <ContextualHelpDrawer
+                    open={guideOpen}
+                    onOpenChange={setGuideOpen}
+                    currentPath={currentPath}
+                />
 
                 {/* Main Content Area */}
                 <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
