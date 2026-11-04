@@ -21,11 +21,18 @@ class MemoryYearController extends Controller
         protected MemoryPublishingService $publishingService
     ) {}
 
+    protected function authorizeAccess(): void
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['super_admin', 'manager']), 403);
+    }
+
     /**
      * Display a listing of memory years for staff.
      */
     public function index(Request $request): Response|JsonResponse
     {
+        $this->authorizeAccess();
+
         $years = MemoryYear::with(['destination', 'media'])
             ->orderByDesc('year')
             ->orderBy('sort_order')
@@ -45,6 +52,8 @@ class MemoryYearController extends Controller
      */
     public function create(): Response
     {
+        $this->authorizeAccess();
+
         $destinations = Destination::orderBy('country')
             ->orderBy('city_region')
             ->get(['id', 'country', 'city_region']);
@@ -59,6 +68,8 @@ class MemoryYearController extends Controller
      */
     public function store(Request $request): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $validated = $request->validate([
             'year' => ['required', 'integer', 'min:1900', 'max:2100', 'unique:memory_years,year'],
             'title' => ['required', 'string', 'max:255'],
@@ -88,6 +99,8 @@ class MemoryYearController extends Controller
      */
     public function edit(MemoryYear $memoryYear): Response
     {
+        $this->authorizeAccess();
+
         $memoryYear->load([
             'destination',
             'media' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
@@ -109,6 +122,8 @@ class MemoryYearController extends Controller
      */
     public function update(Request $request, MemoryYear $memoryYear): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $validated = $request->validate([
             'year' => [
                 'required',
@@ -143,6 +158,8 @@ class MemoryYearController extends Controller
      */
     public function destroy(Request $request, MemoryYear $memoryYear): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $this->publishingService->deleteYear($memoryYear);
 
         if ($request->wantsJson()) {
@@ -158,6 +175,8 @@ class MemoryYearController extends Controller
      */
     public function togglePublish(Request $request, MemoryYear $memoryYear): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $updatedYear = $this->publishingService->togglePublish($memoryYear);
 
         $status = $updatedYear->is_published ? 'published' : 'unpublished';
@@ -178,6 +197,8 @@ class MemoryYearController extends Controller
      */
     public function storeMedia(Request $request, MemoryYear $memoryYear): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $request->validate([
             'type' => ['required', 'string', Rule::in(['image', 'video'])],
         ]);
@@ -255,6 +276,8 @@ class MemoryYearController extends Controller
      */
     public function destroyMedia(Request $request, MemoryYear $memoryYear, MemoryMedia $media): RedirectResponse|JsonResponse
     {
+        $this->authorizeAccess();
+
         $this->publishingService->removeMedia($memoryYear, $media);
 
         if ($request->wantsJson()) {

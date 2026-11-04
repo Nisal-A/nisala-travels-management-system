@@ -18,7 +18,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Customer::class);
+        $this->authorize('viewAny', Customer::class);
 
         $perPage = $request->input('per_page', 10);
         $customers = Customer::query()
@@ -42,7 +42,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        Gate::authorize('create', Customer::class);
+        $this->authorize('create', Customer::class);
 
         return Inertia::render('Customers/Create');
     }
@@ -52,7 +52,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        Gate::authorize('create', Customer::class);
+        $this->authorize('create', Customer::class);
 
         $validated = $request->validated();
 
@@ -81,7 +81,7 @@ class CustomerController extends Controller
      */
     public function search(Request $request)
     {
-        Gate::authorize('viewAny', Customer::class);
+        $this->authorize('viewAny', Customer::class);
         $query = $request->input('query', '');
 
         $customers = Customer::query()
@@ -106,7 +106,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        Gate::authorize('view', $customer);
+        $this->authorize('view', $customer);
 
         // Load documents with their types and uploaders
         $documents = $customer->documents()
@@ -134,7 +134,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        Gate::authorize('update', $customer);
+        $this->authorize('update', $customer);
 
         return Inertia::render('Customers/Edit', [
             'customer' => $customer,
@@ -146,7 +146,7 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        Gate::authorize('update', $customer);
+        $this->authorize('update', $customer);
 
         $customer->update($request->validated());
 
@@ -158,7 +158,7 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        Gate::authorize('delete', $customer);
+        $this->authorize('delete', $customer);
 
         $customer->delete();
 

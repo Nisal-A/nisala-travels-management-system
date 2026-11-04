@@ -110,6 +110,7 @@ class PaymentController extends Controller
     public function receipt(Payment $payment)
     {
         // Enforce authorization
+        $this->authorize('view', $payment);
         if ($payment->customer_id !== request()->user()->customer->id) {
             abort(403);
         }

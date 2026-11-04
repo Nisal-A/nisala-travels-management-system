@@ -21,7 +21,7 @@ class PaymentController extends Controller
      */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Payment::class);
+        $this->authorize('viewAny', Payment::class);
 
         $perPage = $request->input('per_page', 10);
         $payments = Payment::with(['customer', 'booking', 'recordedBy', 'receipt'])
@@ -45,7 +45,7 @@ class PaymentController extends Controller
      */
     public function store(StorePaymentRequest $request)
     {
-        Gate::authorize('create', Payment::class);
+        $this->authorize('create', Payment::class);
         $validated = $request->validated();
 
         $booking = Booking::findOrFail($validated['booking_id']);
@@ -108,11 +108,38 @@ class PaymentController extends Controller
     }
 
     /**
+     * Display the specified payment resource.
+     */
+    public function show(Payment $payment)
+    {
+        $this->authorize('view', $payment);
+
+        return response()->json($payment->load(['customer', 'booking', 'recordedBy', 'receipt']));
+    }
+
+    /**
+     * Update the specified payment resource.
+     */
+    public function update(Request $request, Payment $payment)
+    {
+        $this->authorize('update', $payment);
+
+        $validated = $request->validate([
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'reference_number' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $payment->update($validated);
+
+        return back()->with('success', 'Payment updated successfully.');
+    }
+
+    /**
      * Remove the specified resource from storage (Void payment).
      */
     public function destroy(Payment $payment)
     {
-        Gate::authorize('delete', $payment);
+        $this->authorize('delete', $payment);
 
         if ($payment->status === PaymentStatus::Failed) {
             return back()->withErrors(['error' => 'This payment is already failed/voided.']);

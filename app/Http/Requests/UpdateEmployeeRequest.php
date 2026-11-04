@@ -9,7 +9,7 @@ class UpdateEmployeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'manager']);
+        return (bool) $this->user()?->hasRole('super_admin');
     }
 
     public function rules(): array

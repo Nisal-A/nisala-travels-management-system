@@ -14,6 +14,8 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'manager']), 403);
+
         $query = User::with('roles')->whereHas('roles', function ($q) {
             $q->whereIn('name', ['super_admin', 'manager', 'staff', 'finance']);
         });
@@ -60,6 +62,8 @@ class EmployeeController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()?->hasRole('super_admin'), 403);
+
         $roles = Role::whereIn('name', ['super_admin', 'manager', 'staff', 'finance'])->get();
 
         return Inertia::render('Employees/Create', ['roles' => $roles]);
@@ -67,6 +71,8 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request)
     {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+
         $validated = $request->validated();
 
         $employee = User::create([
@@ -81,8 +87,17 @@ class EmployeeController extends Controller
         return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
 
+    public function show(User $employee)
+    {
+        abort_unless(auth()->user()?->hasAnyRole(['super_admin', 'manager']), 403);
+
+        return redirect()->route('employees.index');
+    }
+
     public function edit(User $employee)
     {
+        abort_unless(auth()->user()?->hasRole('super_admin'), 403);
+
         $roles = Role::whereIn('name', ['super_admin', 'manager', 'staff', 'finance'])->get();
         $employee->load('roles');
 
@@ -94,6 +109,8 @@ class EmployeeController extends Controller
 
     public function update(UpdateEmployeeRequest $request, User $employee)
     {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+
         $validated = $request->validated();
 
         $employee->name = $validated['name'];
@@ -115,6 +132,8 @@ class EmployeeController extends Controller
 
     public function destroy(User $employee)
     {
+        abort_unless(auth()->user()?->hasRole('super_admin'), 403);
+
         if (auth()->id() === $employee->id) {
             return back()->with('error', 'You cannot delete your own account.');
         }

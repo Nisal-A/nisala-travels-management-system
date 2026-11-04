@@ -69,17 +69,12 @@ test('finance can access dashboard without customer stats', function () {
         );
 });
 
-test('customer sees customer stats and not office stats', function () {
+test('customer is blocked from accessing the staff dashboard', function () {
     $customer = createDashUser('customer');
 
     $this->actingAs($customer)
         ->get('/dashboard')
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Dashboard')
-            ->has('customerStats.myBookings')
-            ->has('customerStats.myDocuments')
-            ->has('customerStats.myPayments')
-        );
+        ->assertForbidden();
 });
 
 test('dashboard loads successfully for all office roles', function ($role) {

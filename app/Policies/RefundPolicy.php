@@ -57,6 +57,15 @@ class RefundPolicy
         ]);
     }
 
+    public function update(User $user, Refund $refund): bool
+    {
+        return $user->hasAnyRole([
+            UserRole::SuperAdmin->value,
+            UserRole::Manager->value,
+            UserRole::Finance->value,
+        ]);
+    }
+
     public function approve(User $user, Refund $refund): bool
     {
         // Nobody approves their own request

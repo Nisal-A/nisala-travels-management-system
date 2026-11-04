@@ -13,7 +13,7 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Supplier::class);
+        $this->authorize('viewAny', Supplier::class);
 
         $query = Supplier::query()->filterAndSort($request->all());
 
@@ -28,7 +28,7 @@ class SupplierController extends Controller
 
     public function create()
     {
-        Gate::authorize('create', Supplier::class);
+        $this->authorize('create', Supplier::class);
 
         return Inertia::render('Suppliers/Create', [
             'types' => array_map(fn (SupplierType $t) => ['value' => $t->value, 'label' => $t->label()], SupplierType::cases()),
@@ -37,7 +37,7 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
-        Gate::authorize('create', Supplier::class);
+        $this->authorize('create', Supplier::class);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -55,9 +55,16 @@ class SupplierController extends Controller
         return redirect()->route('suppliers.index')->with('success', "Supplier {$supplier->supplier_code} created successfully.");
     }
 
+    public function show(Supplier $supplier)
+    {
+        $this->authorize('view', $supplier);
+
+        return redirect()->route('suppliers.edit', $supplier);
+    }
+
     public function edit(Supplier $supplier)
     {
-        Gate::authorize('update', $supplier);
+        $this->authorize('update', $supplier);
 
         return Inertia::render('Suppliers/Edit', [
             'supplier' => $supplier,
@@ -67,7 +74,7 @@ class SupplierController extends Controller
 
     public function update(Request $request, Supplier $supplier)
     {
-        Gate::authorize('update', $supplier);
+        $this->authorize('update', $supplier);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -87,7 +94,7 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
-        Gate::authorize('delete', $supplier);
+        $this->authorize('delete', $supplier);
 
         $supplier->delete();
 

@@ -222,4 +222,32 @@ class SettingsController extends Controller
 
         return back()->with('success', 'Exchange rates updated successfully.');
     }
+
+    /**
+     * Update roles configuration (restricted to Admin role).
+     */
+    public function updateRoles(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+
+        return back()->with('success', 'Roles configuration updated successfully.');
+    }
+
+    /**
+     * Update public website settings (restricted to Admin role).
+     */
+    public function updatePublicWebsite(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+
+        $validated = $request->validate([
+            'public_site_url' => ['nullable', 'url', 'max:255'],
+        ]);
+
+        if (! empty($validated['public_site_url'])) {
+            AppSetting::set('public_site_url', $validated['public_site_url'], 'public_website');
+        }
+
+        return back()->with('success', 'Public website settings updated successfully.');
+    }
 }

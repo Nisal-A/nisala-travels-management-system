@@ -4,17 +4,27 @@ namespace App\Providers;
 
 use App\Contracts\NotificationServiceInterface;
 use App\Listeners\LogNotificationDelivery;
+use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\CustomerDocument;
 use App\Models\Destination;
+use App\Models\Inquiry;
+use App\Models\PackageCostLine;
+use App\Models\Payment;
+use App\Models\Refund;
+use App\Models\Supplier;
 use App\Models\TourPackage;
 use App\Observers\DestinationObserver;
 use App\Observers\TourPackageObserver;
-use App\Services\NotificationService;
-use App\Models\PackageCostLine;
-use App\Models\Refund;
-use App\Models\Supplier;
+use App\Policies\BookingPolicy;
+use App\Policies\CustomerDocumentPolicy;
+use App\Policies\CustomerPolicy;
+use App\Policies\InquiryPolicy;
 use App\Policies\PackageCostLinePolicy;
+use App\Policies\PaymentPolicy;
 use App\Policies\RefundPolicy;
 use App\Policies\SupplierPolicy;
+use App\Services\NotificationService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -54,8 +64,13 @@ class AppServiceProvider extends ServiceProvider
         TourPackage::observe(TourPackageObserver::class);
         Destination::observe(DestinationObserver::class);
 
+        Gate::policy(Booking::class, BookingPolicy::class);
+        Gate::policy(Customer::class, CustomerPolicy::class);
+        Gate::policy(CustomerDocument::class, CustomerDocumentPolicy::class);
+        Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Supplier::class, SupplierPolicy::class);
         Gate::policy(PackageCostLine::class, PackageCostLinePolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
+        Gate::policy(Inquiry::class, InquiryPolicy::class);
     }
 }

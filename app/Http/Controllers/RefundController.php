@@ -25,7 +25,7 @@ class RefundController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Refund::class);
+        $this->authorize('viewAny', Refund::class);
 
         $query = Refund::with(['booking', 'customer', 'requestedBy', 'approvedBy'])
             ->filterAndSort($request->all());
@@ -41,7 +41,7 @@ class RefundController extends Controller
 
     public function create(Request $request)
     {
-        Gate::authorize('create', Refund::class);
+        $this->authorize('create', Refund::class);
 
         $selectedBooking = null;
         if ($request->filled('booking_id')) {
@@ -65,7 +65,7 @@ class RefundController extends Controller
 
     public function store(Request $request)
     {
-        Gate::authorize('create', Refund::class);
+        $this->authorize('create', Refund::class);
 
         $validated = $request->validate([
             'booking_id' => ['required', 'exists:bookings,id'],
@@ -151,7 +151,7 @@ class RefundController extends Controller
 
     public function show(Refund $refund, Request $request)
     {
-        Gate::authorize('view', $refund);
+        $this->authorize('view', $refund);
 
         $refund->load([
             'booking.customer',
@@ -178,7 +178,7 @@ class RefundController extends Controller
 
     public function approve(Request $request, Refund $refund)
     {
-        Gate::authorize('approve', $refund);
+        $this->authorize('approve', $refund);
 
         $refund->load('booking');
 
@@ -232,7 +232,7 @@ class RefundController extends Controller
 
     public function reject(Request $request, Refund $refund)
     {
-        Gate::authorize('reject', $refund);
+        $this->authorize('reject', $refund);
 
         $validated = $request->validate([
             'rejection_reason' => ['nullable', 'string', 'max:1000'],
@@ -276,7 +276,7 @@ class RefundController extends Controller
 
     public function markPaid(Request $request, Refund $refund)
     {
-        Gate::authorize('markPaid', $refund);
+        $this->authorize('markPaid', $refund);
 
         $validated = $request->validate([
             'paid_on' => ['required', 'date'],
@@ -318,5 +318,27 @@ class RefundController extends Controller
         }
 
         return back()->with('success', "Refund {$refund->refund_number} marked as paid.");
+    }
+
+    public function update(Request $request, Refund $refund)
+    {
+        $this->authorize('update', $refund);
+
+        $validated = $request->validate([
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $refund->update($validated);
+
+        return back()->with('success', "Refund {$refund->refund_number} updated.");
+    }
+
+    public function destroy(Refund $refund)
+    {
+        $this->authorize('delete', $refund);
+
+        $refund->delete();
+
+        return redirect()->route('refunds.index')->with('success', 'Refund deleted.');
     }
 }

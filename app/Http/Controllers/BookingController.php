@@ -38,7 +38,7 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Booking::class);
+        $this->authorize('viewAny', Booking::class);
 
         $perPage = $request->input('per_page', 10);
         $bookings = Booking::with([
@@ -91,7 +91,7 @@ class BookingController extends Controller
      */
     public function create(Request $request)
     {
-        Gate::authorize('create', Booking::class);
+        $this->authorize('create', Booking::class);
 
         $customers = Customer::select('id', 'customer_id', 'full_name', 'email', 'phone', 'passport_number', 'nationality')
             ->orderBy('full_name')
@@ -210,7 +210,7 @@ class BookingController extends Controller
      */
     public function saveDraft(Request $request)
     {
-        Gate::authorize('create', Booking::class);
+        $this->authorize('create', Booking::class);
 
         $validated = $request->validate([
             'payload' => ['required', 'array'],
@@ -236,7 +236,7 @@ class BookingController extends Controller
      */
     public function getDraft(Request $request)
     {
-        Gate::authorize('create', Booking::class);
+        $this->authorize('create', Booking::class);
 
         $draft = BookingDraft::where('user_id', $request->user()->id)->first();
 
@@ -255,7 +255,7 @@ class BookingController extends Controller
      */
     public function deleteDraft(Request $request)
     {
-        Gate::authorize('create', Booking::class);
+        $this->authorize('create', Booking::class);
 
         BookingDraft::where('user_id', $request->user()->id)->delete();
 
@@ -267,7 +267,7 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request)
     {
-        Gate::authorize('create', Booking::class);
+        $this->authorize('create', Booking::class);
         $validated = $request->validated();
 
         $package = TourPackage::findOrFail($validated['tour_package_id']);
@@ -471,7 +471,7 @@ class BookingController extends Controller
      */
     public function show(Booking $booking)
     {
-        Gate::authorize('view', $booking);
+        $this->authorize('view', $booking);
 
         $booking->load([
             'customer.documents.documentType',
@@ -550,7 +550,7 @@ class BookingController extends Controller
      */
     public function edit(Booking $booking)
     {
-        Gate::authorize('update', $booking);
+        $this->authorize('update', $booking);
 
         $booking->load(['travelers', 'customer', 'tourPackage', 'paymentSchedules']);
         $customers = Customer::select('id', 'customer_id', 'full_name', 'email', 'phone', 'passport_number', 'nationality')
@@ -593,7 +593,7 @@ class BookingController extends Controller
      */
     public function update(UpdateBookingRequest $request, Booking $booking)
     {
-        Gate::authorize('update', $booking);
+        $this->authorize('update', $booking);
 
         if (in_array($booking->booking_status->value, [BookingStatus::Cancelled->value, BookingStatus::Completed->value])) {
             return back()->withErrors(['error' => 'Bookings cannot be modified once completed or cancelled.']);
@@ -679,7 +679,7 @@ class BookingController extends Controller
      */
     public function changeStatus(Request $request, Booking $booking)
     {
-        Gate::authorize('changeStatus', $booking);
+        $this->authorize('changeStatus', $booking);
 
         $validated = $request->validate([
             'booking_status' => ['required', Rule::enum(BookingStatus::class)],
@@ -701,7 +701,7 @@ class BookingController extends Controller
         }
 
         if ($newStatus === BookingStatus::Cancelled) {
-            Gate::authorize('cancel', $booking);
+            $this->authorize('cancel', $booking);
         }
 
         try {
@@ -763,7 +763,7 @@ class BookingController extends Controller
      */
     public function addNote(Request $request, Booking $booking)
     {
-        Gate::authorize('addNote', $booking);
+        $this->authorize('addNote', $booking);
 
         $validated = $request->validate([
             'content' => ['required', 'string', 'max:2000'],
@@ -802,7 +802,7 @@ class BookingController extends Controller
      */
     public function assignStaff(Request $request, Booking $booking)
     {
-        Gate::authorize('update', $booking);
+        $this->authorize('update', $booking);
 
         $validated = $request->validate([
             'assigned_to' => ['nullable', 'exists:employees,id'],
@@ -830,7 +830,7 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
-        Gate::authorize('delete', $booking);
+        $this->authorize('delete', $booking);
         $booking->update(['updated_by' => auth()->id()]);
         $booking->delete();
 
@@ -843,7 +843,7 @@ class BookingController extends Controller
     public function restore($id)
     {
         $booking = Booking::withTrashed()->findOrFail($id);
-        Gate::authorize('restore', $booking);
+        $this->authorize('restore', $booking);
 
         $booking->restore();
         $booking->update(['updated_by' => auth()->id()]);

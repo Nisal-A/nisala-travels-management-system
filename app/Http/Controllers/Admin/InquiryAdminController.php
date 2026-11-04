@@ -10,7 +10,7 @@ use App\Notifications\NewInquiryNotification;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Inertia;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +22,8 @@ class InquiryAdminController extends Controller
      */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Inquiry::class);
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'manager', 'staff']), 403);
+        $this->authorize('viewAny', Inquiry::class);
 
         $query = Inquiry::query();
 
@@ -60,7 +61,8 @@ class InquiryAdminController extends Controller
      */
     public function show(Inquiry $inquiry)
     {
-        Gate::authorize('view', $inquiry);
+        abort_unless(auth()->user()?->hasAnyRole(['super_admin', 'manager', 'staff']), 403);
+        $this->authorize('view', $inquiry);
 
         // Mark notification as read for the current user
         $user = Auth::user();
@@ -83,7 +85,8 @@ class InquiryAdminController extends Controller
      */
     public function updateStatus(Request $request, Inquiry $inquiry)
     {
-        Gate::authorize('update', $inquiry);
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'manager', 'staff']), 403);
+        $this->authorize('update', $inquiry);
 
         $allowed = config('public_inquiry.lead_statuses', []);
         $status = $request->input('status');
@@ -116,7 +119,8 @@ class InquiryAdminController extends Controller
      */
     public function assign(Request $request, Inquiry $inquiry)
     {
-        Gate::authorize('update', $inquiry);
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'manager', 'staff']), 403);
+        $this->authorize('update', $inquiry);
 
         $employeeId = $request->input('assigned_to');
         if ($employeeId !== null && !Employee::where('id', $employeeId)->exists()) {

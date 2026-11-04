@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -59,7 +64,7 @@ test('users cannot authenticate with nonexistent email', function () {
 });
 
 test('authenticated users can access the dashboard', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
 
     $response = $this->actingAs($user)->get('/dashboard');
 
@@ -142,7 +147,7 @@ test('login requires password field', function () {
 });
 
 test('auth user data is shared with inertia pages', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->staff()->create();
 
     $response = $this->actingAs($user)->get('/dashboard');
 

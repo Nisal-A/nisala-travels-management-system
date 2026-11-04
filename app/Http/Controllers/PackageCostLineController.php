@@ -15,7 +15,7 @@ class PackageCostLineController extends Controller
 {
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', PackageCostLine::class);
+        $this->authorize('viewAny', PackageCostLine::class);
 
         $query = PackageCostLine::with(['tourPackage:id,package_name', 'supplier:id,name,supplier_code'])
             ->filterAndSort($request->all());
@@ -25,16 +25,23 @@ class PackageCostLineController extends Controller
 
     public function forTour(TourPackage $tour)
     {
-        Gate::authorize('viewAny', PackageCostLine::class);
+        $this->authorize('viewAny', PackageCostLine::class);
 
         $costLines = $tour->costLines()->with('supplier')->orderBy('incurred_on', 'desc')->get();
 
         return response()->json($costLines);
     }
 
+    public function show(PackageCostLine $packageCostLine)
+    {
+        $this->authorize('view', $packageCostLine);
+
+        return response()->json($packageCostLine->load('supplier'));
+    }
+
     public function store(Request $request)
     {
-        Gate::authorize('create', PackageCostLine::class);
+        $this->authorize('create', PackageCostLine::class);
 
         $validated = $request->validate([
             'tour_package_id' => ['required', 'exists:tour_packages,id'],
@@ -71,7 +78,7 @@ class PackageCostLineController extends Controller
 
     public function update(Request $request, PackageCostLine $packageCostLine)
     {
-        Gate::authorize('update', $packageCostLine);
+        $this->authorize('update', $packageCostLine);
 
         $validated = $request->validate([
             'supplier_id' => ['nullable', 'exists:suppliers,id'],
@@ -107,7 +114,7 @@ class PackageCostLineController extends Controller
 
     public function destroy(Request $request, PackageCostLine $packageCostLine)
     {
-        Gate::authorize('delete', $packageCostLine);
+        $this->authorize('delete', $packageCostLine);
 
         $packageCostLine->delete();
 

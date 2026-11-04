@@ -73,15 +73,20 @@ test('super admin can access all protected route groups', function (string $rout
 
     $response->assertStatus(200);
 })->with([
+    '/dashboard',
     '/admin',
     '/settings',
     '/employees',
     '/customers',
     '/documents',
     '/tours',
+    '/destinations',
     '/bookings',
     '/payments',
+    '/refunds',
+    '/suppliers',
     '/reports',
+    '/inquiries',
 ]);
 
 // ------------------------------------------------------------------
@@ -188,30 +193,35 @@ test('customer cannot access any office routes', function (string $route) {
 
     $response->assertStatus(403);
 })->with([
+    '/dashboard',
     '/admin',
     '/settings',
     '/employees',
     '/customers',
     '/documents',
     '/tours',
+    '/destinations',
     '/bookings',
     '/payments',
+    '/refunds',
+    '/suppliers',
     '/reports',
+    '/inquiries',
 ]);
 
-test('customer can access the dashboard', function () {
+test('customer cannot access the staff dashboard', function () {
     $user = User::factory()->customer()->create();
 
     $response = $this->actingAs($user)->get('/dashboard');
 
-    $response->assertStatus(200);
+    $response->assertStatus(403);
 });
 
 // ------------------------------------------------------------------
-// Dashboard (accessible to all authenticated users regardless of role)
+// Dashboard (accessible to all office roles, blocked for customer)
 // ------------------------------------------------------------------
 
-test('dashboard is accessible to all authenticated roles', function (string $role) {
+test('dashboard is accessible to all office roles', function (string $role) {
     $user = User::factory()->{$role}()->create();
 
     $response = $this->actingAs($user)->get('/dashboard');
@@ -222,7 +232,6 @@ test('dashboard is accessible to all authenticated roles', function (string $rol
     'manager',
     'staff',
     'finance',
-    'customer',
 ]);
 
 // ------------------------------------------------------------------
@@ -237,10 +246,10 @@ test('user with no role receives 403 on role-restricted route', function () {
     $response->assertStatus(403);
 });
 
-test('user with no role can still access the dashboard', function () {
+test('user with no role receives 403 on the dashboard', function () {
     $user = User::factory()->create(); // No role assigned
 
     $response = $this->actingAs($user)->get('/dashboard');
 
-    $response->assertStatus(200);
+    $response->assertStatus(403);
 });

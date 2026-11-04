@@ -80,18 +80,14 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    // Dashboard — accessible to all authenticated users.
-    // The controller determines which dashboard variant and data to serve based on role.
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     // Saved Filters — accessible to all authenticated users
     Route::post('/saved-filters', [SavedFilterController::class, 'store'])->name('saved-filters.store');
     Route::delete('/saved-filters/{savedFilter}', [SavedFilterController::class, 'destroy'])->name('saved-filters.destroy');
 
-
-
-    // Administrative routes — accessible to all office roles
+    // Administrative routes — accessible to all office roles (customers strictly blocked)
     Route::middleware('role:super_admin,manager,staff,finance')->group(function () {
+        // Staff/Admin Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // Global Search
         Route::get('/admin/search', [GlobalSearchController::class, 'search'])->name('admin.search');
@@ -144,7 +140,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Super Admin + Manager
     // ==============================
     Route::middleware('role:super_admin,manager')->group(function () {
-        Route::resource('employees', EmployeeController::class);
+        Route::resource('employees', EmployeeController::class)
+            ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'role:super_admin');
 
         // Memories Management (TASK P10)
         Route::prefix('admin/memories')->name('admin.memories.')->group(function () {
@@ -191,6 +188,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('bookings/{booking}/assign', [BookingController::class, 'assignStaff'])->name('bookings.assign');
         Route::post('bookings/{id}/restore', [BookingController::class, 'restore'])->name('bookings.restore');
         // Inquiries admin routes
+        Route::get('inquiries', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'index'])->name('inquiries.index');
+        Route::get('inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'show'])->name('inquiries.show');
+        Route::patch('inquiries/{inquiry}/status', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'updateStatus'])->name('inquiries.status');
+        Route::patch('inquiries/{inquiry}/assign', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'assign'])->name('inquiries.assign');
+
         Route::get('admin/inquiries', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'index'])->name('admin.inquiries.index');
         Route::get('admin/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'show'])->name('admin.inquiries.show');
         Route::patch('admin/inquiries/{inquiry}/status', [\App\Http\Controllers\Admin\InquiryAdminController::class, 'updateStatus'])->name('admin.inquiries.status');
@@ -246,6 +248,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // policies further restrict them to their own records only.
     Route::middleware(['role:customer', 'customer'])->prefix('portal')->name('portal.')->group(function () {
         Route::get('/', [App\Http\Controllers\Portal\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [App\Http\Controllers\Portal\DashboardController::class, 'index'])->name('dashboard.index');
 
         Route::get('/bookings', [App\Http\Controllers\Portal\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [App\Http\Controllers\Portal\BookingController::class, 'show'])->name('bookings.show');
@@ -279,11 +282,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     });
 });
 
-if (app()->environment('local')) {
+if (app()->environment('local', 'development', 'testing')) {
     Route::get('/dev/styleguide', function () {
         return Inertia::render('Dev/Styleguide');
-    });
+    })->name('dev.styleguide');
 
-    Route::get('/admin/dev/emails', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'index']);
-    Route::get('/admin/dev/emails/{type}', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'preview']);
+    Route::middleware(['auth', 'active', 'role:super_admin'])->group(function () {
+        Route::get('/admin/dev/emails', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'index']);
+        Route::get('/admin/dev/emails/{type}', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'preview']);
+    });
 }

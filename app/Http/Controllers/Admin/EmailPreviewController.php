@@ -19,11 +19,20 @@ use App\Models\User;
 
 class EmailPreviewController extends Controller
 {
+    protected function authorizePreview(): void
+    {
+        if (auth()->check() && ! auth()->user()->hasRole('super_admin')) {
+            abort(403);
+        }
+
+        if (! app()->environment('local', 'development', 'testing') && ! auth()->user()?->hasRole('super_admin')) {
+            abort(403);
+        }
+    }
+
     public function index()
     {
-        if (app()->environment() !== 'local') {
-            abort(404);
-        }
+        $this->authorizePreview();
 
         $html = '<h1>Email Preview Tool</h1><ul>';
         $html .= '<li><a href="/admin/dev/emails/booking-confirmed">Booking Confirmed</a></li>';
@@ -40,9 +49,7 @@ class EmailPreviewController extends Controller
 
     public function preview($type)
     {
-        if (app()->environment() !== 'local') {
-            abort(404);
-        }
+        $this->authorizePreview();
 
         // Mock a user
         $user = new User(['first_name' => 'John', 'last_name' => 'Doe', 'email' => 'john@example.com']);

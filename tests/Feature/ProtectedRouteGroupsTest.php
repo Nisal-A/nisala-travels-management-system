@@ -61,8 +61,8 @@ function createUser(string $role): User
  * Each entry: [route, [allowed_roles], [denied_roles]]
  */
 dataset('route_access_matrix', [
-    // Dashboard — all authenticated users
-    'dashboard' => ['/dashboard', ['super_admin', 'manager', 'staff', 'finance', 'customer'], []],
+    // Dashboard — office roles only (customers strictly blocked)
+    'dashboard' => ['/dashboard', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
 
     // Notifications — super_admin, manager, staff, finance
     'notifications' => ['/admin/notifications', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
@@ -85,11 +85,23 @@ dataset('route_access_matrix', [
     // Tours — super_admin, manager, staff
     'tours' => ['/tours', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
 
+    // Destinations — super_admin, manager, staff
+    'destinations' => ['/destinations', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
+
     // Bookings — super_admin, manager, staff
     'bookings' => ['/bookings', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
 
+    // Inquiries — super_admin, manager, staff
+    'inquiries' => ['/inquiries', ['super_admin', 'manager', 'staff'], ['finance', 'customer']],
+
     // Payments — super_admin, manager, finance
     'payments' => ['/payments', ['super_admin', 'manager', 'finance'], ['staff', 'customer']],
+
+    // Refunds — super_admin, manager, finance
+    'refunds' => ['/refunds', ['super_admin', 'manager', 'finance'], ['staff', 'customer']],
+
+    // Suppliers — super_admin, manager, finance
+    'suppliers' => ['/suppliers', ['super_admin', 'manager', 'finance'], ['staff', 'customer']],
 
     // Reports — super_admin, manager, staff, finance
     'reports' => ['/reports', ['super_admin', 'manager', 'staff', 'finance'], ['customer']],
@@ -167,8 +179,9 @@ test('guests are redirected to login for all protected routes', function (string
 test('customer cannot access any office route', function () {
     $customer = createUser('customer');
 
-    $officeRoutes = ['/admin', '/settings', '/employees', '/customers',
-        '/documents', '/tours', '/bookings', '/payments', '/reports', '/admin/notifications'];
+    $officeRoutes = ['/dashboard', '/admin', '/settings', '/employees', '/customers',
+        '/documents', '/tours', '/destinations', '/bookings', '/payments', '/refunds',
+        '/suppliers', '/reports', '/inquiries', '/admin/notifications'];
 
     foreach ($officeRoutes as $url) {
         $response = $this->actingAs($customer)->get($url);
@@ -301,7 +314,7 @@ test('finance user navigation excludes operational and admin items', function ()
 test('customer navigation shows portal items only', function () {
     $customer = createUser('customer');
 
-    $response = $this->actingAs($customer)->get('/dashboard');
+    $response = $this->actingAs($customer)->get('/portal');
     $page = $response->original->getData()['page'];
 
     $navigation = $page['props']['navigation'];

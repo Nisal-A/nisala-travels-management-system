@@ -40,6 +40,8 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        abort_if(! $user || $user->hasRole(UserRole::Customer->value), 403);
+
         $viewData = [];
 
         if ($user->hasAnyRole([
