@@ -18,7 +18,7 @@ class CustomerDocumentController extends Controller
      */
     public function store(StoreCustomerDocumentRequest $request, Customer $customer)
     {
-        Gate::authorize('upload', [CustomerDocument::class, $customer]);
+        $this->authorize('upload', [CustomerDocument::class, $customer]);
 
         $file = $request->file('file');
 
@@ -32,7 +32,7 @@ class CustomerDocumentController extends Controller
         $documentId = 'DOC-'.str_pad($nextId, 5, '0', STR_PAD_LEFT);
 
         // Generate secure filename
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
         $secureFilename = Str::random(40).'.'.$extension;
         $storagePath = "customers/{$customer->id}/documents/{$documentId}/{$secureFilename}";
 
@@ -105,7 +105,7 @@ class CustomerDocumentController extends Controller
      */
     public function download(Customer $customer, CustomerDocument $document)
     {
-        Gate::authorize('view', clone $document); // pass document, policy handles ownership
+        $this->authorize('view', $document); // pass document, policy handles ownership
 
         // Ensure document belongs to this customer
         if ($document->customer_id !== $customer->id) {

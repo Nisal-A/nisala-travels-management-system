@@ -256,6 +256,7 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
         Route::prefix('notifications')->name('notifications.')->group(function () {

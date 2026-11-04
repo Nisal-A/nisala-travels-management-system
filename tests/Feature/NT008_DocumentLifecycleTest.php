@@ -37,6 +37,8 @@ beforeEach(function () {
 });
 
 test('manager can verify document', function () {
+    \Illuminate\Support\Facades\Event::fake([\App\Events\DocumentVerified::class]);
+
     $response = $this->actingAs($this->manager)
         ->patch("/customers/{$this->customer->id}/documents/{$this->document->id}/verify");
 
@@ -47,9 +49,13 @@ test('manager can verify document', function () {
     expect($this->document->verification_status)->toBe('Verified');
     expect($this->document->verified_by)->toBe($this->manager->id);
     expect($this->document->verified_at)->not->toBeNull();
+
+    \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\DocumentVerified::class);
 });
 
 test('manager can reject document with reason', function () {
+    \Illuminate\Support\Facades\Event::fake([\App\Events\DocumentRejected::class]);
+
     $response = $this->actingAs($this->manager)
         ->patch("/customers/{$this->customer->id}/documents/{$this->document->id}/reject", [
             'reason' => 'Image is blurry',
@@ -60,7 +66,11 @@ test('manager can reject document with reason', function () {
 
     $this->document->refresh();
     expect($this->document->verification_status)->toBe('Rejected');
+    expect($this->document->verified_by)->toBe($this->manager->id);
+    expect($this->document->verified_at)->not->toBeNull();
     expect($this->document->rejection_reason)->toBe('Image is blurry');
+
+    \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\DocumentRejected::class);
 });
 
 test('rejecting document requires reason', function () {

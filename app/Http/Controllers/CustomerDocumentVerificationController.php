@@ -17,7 +17,7 @@ class CustomerDocumentVerificationController extends Controller
      */
     public function verify(Request $request, Customer $customer, CustomerDocument $document)
     {
-        Gate::authorize('verify', clone $document);
+        $this->authorize('verify', $document);
 
         if ($document->customer_id !== $customer->id) {
             abort(404);
@@ -39,7 +39,7 @@ class CustomerDocumentVerificationController extends Controller
      */
     public function reject(Request $request, Customer $customer, CustomerDocument $document)
     {
-        Gate::authorize('reject', clone $document);
+        $this->authorize('reject', $document);
 
         if ($document->customer_id !== $customer->id) {
             abort(404);
@@ -50,6 +50,8 @@ class CustomerDocumentVerificationController extends Controller
         ]);
 
         $document->verification_status = 'Rejected';
+        $document->verified_by = $request->user()->id;
+        $document->verified_at = now();
         $document->rejection_reason = $request->input('reason');
         $document->save();
 

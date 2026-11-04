@@ -83,6 +83,23 @@ test('invalid file extension is rejected', function () {
     expect(CustomerDocument::count())->toBe(0);
 });
 
+test('svg and executable uploads are rejected', function () {
+    foreach ([
+        UploadedFile::fake()->create('vector.svg', 100, 'image/svg+xml'),
+        UploadedFile::fake()->create('malware.exe', 100, 'application/x-msdownload'),
+    ] as $file) {
+        $response = $this->actingAs($this->manager)
+            ->post("/customers/{$this->customer->id}/documents", [
+                'document_type_id' => $this->documentType->id,
+                'file' => $file,
+            ]);
+
+        $response->assertSessionHasErrors('file');
+    }
+
+    expect(CustomerDocument::count())->toBe(0);
+});
+
 test('oversized file is rejected', function () {
     // Max is 10MB (10240 KB), so 11MB should fail
     $file = UploadedFile::fake()->create('huge.pdf', 11264, 'application/pdf');
