@@ -41,6 +41,41 @@ class PaymentController extends Controller
     }
 
     /**
+     * Recalculate a booking's payment_status and synchronize its PaymentSchedule installments.
+     */
+    protected function syncBookingPaymentState(Booking $booking): void
+    {
+        $paidAmount = max(0.0, (float) $booking->paid_amount);
+        $finalAmount = max(0.0, (float) $booking->final_amount);
+        $booking->balance_amount = max(0.0, $finalAmount - $paidAmount);
+
+        if ($paidAmount >= $finalAmount && $finalAmount > 0) {
+            $booking->payment_status = 'Paid';
+        } elseif ($paidAmount > 0) {
+            $booking->payment_status = 'Partial';
+        } else {
+            $booking->payment_status = 'Unpaid';
+        }
+
+        $booking->save();
+
+        // Update PaymentSchedule installment statuses in chronological order
+        $remainingPaid = $paidAmount;
+        $schedules = $booking->paymentSchedules()->orderBy('due_date', 'asc')->orderBy('id', 'asc')->get();
+        foreach ($schedules as $schedule) {
+            $schedAmount = (float) $schedule->amount;
+            if ($schedAmount > 0 && $remainingPaid >= $schedAmount) {
+                $schedule->status = 'paid';
+                $remainingPaid -= $schedAmount;
+            } else {
+                $schedule->status = ($schedule->due_date && $schedule->due_date->isPast()) ? 'overdue' : 'unpaid';
+                $remainingPaid = 0.0;
+            }
+            $schedule->save();
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StorePaymentRequest $request)
@@ -58,51 +93,56 @@ class PaymentController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($request, $validated) {
+                $booking = Booking::lockForUpdate()->findOrFail($validated['booking_id']);
 
-            $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
-            $currency = \App\Enums\Currency::tryFrom($booking->currency) ?? \App\Enums\Currency::LKR;
-            $exchangeRate = $exchangeService->latest($currency);
-            $amountLkr = $exchangeService->convertToLkr((string) $validated['amount'], $currency);
+                if ($validated['amount'] > $booking->balance_amount) {
+                    throw ValidationException::withMessages([
+                        'amount' => 'Payment amount cannot exceed the remaining balance of '.number_format($booking->balance_amount, 2).' '.$booking->currency,
+                    ]);
+                }
 
-            $payment = Payment::create([
-                'booking_id' => $booking->id,
-                'customer_id' => $booking->customer_id,
-                'amount' => $validated['amount'],
-                'currency' => $booking->currency,
-                'exchange_rate_to_lkr' => (string) $exchangeRate,
-                'amount_lkr' => (string) $amountLkr,
-                'payment_method' => $validated['payment_method'],
-                'payment_date' => $validated['payment_date'],
-                'reference_number' => $validated['reference_number'] ?? null,
-                'recorded_by' => $request->user()->id,
-                'notes' => $validated['notes'] ?? null,
-                'status' => PaymentStatus::Completed,
-            ]);
+                $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
+                $currency = \App\Enums\Currency::tryFrom($booking->currency) ?? \App\Enums\Currency::LKR;
+                $exchangeRate = $exchangeService->latest($currency);
+                $amountLkr = $exchangeService->convertToLkr((string) $validated['amount'], $currency);
 
-            $generator = app(\App\Services\NumberGenerator::class);
-            $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->format('Y') : (int) now()->format('Y');
-            $receiptNumber = $generator->receipt($year);
+                $payment = Payment::create([
+                    'booking_id' => $booking->id,
+                    'customer_id' => $booking->customer_id,
+                    'amount' => $validated['amount'],
+                    'currency' => $booking->currency,
+                    'exchange_rate_to_lkr' => (string) $exchangeRate,
+                    'amount_lkr' => (string) $amountLkr,
+                    'payment_method' => $validated['payment_method'],
+                    'payment_date' => $validated['payment_date'],
+                    'reference_number' => $validated['reference_number'] ?? null,
+                    'recorded_by' => $request->user()->id,
+                    'notes' => $validated['notes'] ?? null,
+                    'status' => PaymentStatus::Completed,
+                ]);
 
-            \App\Models\PaymentReceipt::create([
-                'payment_id' => $payment->id,
-                'receipt_number' => $receiptNumber,
-                'generated_by' => $request->user()->id,
-            ]);
+                $generator = app(\App\Services\NumberGenerator::class);
+                $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->format('Y') : (int) now()->format('Y');
+                $receiptNumber = $generator->receipt($year);
 
-            // Automatically update the booking's paid and balance amounts
-            $booking->paid_amount += $payment->amount;
-            $booking->balance_amount -= $payment->amount;
-            $booking->save();
+                \App\Models\PaymentReceipt::create([
+                    'payment_id' => $payment->id,
+                    'receipt_number' => $receiptNumber,
+                    'generated_by' => $request->user()->id,
+                ]);
 
-            DB::afterCommit(fn () => event(new PaymentReceived($payment)));
+                // Automatically update the booking's paid, balance, payment_status, and installments
+                $booking->paid_amount = (float) $booking->paid_amount + (float) $payment->amount;
+                $this->syncBookingPaymentState($booking);
 
-            DB::commit();
+                DB::afterCommit(fn () => event(new PaymentReceived($payment)));
+            });
 
             return back()->with('success', 'Payment recorded successfully.');
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->withErrors(['error' => 'Failed to record payment.']);
         }
     }
@@ -146,25 +186,19 @@ class PaymentController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($payment) {
+                $booking = Booking::lockForUpdate()->findOrFail($payment->booking_id);
+                $booking->paid_amount = max(0.0, (float) $booking->paid_amount - (float) $payment->amount);
+                $this->syncBookingPaymentState($booking);
 
-            // Reverse the booking amounts
-            $booking = clone $payment->booking;
-            $booking->paid_amount -= $payment->amount;
-            $booking->balance_amount += $payment->amount;
-            $booking->save();
+                $payment->status = PaymentStatus::Failed;
+                $payment->save();
 
-            $payment->status = PaymentStatus::Failed;
-            $payment->save();
-
-            $payment->delete();
-
-            DB::commit();
+                $payment->delete();
+            });
 
             return back()->with('success', 'Payment voided successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->withErrors(['error' => 'Failed to void payment.']);
         }
     }

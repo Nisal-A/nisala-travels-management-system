@@ -15,6 +15,7 @@ use App\Services\Currency\ExchangeRateService;
 use App\Services\NotificationRecipients;
 use Brick\Math\BigDecimal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
@@ -76,75 +77,81 @@ class RefundController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $booking = Booking::with('customer')->findOrFail($validated['booking_id']);
+        $refund = DB::transaction(function () use ($request, $validated) {
+            $booking = Booking::with('customer')->lockForUpdate()->findOrFail($validated['booking_id']);
 
-        // Check over-refund: The refund amount cannot exceed the booking's paid amount minus refunds already approved or paid.
-        $approvedOrPaidRefunds = Refund::where('booking_id', $booking->id)
-            ->whereIn('status', [RefundStatus::Approved->value, RefundStatus::Paid->value])
-            ->get();
+            // Check over-refund: The refund amount cannot exceed the booking's paid amount minus refunds already approved or paid.
+            $approvedOrPaidRefunds = Refund::where('booking_id', $booking->id)
+                ->whereIn('status', [RefundStatus::Approved->value, RefundStatus::Paid->value])
+                ->lockForUpdate()
+                ->get();
 
-        $alreadyRefunded = BigDecimal::zero();
-        foreach ($approvedOrPaidRefunds as $existingRefund) {
-            $alreadyRefunded = $alreadyRefunded->plus((string) $existingRefund->amount);
-        }
+            $alreadyRefunded = BigDecimal::zero();
+            foreach ($approvedOrPaidRefunds as $existingRefund) {
+                $alreadyRefunded = $alreadyRefunded->plus((string) $existingRefund->amount);
+            }
 
-        $bookingPaid = BigDecimal::of((string) $booking->paid_amount);
-        $maxRefundable = $bookingPaid->minus($alreadyRefunded);
-        $requestedAmount = BigDecimal::of((string) $validated['amount']);
+            $bookingPaid = BigDecimal::of((string) $booking->paid_amount);
+            $maxRefundable = $bookingPaid->minus($alreadyRefunded);
+            $requestedAmount = BigDecimal::of((string) $validated['amount']);
 
-        if ($requestedAmount->isGreaterThan($maxRefundable)) {
-            $maxStr = (string) $maxRefundable;
-            throw ValidationException::withMessages([
-                'amount' => "Refund amount cannot exceed the booking's remaining paid amount of {$maxStr} {$booking->currency}.",
-            ]);
-        }
+            if ($requestedAmount->isGreaterThan($maxRefundable)) {
+                $maxStr = (string) $maxRefundable;
+                throw ValidationException::withMessages([
+                    'amount' => "Refund amount cannot exceed the booking's remaining paid amount of {$maxStr} {$booking->currency}.",
+                ]);
+            }
 
-        $currency = $booking->currency ?? 'LKR';
-        $currencyEnum = Currency::tryFrom($currency) ?? Currency::LKR;
+            $currency = $booking->currency ?? 'LKR';
+            $currencyEnum = Currency::tryFrom($currency) ?? Currency::LKR;
 
-        $exchangeService = app(ExchangeRateService::class);
-        $rate = $exchangeService->latest($currencyEnum);
-        $amountLkr = $exchangeService->convertToLkr((string) $validated['amount'], $currencyEnum);
+            $exchangeService = app(ExchangeRateService::class);
+            $rate = $exchangeService->latest($currencyEnum);
+            $amountLkr = $exchangeService->convertToLkr((string) $validated['amount'], $currencyEnum);
 
-        $cancellationCharge = $validated['cancellation_charge'] ?? 0;
+            $cancellationCharge = $validated['cancellation_charge'] ?? 0;
 
-        $refund = Refund::create([
-            'booking_id' => $booking->id,
-            'payment_id' => $validated['payment_id'] ?? null,
-            'customer_id' => $booking->customer_id,
-            'amount' => $validated['amount'],
-            'cancellation_charge' => $cancellationCharge,
-            'currency' => $currency,
-            'exchange_rate_to_lkr' => (string) $rate,
-            'amount_lkr' => (string) $amountLkr,
-            'reason' => $validated['reason'],
-            'status' => RefundStatus::Requested,
-            'requested_by' => $request->user()->id,
-            'notes' => $validated['notes'] ?? null,
-        ]);
-
-        // Write Activity Log
-        ActivityLog::create([
-            'log_name' => 'refund',
-            'description' => "Refund {$refund->refund_number} requested for {$refund->amount} {$refund->currency}",
-            'subject_type' => Refund::class,
-            'subject_id' => $refund->id,
-            'causer_type' => User::class,
-            'causer_id' => $request->user()->id,
-            'properties' => [
-                'refund_number' => $refund->refund_number,
+            $refund = Refund::create([
                 'booking_id' => $booking->id,
-                'amount' => (string) $refund->amount,
-                'currency' => $refund->currency,
-                'status' => 'requested',
-            ],
-        ]);
+                'payment_id' => $validated['payment_id'] ?? null,
+                'customer_id' => $booking->customer_id,
+                'amount' => $validated['amount'],
+                'cancellation_charge' => $cancellationCharge,
+                'currency' => $currency,
+                'exchange_rate_to_lkr' => (string) $rate,
+                'amount_lkr' => (string) $amountLkr,
+                'reason' => $validated['reason'],
+                'status' => RefundStatus::Requested,
+                'requested_by' => $request->user()->id,
+                'notes' => $validated['notes'] ?? null,
+            ]);
 
-        // Send in-app notification to the approvers (managers and super admins)
-        $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager]);
-        if ($approvers->isNotEmpty()) {
-            Notification::send($approvers, new RefundStatusNotification($refund, 'requested'));
-        }
+            // Write Activity Log
+            ActivityLog::create([
+                'log_name' => 'refund',
+                'description' => "Refund {$refund->refund_number} requested for {$refund->amount} {$refund->currency}",
+                'subject_type' => Refund::class,
+                'subject_id' => $refund->id,
+                'causer_type' => User::class,
+                'causer_id' => $request->user()->id,
+                'properties' => [
+                    'refund_number' => $refund->refund_number,
+                    'booking_id' => $booking->id,
+                    'amount' => (string) $refund->amount,
+                    'currency' => $refund->currency,
+                    'status' => 'requested',
+                ],
+            ]);
+
+            DB::afterCommit(function () use ($refund) {
+                $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager]);
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new RefundStatusNotification($refund, 'requested'));
+                }
+            });
+
+            return $refund;
+        });
 
         return redirect()->route('refunds.show', $refund)->with('success', "Refund request {$refund->refund_number} submitted successfully.");
     }
@@ -180,52 +187,56 @@ class RefundController extends Controller
     {
         $this->authorize('approve', $refund);
 
-        $refund->load('booking');
+        DB::transaction(function () use ($request, $refund) {
+            $booking = Booking::lockForUpdate()->findOrFail($refund->booking_id);
 
-        // Check if approval exceeds paid amount
-        $approvedOrPaidRefunds = Refund::where('booking_id', $refund->booking_id)
-            ->where('id', '!=', $refund->id)
-            ->whereIn('status', [RefundStatus::Approved->value, RefundStatus::Paid->value])
-            ->get();
+            // Check if approval exceeds paid amount
+            $approvedOrPaidRefunds = Refund::where('booking_id', $refund->booking_id)
+                ->where('id', '!=', $refund->id)
+                ->whereIn('status', [RefundStatus::Approved->value, RefundStatus::Paid->value])
+                ->lockForUpdate()
+                ->get();
 
-        $alreadyRefunded = BigDecimal::zero();
-        foreach ($approvedOrPaidRefunds as $existing) {
-            $alreadyRefunded = $alreadyRefunded->plus((string) $existing->amount);
-        }
+            $alreadyRefunded = BigDecimal::zero();
+            foreach ($approvedOrPaidRefunds as $existing) {
+                $alreadyRefunded = $alreadyRefunded->plus((string) $existing->amount);
+            }
 
-        $bookingPaid = BigDecimal::of((string) $refund->booking->paid_amount);
-        $maxRefundable = $bookingPaid->minus($alreadyRefunded);
-        if (BigDecimal::of((string) $refund->amount)->isGreaterThan($maxRefundable)) {
-            throw ValidationException::withMessages([
-                'error' => 'Cannot approve: refund amount exceeds the remaining refundable paid amount.',
-            ]);
-        }
+            $bookingPaid = BigDecimal::of((string) $booking->paid_amount);
+            $maxRefundable = $bookingPaid->minus($alreadyRefunded);
+            if (BigDecimal::of((string) $refund->amount)->isGreaterThan($maxRefundable)) {
+                throw ValidationException::withMessages([
+                    'error' => 'Cannot approve: refund amount exceeds the remaining refundable paid amount.',
+                ]);
+            }
 
-        $refund->update([
-            'status' => RefundStatus::Approved,
-            'approved_by' => $request->user()->id,
-            'approved_at' => now(),
-        ]);
-
-        ActivityLog::create([
-            'log_name' => 'refund',
-            'description' => "Refund {$refund->refund_number} approved",
-            'subject_type' => Refund::class,
-            'subject_id' => $refund->id,
-            'causer_type' => User::class,
-            'causer_id' => $request->user()->id,
-            'properties' => [
-                'refund_number' => $refund->refund_number,
-                'status' => 'approved',
+            $refund->update([
+                'status' => RefundStatus::Approved,
                 'approved_by' => $request->user()->id,
-            ],
-        ]);
+                'approved_at' => now(),
+            ]);
 
-        // Send in-app notification to the approvers
-        $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
-        if ($approvers->isNotEmpty()) {
-            Notification::send($approvers, new RefundStatusNotification($refund, 'approved'));
-        }
+            ActivityLog::create([
+                'log_name' => 'refund',
+                'description' => "Refund {$refund->refund_number} approved",
+                'subject_type' => Refund::class,
+                'subject_id' => $refund->id,
+                'causer_type' => User::class,
+                'causer_id' => $request->user()->id,
+                'properties' => [
+                    'refund_number' => $refund->refund_number,
+                    'status' => 'approved',
+                    'approved_by' => $request->user()->id,
+                ],
+            ]);
+
+            DB::afterCommit(function () use ($refund) {
+                $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new RefundStatusNotification($refund, 'approved'));
+                }
+            });
+        });
 
         return back()->with('success', "Refund {$refund->refund_number} approved.");
     }
@@ -238,38 +249,41 @@ class RefundController extends Controller
             'rejection_reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $notes = $refund->notes;
-        if (! empty($validated['rejection_reason'])) {
-            $notes = trim($notes . "\nRejection reason: " . $validated['rejection_reason']);
-        }
+        DB::transaction(function () use ($request, $refund, $validated) {
+            $notes = $refund->notes;
+            if (! empty($validated['rejection_reason'])) {
+                $notes = trim($notes . "\nRejection reason: " . $validated['rejection_reason']);
+            }
 
-        $refund->update([
-            'status' => RefundStatus::Rejected,
-            'approved_by' => $request->user()->id,
-            'approved_at' => now(),
-            'notes' => $notes,
-        ]);
+            $refund->update([
+                'status' => RefundStatus::Rejected,
+                'approved_by' => $request->user()->id,
+                'approved_at' => now(),
+                'notes' => $notes,
+            ]);
 
-        ActivityLog::create([
-            'log_name' => 'refund',
-            'description' => "Refund {$refund->refund_number} rejected",
-            'subject_type' => Refund::class,
-            'subject_id' => $refund->id,
-            'causer_type' => User::class,
-            'causer_id' => $request->user()->id,
-            'properties' => [
-                'refund_number' => $refund->refund_number,
-                'status' => 'rejected',
-                'rejected_by' => $request->user()->id,
-                'reason' => $validated['rejection_reason'] ?? null,
-            ],
-        ]);
+            ActivityLog::create([
+                'log_name' => 'refund',
+                'description' => "Refund {$refund->refund_number} rejected",
+                'subject_type' => Refund::class,
+                'subject_id' => $refund->id,
+                'causer_type' => User::class,
+                'causer_id' => $request->user()->id,
+                'properties' => [
+                    'refund_number' => $refund->refund_number,
+                    'status' => 'rejected',
+                    'rejected_by' => $request->user()->id,
+                    'reason' => $validated['rejection_reason'] ?? null,
+                ],
+            ]);
 
-        // Send in-app notification to the approvers
-        $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
-        if ($approvers->isNotEmpty()) {
-            Notification::send($approvers, new RefundStatusNotification($refund, 'rejected'));
-        }
+            DB::afterCommit(function () use ($refund) {
+                $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new RefundStatusNotification($refund, 'rejected'));
+                }
+            });
+        });
 
         return back()->with('success', "Refund {$refund->refund_number} rejected.");
     }
@@ -284,38 +298,41 @@ class RefundController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $notes = $refund->notes;
-        if (! empty($validated['notes'])) {
-            $notes = trim($notes . "\nPayment notes: " . $validated['notes']);
-        }
+        DB::transaction(function () use ($request, $refund, $validated) {
+            $notes = $refund->notes;
+            if (! empty($validated['notes'])) {
+                $notes = trim($notes . "\nPayment notes: " . $validated['notes']);
+            }
 
-        $refund->update([
-            'status' => RefundStatus::Paid,
-            'paid_on' => $validated['paid_on'],
-            'payment_method' => $validated['payment_method'],
-            'notes' => $notes,
-        ]);
-
-        ActivityLog::create([
-            'log_name' => 'refund',
-            'description' => "Refund {$refund->refund_number} marked as paid",
-            'subject_type' => Refund::class,
-            'subject_id' => $refund->id,
-            'causer_type' => User::class,
-            'causer_id' => $request->user()->id,
-            'properties' => [
-                'refund_number' => $refund->refund_number,
-                'status' => 'paid',
+            $refund->update([
+                'status' => RefundStatus::Paid,
                 'paid_on' => $validated['paid_on'],
                 'payment_method' => $validated['payment_method'],
-            ],
-        ]);
+                'notes' => $notes,
+            ]);
 
-        // Send in-app notification to the approvers
-        $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
-        if ($approvers->isNotEmpty()) {
-            Notification::send($approvers, new RefundStatusNotification($refund, 'paid'));
-        }
+            ActivityLog::create([
+                'log_name' => 'refund',
+                'description' => "Refund {$refund->refund_number} marked as paid",
+                'subject_type' => Refund::class,
+                'subject_id' => $refund->id,
+                'causer_type' => User::class,
+                'causer_id' => $request->user()->id,
+                'properties' => [
+                    'refund_number' => $refund->refund_number,
+                    'status' => 'paid',
+                    'paid_on' => $validated['paid_on'],
+                    'payment_method' => $validated['payment_method'],
+                ],
+            ]);
+
+            DB::afterCommit(function () use ($refund) {
+                $approvers = NotificationRecipients::getStaffByRole([UserRole::SuperAdmin, UserRole::Manager, UserRole::Finance]);
+                if ($approvers->isNotEmpty()) {
+                    Notification::send($approvers, new RefundStatusNotification($refund, 'paid'));
+                }
+            });
+        });
 
         return back()->with('success', "Refund {$refund->refund_number} marked as paid.");
     }
@@ -328,7 +345,9 @@ class RefundController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $refund->update($validated);
+        DB::transaction(function () use ($refund, $validated) {
+            $refund->update($validated);
+        });
 
         return back()->with('success', "Refund {$refund->refund_number} updated.");
     }
@@ -337,7 +356,9 @@ class RefundController extends Controller
     {
         $this->authorize('delete', $refund);
 
-        $refund->delete();
+        DB::transaction(function () use ($refund) {
+            $refund->delete();
+        });
 
         return redirect()->route('refunds.index')->with('success', 'Refund deleted.');
     }

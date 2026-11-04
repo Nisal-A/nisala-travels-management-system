@@ -59,6 +59,17 @@ class NumberGenerator
     }
 
     /**
+     * Generate the next booking reference formatted as NT-{YYYY}-{6 digits}.
+     */
+    public function booking(?int $year = null): string
+    {
+        $year = $year ?? (int) now()->format('Y');
+        $seq = $this->next('booking', $year);
+
+        return $this->formatBooking($seq, $year);
+    }
+
+    /**
      * Generate the next receipt number formatted as RCP-{YYYY}-{6 digits}.
      */
     public function receipt(?int $year = null): string
@@ -88,6 +99,16 @@ class NumberGenerator
         $seq = $this->next('supplier', null);
 
         return $this->formatSupplier($seq);
+    }
+
+    /**
+     * Format a booking sequence number.
+     */
+    public function formatBooking(int $seq, ?int $year = null): string
+    {
+        $year = $year ?? (int) now()->format('Y');
+
+        return sprintf('NT-%04d-%06d', $year, $seq);
     }
 
     /**
@@ -124,6 +145,14 @@ class NumberGenerator
     public static function nextNumber(string $key, ?int $year = null): int
     {
         return (new self())->next($key, $year);
+    }
+
+    /**
+     * Static helper for booking.
+     */
+    public static function forBooking(?int $year = null): string
+    {
+        return (new self())->booking($year);
     }
 
     /**

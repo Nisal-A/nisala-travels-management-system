@@ -276,192 +276,190 @@ class BookingController extends Controller
         $this->validateCapacity($package, $travelersCount);
 
         try {
-            DB::beginTransaction();
+            $booking = DB::transaction(function () use ($request, $validated, $package, $travelersCount) {
+                // SERVER-SIDE PRICE CALCULATION (Never trust client totals)
+                $baseAmount = (float) $package->price * $travelersCount;
 
-            // SERVER-SIDE PRICE CALCULATION (Never trust client totals)
-            $baseAmount = (float) $package->price * $travelersCount;
-
-            $extrasAmount = 0;
-            $extrasList = [];
-            if (! empty($validated['extras']) && is_array($validated['extras'])) {
-                foreach ($validated['extras'] as $extra) {
-                    if (! empty($extra['name']) && isset($extra['price'])) {
-                        $price = max(0, (float) $extra['price']);
-                        $extrasAmount += $price;
-                        $extrasList[] = [
-                            'name' => $extra['name'],
-                            'price' => $price,
-                        ];
+                $extrasAmount = 0;
+                $extrasList = [];
+                if (! empty($validated['extras']) && is_array($validated['extras'])) {
+                    foreach ($validated['extras'] as $extra) {
+                        if (! empty($extra['name']) && isset($extra['price'])) {
+                            $price = max(0, (float) $extra['price']);
+                            $extrasAmount += $price;
+                            $extrasList[] = [
+                                'name' => $extra['name'],
+                                'price' => $price,
+                            ];
+                        }
                     }
                 }
-            }
 
-            $taxAmount = max(0, (float) ($validated['tax_amount'] ?? 0));
-            $discount = max(0, (float) ($validated['discount_amount'] ?? 0));
+                $taxAmount = max(0, (float) ($validated['tax_amount'] ?? 0));
+                $discount = max(0, (float) ($validated['discount_amount'] ?? 0));
 
-            // Permission check for discount was verified in StoreBookingRequest withValidator,
-            // but double check here as defense-in-depth:
-            if ($discount > 0 && ! $request->user()->can('applyDiscount', Booking::class)) {
-                throw ValidationException::withMessages([
-                    'discount_amount' => 'You do not have permission to authorize discounts.',
-                ]);
-            }
-
-            $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
-
-            // Record initial payment if requested
-            $recordPayment = ! empty($validated['record_payment']);
-            $initialPaymentAmount = $recordPayment ? min($finalAmount, max(0, (float) ($validated['payment_amount'] ?? 0))) : 0;
-            $paidAmount = $initialPaymentAmount;
-            $balanceAmount = max(0, $finalAmount - $paidAmount);
-            $paymentStatus = $paidAmount >= $finalAmount && $finalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid');
-
-            $latest = Booking::withTrashed()->orderBy('id', 'desc')->first();
-            $nextId = $latest ? $latest->id + 1 : 1;
-            $bookingRef = 'NT-'.date('Y').'-'.str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
-
-            $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
-            $bookingCurrency = \App\Enums\Currency::tryFrom($package->currency ?? 'LKR') ?? \App\Enums\Currency::LKR;
-            $bookingExchangeRate = $exchangeService->latest($bookingCurrency);
-
-            $booking = Booking::create([
-                'booking_reference' => $bookingRef,
-                'customer_id' => $validated['customer_id'],
-                'tour_package_id' => $package->id,
-                'assigned_to' => $validated['assigned_to'] ?? null,
-                'booking_date' => $validated['booking_date'],
-                'travel_date' => $validated['travel_date'],
-                'return_date' => $validated['return_date'] ?? null,
-                'number_of_travelers' => $travelersCount,
-                'base_amount' => $baseAmount,
-                'discount_amount' => $discount,
-                'extras_amount' => $extrasAmount,
-                'tax_amount' => $taxAmount,
-                'extras' => $extrasList,
-                'final_amount' => $finalAmount,
-                'paid_amount' => $paidAmount,
-                'balance_amount' => $balanceAmount,
-                'currency' => $package->currency ?? 'LKR',
-                'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
-                'booking_status' => BookingStatus::Pending,
-                'payment_status' => $paymentStatus,
-                'notes' => $validated['notes'] ?? null,
-                'created_by' => $request->user()->id,
-                'updated_by' => $request->user()->id,
-            ]);
-
-            // Create Travelers
-            $booking->travelers()->createMany($validated['travelers']);
-
-            // Create Payment Schedules
-            if (! empty($validated['payment_schedules']) && is_array($validated['payment_schedules'])) {
-                foreach ($validated['payment_schedules'] as $index => $sched) {
-                    $schedAmount = (float) $sched['amount'];
-                    $isPaid = false;
-                    if ($index === 0 && $initialPaymentAmount >= $schedAmount && $schedAmount > 0) {
-                        $isPaid = true;
-                    }
-                    PaymentSchedule::create([
-                        'booking_id' => $booking->id,
-                        'description' => $sched['description'] ?? 'Installment '.($index + 1),
-                        'amount' => $schedAmount,
-                        'due_date' => $sched['due_date'],
-                        'status' => $isPaid ? 'paid' : 'unpaid',
+                // Permission check for discount was verified in StoreBookingRequest withValidator,
+                // but double check here as defense-in-depth:
+                if ($discount > 0 && ! $request->user()->can('applyDiscount', Booking::class)) {
+                    throw ValidationException::withMessages([
+                        'discount_amount' => 'You do not have permission to authorize discounts.',
                     ]);
                 }
-            } else {
-                // Generate default 2-part schedule: 20% Deposit, 80% Final Balance
-                $deposit = round($finalAmount * 0.20, 2);
-                $balance = $finalAmount - $deposit;
-                $travelDate = Carbon::parse($validated['travel_date']);
-                $balanceDue = $travelDate->copy()->subDays(30)->isPast() ? $travelDate->toDateString() : $travelDate->copy()->subDays(30)->toDateString();
 
-                PaymentSchedule::create([
-                    'booking_id' => $booking->id,
-                    'description' => 'Deposit (20%)',
-                    'amount' => $deposit,
-                    'due_date' => $validated['booking_date'],
-                    'status' => ($initialPaymentAmount >= $deposit && $deposit > 0) ? 'paid' : 'unpaid',
-                ]);
+                $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
 
-                if ($balance > 0) {
-                    PaymentSchedule::create([
-                        'booking_id' => $booking->id,
-                        'description' => 'Final Balance',
-                        'amount' => $balance,
-                        'due_date' => $balanceDue,
-                        'status' => 'unpaid',
-                    ]);
-                }
-            }
-
-            // Record First Payment if requested
-            if ($recordPayment && $initialPaymentAmount > 0) {
-                $paymentAmountLkr = $exchangeService->convertToLkr((string) $initialPaymentAmount, $bookingCurrency);
-
-                $payment = Payment::create([
-                    'booking_id' => $booking->id,
-                    'customer_id' => $booking->customer_id,
-                    'amount' => $initialPaymentAmount,
-                    'currency' => $booking->currency,
-                    'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
-                    'amount_lkr' => (string) $paymentAmountLkr,
-                    'payment_method' => $validated['payment_method'] ?? 'cash',
-                    'payment_date' => $validated['booking_date'] ?? now()->toDateString(),
-                    'reference_number' => $validated['payment_reference'] ?? ('RCP-'.strtoupper(Str::random(8))),
-                    'recorded_by' => $request->user()->id,
-                    'notes' => 'Initial payment recorded during booking creation',
-                    'status' => PaymentStatus::Completed,
-                ]);
+                // Record initial payment if requested
+                $recordPayment = ! empty($validated['record_payment']);
+                $initialPaymentAmount = $recordPayment ? min($finalAmount, max(0, (float) ($validated['payment_amount'] ?? 0))) : 0;
+                $paidAmount = $initialPaymentAmount;
+                $balanceAmount = max(0, $finalAmount - $paidAmount);
+                $paymentStatus = $paidAmount >= $finalAmount && $finalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid');
 
                 $generator = app(\App\Services\NumberGenerator::class);
-                $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->timezone('Asia/Colombo')->format('Y') : (int) now('Asia/Colombo')->format('Y');
-                $receiptNumber = $generator->receipt($year);
+                $bookingYear = (int) date('Y');
+                do {
+                    $bookingRef = $generator->booking($bookingYear);
+                } while (Booking::withTrashed()->where('booking_reference', $bookingRef)->exists());
 
-                \App\Models\PaymentReceipt::create([
-                    'payment_id' => $payment->id,
-                    'receipt_number' => $receiptNumber,
-                    'generated_by' => $request->user()->id,
+                $exchangeService = app(\App\Services\Currency\ExchangeRateService::class);
+                $bookingCurrency = \App\Enums\Currency::tryFrom($package->currency ?? 'LKR') ?? \App\Enums\Currency::LKR;
+                $bookingExchangeRate = $exchangeService->latest($bookingCurrency);
+
+                $booking = Booking::create([
+                    'booking_reference' => $bookingRef,
+                    'customer_id' => $validated['customer_id'],
+                    'tour_package_id' => $package->id,
+                    'assigned_to' => $validated['assigned_to'] ?? null,
+                    'booking_date' => $validated['booking_date'],
+                    'travel_date' => $validated['travel_date'],
+                    'return_date' => $validated['return_date'] ?? null,
+                    'number_of_travelers' => $travelersCount,
+                    'base_amount' => $baseAmount,
+                    'discount_amount' => $discount,
+                    'extras_amount' => $extrasAmount,
+                    'tax_amount' => $taxAmount,
+                    'extras' => $extrasList,
+                    'final_amount' => $finalAmount,
+                    'paid_amount' => $paidAmount,
+                    'balance_amount' => $balanceAmount,
+                    'currency' => $package->currency ?? 'LKR',
+                    'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
+                    'booking_status' => BookingStatus::Pending,
+                    'payment_status' => $paymentStatus,
+                    'notes' => $validated['notes'] ?? null,
+                    'created_by' => $request->user()->id,
+                    'updated_by' => $request->user()->id,
                 ]);
 
-                DB::afterCommit(fn () => event(new PaymentReceived($payment)));
-            }
+                // Create Travelers
+                $booking->travelers()->createMany($validated['travelers']);
 
-            // Write initial entry to Notes Timeline
-            BookingNote::create([
-                'booking_id' => $booking->id,
-                'user_id' => $request->user()->id,
-                'content' => "Booking {$booking->booking_reference} created with {$travelersCount} traveler(s). Total: ".number_format($finalAmount, 2)." {$booking->currency}.",
-                'type' => 'status_change',
-            ]);
+                // Create Payment Schedules
+                if (! empty($validated['payment_schedules']) && is_array($validated['payment_schedules'])) {
+                    foreach ($validated['payment_schedules'] as $index => $sched) {
+                        $schedAmount = (float) $sched['amount'];
+                        $isPaid = false;
+                        if ($index === 0 && $initialPaymentAmount >= $schedAmount && $schedAmount > 0) {
+                            $isPaid = true;
+                        }
+                        PaymentSchedule::create([
+                            'booking_id' => $booking->id,
+                            'description' => $sched['description'] ?? 'Installment '.($index + 1),
+                            'amount' => $schedAmount,
+                            'due_date' => $sched['due_date'],
+                            'status' => $isPaid ? 'paid' : 'unpaid',
+                        ]);
+                    }
+                } else {
+                    // Generate default 2-part schedule: 20% Deposit, 80% Final Balance
+                    $deposit = round($finalAmount * 0.20, 2);
+                    $balance = $finalAmount - $deposit;
+                    $travelDate = Carbon::parse($validated['travel_date']);
+                    $balanceDue = $travelDate->copy()->subDays(30)->isPast() ? $travelDate->toDateString() : $travelDate->copy()->subDays(30)->toDateString();
 
-            // Write Activity Log
-            ActivityLog::create([
-                'log_name' => 'booking',
-                'description' => "Booking {$booking->booking_reference} created",
-                'subject_type' => Booking::class,
-                'subject_id' => $booking->id,
-                'causer_type' => get_class($request->user()),
-                'causer_id' => $request->user()->id,
-                'properties' => [
-                    'reference' => $booking->booking_reference,
-                    'final_amount' => $finalAmount,
-                    'travelers_count' => $travelersCount,
-                ],
-            ]);
+                    PaymentSchedule::create([
+                        'booking_id' => $booking->id,
+                        'description' => 'Deposit (20%)',
+                        'amount' => $deposit,
+                        'due_date' => $validated['booking_date'],
+                        'status' => ($initialPaymentAmount >= $deposit && $deposit > 0) ? 'paid' : 'unpaid',
+                    ]);
 
-            // Delete Draft after successful creation
-            BookingDraft::where('user_id', $request->user()->id)->delete();
+                    if ($balance > 0) {
+                        PaymentSchedule::create([
+                            'booking_id' => $booking->id,
+                            'description' => 'Final Balance',
+                            'amount' => $balance,
+                            'due_date' => $balanceDue,
+                            'status' => ($initialPaymentAmount >= $finalAmount && $finalAmount > 0) ? 'paid' : 'unpaid',
+                        ]);
+                    }
+                }
 
-            DB::commit();
+                // Record First Payment if requested
+                if ($recordPayment && $initialPaymentAmount > 0) {
+                    $paymentAmountLkr = $exchangeService->convertToLkr((string) $initialPaymentAmount, $bookingCurrency);
+
+                    $payment = Payment::create([
+                        'booking_id' => $booking->id,
+                        'customer_id' => $booking->customer_id,
+                        'amount' => $initialPaymentAmount,
+                        'currency' => $booking->currency,
+                        'exchange_rate_to_lkr' => (string) $bookingExchangeRate,
+                        'amount_lkr' => (string) $paymentAmountLkr,
+                        'payment_method' => $validated['payment_method'] ?? 'cash',
+                        'payment_date' => $validated['booking_date'] ?? now()->toDateString(),
+                        'reference_number' => $validated['payment_reference'] ?? ('RCP-'.strtoupper(Str::random(8))),
+                        'recorded_by' => $request->user()->id,
+                        'notes' => 'Initial payment recorded during booking creation',
+                        'status' => PaymentStatus::Completed,
+                    ]);
+
+                    $year = $payment->payment_date ? (int) \Carbon\Carbon::parse($payment->payment_date)->timezone('Asia/Colombo')->format('Y') : (int) now('Asia/Colombo')->format('Y');
+                    $receiptNumber = $generator->receipt($year);
+
+                    \App\Models\PaymentReceipt::create([
+                        'payment_id' => $payment->id,
+                        'receipt_number' => $receiptNumber,
+                        'generated_by' => $request->user()->id,
+                    ]);
+
+                    DB::afterCommit(fn () => event(new PaymentReceived($payment)));
+                }
+
+                // Write initial entry to Notes Timeline
+                BookingNote::create([
+                    'booking_id' => $booking->id,
+                    'user_id' => $request->user()->id,
+                    'content' => "Booking {$booking->booking_reference} created with {$travelersCount} traveler(s). Total: ".number_format($finalAmount, 2)." {$booking->currency}.",
+                    'type' => 'status_change',
+                ]);
+
+                // Write Activity Log
+                ActivityLog::create([
+                    'log_name' => 'booking',
+                    'description' => "Booking {$booking->booking_reference} created",
+                    'subject_type' => Booking::class,
+                    'subject_id' => $booking->id,
+                    'causer_type' => get_class($request->user()),
+                    'causer_id' => $request->user()->id,
+                    'properties' => [
+                        'reference' => $booking->booking_reference,
+                        'final_amount' => $finalAmount,
+                        'travelers_count' => $travelersCount,
+                    ],
+                ]);
+
+                // Delete Draft after successful creation
+                BookingDraft::where('user_id', $request->user()->id)->delete();
+
+                return $booking;
+            });
 
             return redirect()->route('bookings.show', $booking)->with('success', 'Booking created successfully.');
         } catch (ValidationException $e) {
-            DB::rollBack();
             throw $e;
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->withInput()->withErrors(['error' => 'Failed to create booking: '.$e->getMessage()]);
         }
     }
@@ -615,61 +613,64 @@ class BookingController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($request, $booking, $validated, $travelers) {
+                $validated['updated_by'] = $request->user()->id;
 
-            $validated['updated_by'] = $request->user()->id;
+                // Keep exchange rate snapshot immutable on existing bookings
+                unset($validated['exchange_rate_to_lkr'], $validated['currency']);
 
-            // Recalculate amounts if discount or travelers changed
-            if ($travelers !== null) {
-                $baseAmount = $booking->tourPackage->price * count($travelers);
-                $discount = isset($validated['discount_amount']) ? (float) $validated['discount_amount'] : (float) $booking->discount_amount;
-                $extrasAmount = isset($validated['extras_amount']) ? (float) $validated['extras_amount'] : (float) $booking->extras_amount;
-                $taxAmount = isset($validated['tax_amount']) ? (float) $validated['tax_amount'] : (float) $booking->tax_amount;
+                // Recalculate amounts if discount or travelers changed
+                if ($travelers !== null) {
+                    $baseAmount = $booking->tourPackage->price * count($travelers);
+                    $discount = isset($validated['discount_amount']) ? (float) $validated['discount_amount'] : (float) $booking->discount_amount;
+                    $extrasAmount = isset($validated['extras_amount']) ? (float) $validated['extras_amount'] : (float) $booking->extras_amount;
+                    $taxAmount = isset($validated['tax_amount']) ? (float) $validated['tax_amount'] : (float) $booking->tax_amount;
 
-                $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
-                $balanceAmount = max(0, $finalAmount - (float) $booking->paid_amount);
+                    $finalAmount = max(0, ($baseAmount + $extrasAmount + $taxAmount) - $discount);
+                    $paidAmount = (float) $booking->paid_amount;
+                    $balanceAmount = max(0, $finalAmount - $paidAmount);
 
-                $validated['number_of_travelers'] = count($travelers);
-                $validated['base_amount'] = $baseAmount;
-                $validated['discount_amount'] = $discount;
-                $validated['final_amount'] = $finalAmount;
-                $validated['balance_amount'] = $balanceAmount;
-            } elseif (isset($validated['discount_amount'])) {
-                $discount = (float) $validated['discount_amount'];
-                $finalAmount = max(0, ($booking->base_amount + $booking->extras_amount + $booking->tax_amount) - $discount);
-                $validated['discount_amount'] = $discount;
-                $validated['final_amount'] = $finalAmount;
-                $validated['balance_amount'] = max(0, $finalAmount - (float) $booking->paid_amount);
-            }
+                    $validated['number_of_travelers'] = count($travelers);
+                    $validated['base_amount'] = $baseAmount;
+                    $validated['discount_amount'] = $discount;
+                    $validated['final_amount'] = $finalAmount;
+                    $validated['balance_amount'] = $balanceAmount;
+                    $validated['payment_status'] = $paidAmount >= $finalAmount && $finalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid');
+                } elseif (isset($validated['discount_amount'])) {
+                    $discount = (float) $validated['discount_amount'];
+                    $finalAmount = max(0, ($booking->base_amount + $booking->extras_amount + $booking->tax_amount) - $discount);
+                    $paidAmount = (float) $booking->paid_amount;
+                    $validated['discount_amount'] = $discount;
+                    $validated['final_amount'] = $finalAmount;
+                    $validated['balance_amount'] = max(0, $finalAmount - $paidAmount);
+                    $validated['payment_status'] = $paidAmount >= $finalAmount && $finalAmount > 0 ? 'Paid' : ($paidAmount > 0 ? 'Partial' : 'Unpaid');
+                }
 
-            $booking->update($validated);
+                $booking->update($validated);
 
-            if ($travelers !== null) {
-                $providedIds = collect($travelers)->pluck('id')->filter()->toArray();
-                $booking->travelers()->whereNotIn('id', $providedIds)->delete();
+                if ($travelers !== null) {
+                    $providedIds = collect($travelers)->pluck('id')->filter()->toArray();
+                    $booking->travelers()->whereNotIn('id', $providedIds)->delete();
 
-                foreach ($travelers as $travelerData) {
-                    if (isset($travelerData['id']) && $travelerData['id']) {
-                        $booking->travelers()->where('id', $travelerData['id'])->update($travelerData);
-                    } else {
-                        $booking->travelers()->create($travelerData);
+                    foreach ($travelers as $travelerData) {
+                        if (isset($travelerData['id']) && $travelerData['id']) {
+                            $booking->travelers()->where('id', $travelerData['id'])->update($travelerData);
+                        } else {
+                            $booking->travelers()->create($travelerData);
+                        }
                     }
                 }
-            }
 
-            BookingNote::create([
-                'booking_id' => $booking->id,
-                'user_id' => $request->user()->id,
-                'content' => 'Booking details updated by '.$request->user()->name.'.',
-                'type' => 'note',
-            ]);
-
-            DB::commit();
+                BookingNote::create([
+                    'booking_id' => $booking->id,
+                    'user_id' => $request->user()->id,
+                    'content' => 'Booking details updated by '.$request->user()->name.'.',
+                    'type' => 'note',
+                ]);
+            });
 
             return redirect()->route('bookings.show', $booking)->with('success', 'Booking updated successfully.');
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return back()->withErrors(['error' => 'Failed to update booking: '.$e->getMessage()]);
         }
     }
