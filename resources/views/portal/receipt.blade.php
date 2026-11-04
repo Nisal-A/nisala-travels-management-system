@@ -19,10 +19,16 @@
     </style>
 </head>
 <body>
+    @php
+        $currency = $payment->currency ?? $payment->booking?->currency ?? 'LKR';
+        $tourName = $payment->booking?->tourPackage?->package_name ?? $payment->booking?->tourPackage?->name ?? 'Custom Tour';
+        $bookingRef = $payment->booking?->booking_reference ?? ('BKG-' . $payment->booking_id);
+    @endphp
+
     <div class="header">
-        <div class="company-name">{{ $company['name'] }}</div>
-        <div>{{ $company['address'] }}</div>
-        <div>Phone: {{ $company['phone'] }} | Email: {{ $company['email'] }}</div>
+        <div class="company-name">{{ $company['name'] ?? 'Nisala Travels' }}</div>
+        <div>{{ $company['address'] ?? '' }}</div>
+        <div>Phone: {{ $company['phone'] ?? '' }} | Email: {{ $company['email'] ?? '' }}</div>
     </div>
 
     <div class="title">Payment Receipt</div>
@@ -31,15 +37,15 @@
         <tr>
             <td>
                 <strong>Billed To:</strong><br>
-                {{ $customer->full_name }}<br>
-                {{ $customer->email }}<br>
-                {{ $customer->phone }}
+                {{ $customer->full_name ?? 'Valued Customer' }}<br>
+                {{ $customer->email ?? '' }}<br>
+                {{ $customer->phone ?? '' }}
             </td>
             <td>
                 <strong>Receipt No:</strong> {{ $receipt_number }}<br>
-                <strong>Date:</strong> {{ $payment->payment_date->format('F d, Y') }}<br>
-                <strong>Booking Ref:</strong> {{ $payment->booking->booking_reference ?? 'BKG-'.$payment->booking->id }}<br>
-                <strong>Tour:</strong> {{ $payment->booking->tourPackage->name ?? 'Custom Tour' }}
+                <strong>Date:</strong> {{ $payment->payment_date ? $payment->payment_date->format('F d, Y') : now()->format('F d, Y') }}<br>
+                <strong>Booking Ref:</strong> {{ $bookingRef }}<br>
+                <strong>Tour:</strong> {{ $tourName }}
             </td>
         </tr>
     </table>
@@ -50,25 +56,35 @@
                 <th>Description</th>
                 <th>Payment Method</th>
                 <th>Status</th>
-                <th style="text-align: right">Amount (LKR)</th>
+                <th style="text-align: right">Amount ({{ $currency }})</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Payment for Booking {{ $payment->booking->booking_reference ?? 'BKG-'.$payment->booking->id }}</td>
-                <td>{{ ucfirst(str_replace('_', ' ', $payment->payment_method instanceof \BackedEnum ? $payment->payment_method->value : $payment->payment_method)) }}</td>
-                <td>{{ ucfirst($payment->status instanceof \BackedEnum ? $payment->status->value : $payment->status) }}</td>
-                <td style="text-align: right">{{ number_format($payment->amount, 2) }}</td>
+                <td>Payment for Booking {{ $bookingRef }} ({{ $tourName }})</td>
+                <td>{{ ucfirst(str_replace('_', ' ', $payment->payment_method instanceof \BackedEnum ? $payment->payment_method->value : (string) $payment->payment_method)) }}</td>
+                <td>{{ ucfirst($payment->status instanceof \BackedEnum ? $payment->status->value : (string) $payment->status) }}</td>
+                <td style="text-align: right">{{ $currency }} {{ number_format((float) $payment->amount, 2) }}</td>
             </tr>
             <tr class="total-row">
                 <td colspan="3" style="text-align: right">Total Paid</td>
-                <td style="text-align: right">Rs. {{ number_format($payment->amount, 2) }}</td>
+                <td style="text-align: right">{{ $currency }} {{ number_format((float) $payment->amount, 2) }}</td>
             </tr>
+            @if($payment->booking)
+            <tr>
+                <td colspan="3" style="text-align: right">Booking Total</td>
+                <td style="text-align: right">{{ $currency }} {{ number_format((float) $payment->booking->final_amount, 2) }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right">Remaining Balance</td>
+                <td style="text-align: right">{{ $currency }} {{ number_format((float) $payment->booking->balance_amount, 2) }}</td>
+            </tr>
+            @endif
         </tbody>
     </table>
 
     <div class="footer">
-        Thank you for choosing {{ $company['name'] }}. If you have any questions, please contact us.
+        Thank you for choosing {{ $company['name'] ?? 'Nisala Travels' }}. If you have any questions, please contact us.
     </div>
 </body>
 </html>

@@ -85,8 +85,19 @@
     </style>
 </head>
 <body>
+    @php
+        $companyName = $company['name'] ?? config('travel.company.name', 'Nisala Travels');
+        $companyEmail = $company['email'] ?? config('travel.company.email', 'support@nisalatravels.com');
+        $companyPhone = $company['phone'] ?? config('travel.company.phone', '+94 11 234 5678');
+        $packageName = $booking->tourPackage?->package_name ?? $booking->tourPackage?->name ?? 'Custom Tour Package';
+        $destinationLabel = $booking->tourPackage?->destination
+            ? trim(($booking->tourPackage->destination->city_region ? $booking->tourPackage->destination->city_region . ', ' : '') . $booking->tourPackage->destination->country)
+            : $packageName;
+        $itineraryItems = is_array($booking->tourPackage?->itinerary) ? $booking->tourPackage->itinerary : [];
+    @endphp
+
     <div class="header">
-        <div class="logo">Nisala Travels</div>
+        <div class="logo">{{ $companyName }}</div>
         <div class="title">Travel Itinerary</div>
     </div>
 
@@ -96,12 +107,16 @@
             <div class="summary-value">{{ $booking->booking_reference }}</div>
         </div>
         <div class="summary-row">
+            <div class="summary-label">Tour Package:</div>
+            <div class="summary-value">{{ $packageName }}</div>
+        </div>
+        <div class="summary-row">
             <div class="summary-label">Destination:</div>
-            <div class="summary-value">{{ $booking->tourPackage->name ?? 'Custom Destination' }}</div>
+            <div class="summary-value">{{ $destinationLabel }}</div>
         </div>
         <div class="summary-row">
             <div class="summary-label">Travel Date:</div>
-            <div class="summary-value">{{ $booking->travel_date->format('F j, Y') }} - {{ $booking->return_date ? $booking->return_date->format('F j, Y') : 'TBD' }}</div>
+            <div class="summary-value">{{ $booking->travel_date ? $booking->travel_date->format('F j, Y') : 'TBD' }} - {{ $booking->return_date ? $booking->return_date->format('F j, Y') : 'TBD' }}</div>
         </div>
         <div class="summary-row">
             <div class="summary-label">Primary Customer:</div>
@@ -111,6 +126,10 @@
             <div class="summary-label">Number of Travelers:</div>
             <div class="summary-value">{{ $booking->number_of_travelers }}</div>
         </div>
+        <div class="summary-row">
+            <div class="summary-label">Booking Status:</div>
+            <div class="summary-value">{{ ucfirst($booking->booking_status instanceof \BackedEnum ? $booking->booking_status->value : (string) $booking->booking_status) }}</div>
+        </div>
     </div>
 
     <div class="section-title">Travelers</div>
@@ -119,42 +138,64 @@
             <tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">
                 <th style="text-align: left; padding: 10px; border: 1px solid #e2e8f0;">Name</th>
                 <th style="text-align: left; padding: 10px; border: 1px solid #e2e8f0;">Type</th>
+                <th style="text-align: left; padding: 10px; border: 1px solid #e2e8f0;">Passport / Nationality</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($booking->travelers as $traveler)
+            @forelse($booking->travelers as $traveler)
             <tr>
-                <td style="padding: 10px; border: 1px solid #e2e8f0;">{{ $traveler->first_name }} {{ $traveler->last_name }}</td>
-                <td style="padding: 10px; border: 1px solid #e2e8f0; text-transform: capitalize;">{{ $traveler->traveler_type }}</td>
+                <td style="padding: 10px; border: 1px solid #e2e8f0;">{{ $traveler->full_name ?: trim(($traveler->first_name ?? '') . ' ' . ($traveler->last_name ?? '')) }}</td>
+                <td style="padding: 10px; border: 1px solid #e2e8f0; text-transform: capitalize;">{{ $traveler->traveler_type instanceof \BackedEnum ? $traveler->traveler_type->value : $traveler->traveler_type }}</td>
+                <td style="padding: 10px; border: 1px solid #e2e8f0;">{{ $traveler->passport_number ?? 'N/A' }}{{ $traveler->nationality ? ' (' . $traveler->nationality . ')' : '' }}</td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="3" style="padding: 10px; border: 1px solid #e2e8f0;">{{ $booking->customer->full_name ?? 'Primary Traveler' }}</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
 
     <div class="section-title">Daily Itinerary</div>
-    
-    <!-- Mocked Itinerary for now -->
-    <div class="itinerary-day">
-        <div class="day-header">Day 1: Arrival & Check-in ({{ $booking->travel_date->format('M j, Y') }})</div>
-        <div class="day-content">
-            <p>Arrive at the destination airport. Meet our local representative who will assist you with the transfer to your hotel. Rest and acclimatize to the local environment.</p>
-        </div>
-    </div>
 
-    <div class="itinerary-day">
-        <div class="day-header">Day 2: Exploring the City ({{ $booking->travel_date->addDay()->format('M j, Y') }})</div>
-        <div class="day-content">
-            <p>After breakfast, embark on a full-day guided city tour. Visit major historical landmarks, museums, and local markets. Enjoy lunch at a highly-rated local restaurant.</p>
+    @if(count($itineraryItems) > 0)
+        @foreach($itineraryItems as $index => $dayItem)
+            @php
+                $dayNumber = $dayItem['day'] ?? ($index + 1);
+                $dayTitle = $dayItem['title'] ?? ('Day ' . $dayNumber);
+                $dayDesc = $dayItem['description'] ?? '';
+                $dayDate = $booking->travel_date ? $booking->travel_date->copy()->addDays((int) $dayNumber - 1)->format('M j, Y') : null;
+            @endphp
+            <div class="itinerary-day">
+                <div class="day-header">Day {{ $dayNumber }}: {{ $dayTitle }}{{ $dayDate ? ' (' . $dayDate . ')' : '' }}</div>
+                <div class="day-content">
+                    <p>{{ $dayDesc }}</p>
+                </div>
+            </div>
+        @endforeach
+    @else
+        <div class="itinerary-day">
+            <div class="day-header">Day 1: Arrival &amp; Check-in ({{ $booking->travel_date ? $booking->travel_date->format('M j, Y') : 'Day 1' }})</div>
+            <div class="day-content">
+                <p>Arrive at {{ $destinationLabel }}. Meet our {{ $companyName }} representative for hotel transfer and check-in.</p>
+            </div>
         </div>
-    </div>
-    
-    <div class="itinerary-day">
-        <div class="day-header">Departure ({{ $booking->return_date ? $booking->return_date->format('M j, Y') : 'Final Day' }})</div>
-        <div class="day-content">
-            <p>Enjoy a relaxed morning. Depending on your flight schedule, transfer to the airport for your onward journey. Safe travels!</p>
+        @if($booking->tourPackage?->description)
+        <div class="itinerary-day">
+            <div class="day-header">Tour Programme Overview</div>
+            <div class="day-content">
+                <p>{{ $booking->tourPackage->description }}</p>
+            </div>
         </div>
-    </div>
-    
+        @endif
+        <div class="itinerary-day">
+            <div class="day-header">Departure ({{ $booking->return_date ? $booking->return_date->format('M j, Y') : 'Final Day' }})</div>
+            <div class="day-content">
+                <p>Check out and transfer to the airport for your onward journey.</p>
+            </div>
+        </div>
+    @endif
+
     @if($booking->notes)
     <div class="section-title">Important Notes</div>
     <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px;">
@@ -163,8 +204,8 @@
     @endif
 
     <div class="footer">
-        <p>Thank you for choosing Nisala Travels. We wish you a wonderful trip!</p>
-        <p>Contact us: support@nisalatravels.com | +94 11 234 5678</p>
+        <p>Thank you for choosing {{ $companyName }}. We wish you a wonderful trip!</p>
+        <p>Contact us: {{ $companyEmail }} | {{ $companyPhone }}</p>
     </div>
 </body>
 </html>

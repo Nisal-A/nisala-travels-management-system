@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Portal\PaymentResource;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Policies\Concerns\ChecksCustomerOwnership;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, ChecksCustomerOwnership;
 
     public function index(Request $request)
     {
@@ -109,21 +110,26 @@ class PaymentController extends Controller
 
     public function receipt(Payment $payment)
     {
-        // Enforce authorization
+        // Enforce authorization via PaymentPolicy + ChecksCustomerOwnership
         $this->authorize('view', $payment);
-        if ($payment->customer_id !== request()->user()->customer->id) {
-            abort(403);
-        }
+        abort_unless($this->isOwner(request()->user(), $payment->customer_id), 403);
 
         $payment->load('receipt', 'booking.customer', 'booking.tourPackage');
 
         // Derive receipt number: from receipt relation, falling back to RCP- + id only
         $receiptNumber = $payment->receipt?->receipt_number ?? 'RCP-'.$payment->id;
 
+        $company = array_merge(config('travel.company', []), [
+            'name' => company_setting('name', config('travel.company.name', 'Nisala Travels')),
+            'address' => company_setting('address', config('travel.company.address', '')),
+            'phone' => company_setting('phone', config('travel.company.phone', '')),
+            'email' => company_setting('support_email', config('travel.company.email', 'support@nisalatravels.com')),
+        ]);
+
         $pdf = Pdf::loadView('portal.receipt', [
             'payment' => $payment,
-            'customer' => $payment->booking->customer,
-            'company' => config('travel.company'),
+            'customer' => $payment->booking->customer ?? $payment->customer,
+            'company' => $company,
             'receipt_number' => $receiptNumber,
         ]);
 

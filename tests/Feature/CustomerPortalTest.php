@@ -99,3 +99,38 @@ it('shows only the customer\'s own payments', function () {
         ->where('payments.data.0.id', $payment1->id)
     );
 });
+
+it('downloads itinerary and payment receipt PDFs for the customer\'s own booking and payment', function () {
+    [$user, $customer] = createCustomerUser();
+
+    $tour = TourPackage::factory()->create([
+        'package_name' => 'Sigiriya & Kandy Cultural Tour',
+        'itinerary' => [
+            ['day' => 1, 'title' => 'Arrival & Transfer to Sigiriya', 'description' => 'Check in and evening climb.'],
+            ['day' => 2, 'title' => 'Sigiriya to Kandy', 'description' => 'Temple of the Tooth visit.'],
+        ],
+    ]);
+
+    $booking = Booking::factory()->create([
+        'customer_id' => $customer->id,
+        'tour_package_id' => $tour->id,
+        'final_amount' => 1500,
+        'balance_amount' => 1000,
+    ]);
+
+    $payment = Payment::factory()->create([
+        'customer_id' => $customer->id,
+        'booking_id' => $booking->id,
+        'amount' => 500,
+        'currency' => 'USD',
+    ]);
+
+    $itineraryResponse = $this->actingAs($user)->get(route('portal.bookings.itinerary', $booking));
+    $itineraryResponse->assertStatus(200);
+    $itineraryResponse->assertHeader('content-type', 'application/pdf');
+
+    $receiptResponse = $this->actingAs($user)->get(route('portal.payments.receipt', $payment));
+    $receiptResponse->assertStatus(200);
+    $receiptResponse->assertHeader('content-type', 'application/pdf');
+});
+

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Portal\BookingCardResource;
 use App\Http\Resources\Portal\BookingDetailResource;
 use App\Models\Booking;
+use App\Policies\Concerns\ChecksCustomerOwnership;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ use Inertia\Inertia;
 
 class BookingController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, ChecksCustomerOwnership;
 
     public function index(Request $request)
     {
@@ -56,6 +57,7 @@ class BookingController extends Controller
     public function show(Booking $booking)
     {
         $this->authorize('view', $booking);
+        abort_unless($this->isOwner(request()->user(), $booking->customer_id), 403);
 
         $booking->load(['tourPackage', 'travelers', 'payments', 'customer.documents.documentType']);
 
@@ -67,9 +69,17 @@ class BookingController extends Controller
     public function itinerary(Booking $booking)
     {
         $this->authorize('view', $booking);
-        $booking->load(['tourPackage', 'travelers', 'customer']);
+        abort_unless($this->isOwner(request()->user(), $booking->customer_id), 403);
 
-        $pdf = Pdf::loadView('portal.itinerary', compact('booking'));
+        $booking->load(['tourPackage.destination', 'travelers', 'customer']);
+        $company = [
+            'name' => company_setting('name', config('travel.company.name', 'Nisala Travels')),
+            'address' => company_setting('address', config('travel.company.address', '')),
+            'phone' => company_setting('phone', config('travel.company.phone', '')),
+            'email' => company_setting('support_email', config('travel.company.email', 'support@nisalatravels.com')),
+        ];
+
+        $pdf = Pdf::loadView('portal.itinerary', compact('booking', 'company'));
 
         return $pdf->download("Itinerary_{$booking->booking_reference}.pdf");
     }
