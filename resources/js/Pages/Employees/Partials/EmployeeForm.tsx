@@ -73,7 +73,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="role">Role *</Label>
-                            <Select value={data.role} onValueChange={(value) => setData('role', value)} required>
+                            <Select value={data.role} onValueChange={(value) => setData('role', value ?? '')} required>
                                 <SelectTrigger className={errors.role ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
@@ -90,7 +90,7 @@ export default function EmployeeForm({ employee, roles, isEditing = false }: Emp
 
                         <div className="space-y-2">
                             <Label htmlFor="status">Account Status *</Label>
-                            <Select value={data.status} onValueChange={(value) => setData('status', value)} required>
+                            <Select value={data.status} onValueChange={(value) => setData('status', value ?? 'active')} required>
                                 <SelectTrigger className={errors.status ? 'border-destructive' : ''}>
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>

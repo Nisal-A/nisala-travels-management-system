@@ -285,6 +285,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
 if (app()->environment('local', 'development', 'testing')) {
     Route::get('/dev/styleguide', function () {
+        abort_unless(in_array(config('app.env'), ['local', 'development', 'testing'], true), 404);
+
         return Inertia::render('Dev/Styleguide');
     })->name('dev.styleguide');
 
@@ -293,3 +295,6 @@ if (app()->environment('local', 'development', 'testing')) {
         Route::get('/admin/dev/emails/{type}', [\App\Http\Controllers\Admin\EmailPreviewController::class, 'preview']);
     });
 }
+
+// Legacy public web POST /inquiries endpoint was replaced by POST /api/public/inquiries
+Route::post('/inquiries', fn () => abort(404));

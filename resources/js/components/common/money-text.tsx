@@ -3,7 +3,7 @@
  */
 export interface MoneyTextProps {
     amount: number;
-    currency?: 'LKR' | 'USD';
+    currency?: 'LKR' | 'USD' | 'INR' | 'THB' | string;
     size?: 'sm' | 'base' | 'lg' | 'xl' | '2xl';
     weight?: 'normal' | 'medium' | 'semibold' | 'bold';
     className?: string;

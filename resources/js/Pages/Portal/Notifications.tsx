@@ -1,7 +1,8 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import CustomerPortalLayout from '@/components/layouts/CustomerPortalLayout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { getNotificationIcon, NotificationData } from '@/components/notifications/NotificationBell';
@@ -128,14 +129,22 @@ export default function PortalNotifications({ notifications, filter, group }: Pr
                                             
                                             <div className="flex items-center gap-3">
                                                 {data.url && (
-                                                    <Button variant="secondary" size="sm" asChild className="h-8 text-xs">
-                                                        <a href={data.url} onClick={(e) => {
-                                                            if (isUnread) {
-                                                                markAsRead(notification.id);
-                                                            }
-                                                        }}>
-                                                            View Details
-                                                        </a>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="h-8 text-xs"
+                                                        render={
+                                                            <a
+                                                                href={data.url}
+                                                                onClick={() => {
+                                                                    if (isUnread) {
+                                                                        markAsRead(notification.id);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        }
+                                                    >
+                                                        View Details
                                                     </Button>
                                                 )}
                                                 
@@ -163,22 +172,34 @@ export default function PortalNotifications({ notifications, filter, group }: Pr
                 {/* Pagination */}
                 {notifications.last_page > 1 && (
                     <div className="flex justify-center gap-2">
-                        {notifications.links.map((link, i) => (
-                            <Button 
-                                key={i}
-                                variant={link.active ? 'default' : 'outline'}
-                                size="sm"
-                                disabled={!link.url}
-                                asChild={!!link.url}
-                                className={link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''}
-                            >
-                                {link.url ? (
-                                    <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
-                                ) : (
+                        {notifications.links.map((link, i) => {
+                            const className = cn(
+                                link.label.includes('Previous') || link.label.includes('Next') ? 'hidden sm:inline-flex' : ''
+                            );
+
+                            if (link.url) {
+                                return (
+                                    <Link
+                                        key={i}
+                                        href={link.url}
+                                        className={cn(buttonVariants({ variant: link.active ? 'default' : 'outline', size: 'sm' }), className)}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                );
+                            }
+
+                            return (
+                                <Button
+                                    key={i}
+                                    variant={link.active ? 'default' : 'outline'}
+                                    size="sm"
+                                    disabled
+                                    className={className}
+                                >
                                     <span dangerouslySetInnerHTML={{ __html: link.label }} />
-                                )}
-                            </Button>
-                        ))}
+                                </Button>
+                            );
+                        })}
                     </div>
                 )}
             </div>

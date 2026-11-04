@@ -11,7 +11,12 @@ import type { PageProps } from '@/types';
 export interface NotificationData {
     id: string;
     type: string;
-    data: Record<string, unknown>;
+    data: {
+        title?: string;
+        body?: string;
+        url?: string;
+        [key: string]: unknown;
+    };
     read_at: string | null;
     created_at: string;
 }

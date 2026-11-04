@@ -52,19 +52,24 @@ export default function PortalDocuments({ documents }: Props) {
                                                         : 'N/A'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <StatusBadge
-                                                        type="document"
-                                                        status={
-                                                            doc.status === 'pending'
-                                                                ? 'Pending Review'
-                                                                : ((doc.status.charAt(0).toUpperCase() +
-                                                                      doc.status.slice(1)) as
-                                                                      | 'Pending Review'
-                                                                      | 'Verified'
-                                                                      | 'Rejected'
-                                                                      | 'Expired')
-                                                        }
-                                                    />
+                                                    {(() => {
+                                                        const rawStatus = doc.status || doc.verification_status || 'pending';
+                                                        return (
+                                                            <StatusBadge
+                                                                type="document"
+                                                                status={
+                                                                    rawStatus === 'pending'
+                                                                        ? 'Pending Review'
+                                                                        : ((rawStatus.charAt(0).toUpperCase() +
+                                                                              rawStatus.slice(1)) as
+                                                                              | 'Pending Review'
+                                                                              | 'Verified'
+                                                                              | 'Rejected'
+                                                                              | 'Expired')
+                                                                }
+                                                            />
+                                                        );
+                                                    })()}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

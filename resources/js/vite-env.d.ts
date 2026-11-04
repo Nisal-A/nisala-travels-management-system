@@ -12,4 +12,7 @@ interface ImportMeta {
  * Global Ziggy route() helper, injected at runtime via the @routes
  * Blade directive. See: tighten/ziggy
  */
-declare function route(name: string, params?: Record<string, unknown>): string;
+declare function route(
+    name: string,
+    params?: Record<string, unknown> | string | number | (string | number)[],
+): string;

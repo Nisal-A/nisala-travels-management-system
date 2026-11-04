@@ -207,7 +207,7 @@ export default function CostLines({ tourId, initialCostLines = [], suppliers = [
                                             <Label htmlFor="supplier_id">Supplier</Label>
                                             <Select
                                                 value={formData.supplier_id || '__none__'}
-                                                onValueChange={(val) => handleSupplierChange(val === '__none__' ? '' : val)}
+                                                onValueChange={(val) => handleSupplierChange(!val || val === '__none__' ? '' : val)}
                                             >
                                                 <SelectTrigger id="supplier_id" className="w-full">
                                                     <SelectValue placeholder="Optional" />
@@ -256,7 +256,7 @@ export default function CostLines({ tourId, initialCostLines = [], suppliers = [
                                             <Label htmlFor="currency">Currency *</Label>
                                             <Select
                                                 value={formData.currency}
-                                                onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}
+                                                onValueChange={(val) => setFormData((p) => ({ ...p, currency: val ?? 'LKR' }))}
                                             >
                                                 <SelectTrigger id="currency" className="w-full">
                                                     <SelectValue placeholder="Currency" />
@@ -506,7 +506,7 @@ export default function CostLines({ tourId, initialCostLines = [], suppliers = [
                                 <Label htmlFor="edit-supplier_id">Supplier</Label>
                                 <Select
                                     value={formData.supplier_id || '__none__'}
-                                    onValueChange={(val) => handleSupplierChange(val === '__none__' ? '' : val)}
+                                    onValueChange={(val) => handleSupplierChange(!val || val === '__none__' ? '' : val)}
                                 >
                                     <SelectTrigger id="edit-supplier_id" className="w-full">
                                         <SelectValue placeholder="Optional" />
@@ -550,7 +550,7 @@ export default function CostLines({ tourId, initialCostLines = [], suppliers = [
                                 <Label htmlFor="edit-currency">Currency *</Label>
                                 <Select
                                     value={formData.currency}
-                                    onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}
+                                    onValueChange={(val) => setFormData((p) => ({ ...p, currency: val ?? 'LKR' }))}
                                 >
                                     <SelectTrigger id="edit-currency" className="w-full">
                                         <SelectValue placeholder="Currency" />

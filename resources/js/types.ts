@@ -260,6 +260,7 @@ export interface CustomerDocument {
     status?: string;
     verification_status?: string;
     expiry_date?: string;
+    created_at?: string;
     document_type?: DocumentType;
 }
 

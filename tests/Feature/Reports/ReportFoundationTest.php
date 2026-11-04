@@ -103,8 +103,12 @@ test('finance sees only financial reports on the hub', function () {
 
 test('reports navigation entry is visible to super_admin, manager, staff, and finance but not customer', function (string $roleMethod, bool $shouldSee) {
     $user = User::factory()->{$roleMethod}()->create();
+    if ($roleMethod === 'customer') {
+        Customer::factory()->create(['user_id' => $user->id]);
+    }
 
-    $response = $this->actingAs($user)->get('/dashboard');
+    $url = $roleMethod === 'customer' ? '/portal' : '/dashboard';
+    $response = $this->actingAs($user)->get($url);
     $response->assertStatus(200);
 
     $response->assertInertia(function (Assert $page) use ($shouldSee) {
